@@ -69,7 +69,7 @@
     </div>
   {/each}
 
-  <button on:click={handleAdd}>Add</button>
+  <button on:click={handleAdd}>추가</button>
 </div>
 
 <style>
