@@ -25,7 +25,7 @@
       {gem.option1.optionType} Lv.{gem.option1.value}
     </div>
     <div>
-      {gem.option2.optionType} Lv.{gem.option1.value}
+      {gem.option2.optionType} Lv.{gem.option2.value}
     </div>
   </div>
 </div>
