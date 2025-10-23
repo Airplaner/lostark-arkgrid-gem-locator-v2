@@ -154,4 +154,12 @@
 </div>
 
 <style>
+  button {
+    /* 너비는 자동이지만 최소 5em */
+    width: auto;
+    min-width: 5em;
+
+    /* panel 내부에서 우측 정렬 */
+    align-self: flex-end;
+  }
 </style>
