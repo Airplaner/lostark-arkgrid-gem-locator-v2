@@ -13,7 +13,7 @@
   };
   const integerInputs: IntegerInputDef[] = [
     { name: 'req', label: '필요 의지력', min: 3, max: 6 },
-    { name: 'point', label: '질서/혼돈 포인트', min: 1, max: 5 },
+    { name: 'point', label: '활성 포인트', min: 1, max: 5 },
     { name: 'attack', label: '공격력', min: 0, max: 5 },
     { name: 'skillDamage', label: '추가 피해', min: 0, max: 5 },
     { name: 'bossDamage', label: '보스 피해', min: 0, max: 5 },
@@ -32,24 +32,26 @@
   }
 </script>
 
-<div class="p-4 border rounded flex gap-2 mb-4">
-  <div>
-    <input placeholder="Name" bind:value={name} class="border p-2 rounded w-40" />
+<div class="panel">
+  <div class="row">
+    <span class="title">이름</span>
+    <input placeholder="Name" bind:value={name}/>
   </div>
-  <div>
+  <div class="row">
+    <span class="title">젬 타입</span>
     <label>
-      <input type="radio" bind:group={gemAttr} value={ArkGridGemAttr.Order} />
+      <input type="radio" name="gemAttr" bind:group={gemAttr} value={ArkGridGemAttr.Order} />
       질서
     </label>
     <label>
-      <input type="radio" bind:group={gemAttr} value={ArkGridGemAttr.Chaos} />
+      <input type="radio" name="gemAttr" bind:group={gemAttr} value={ArkGridGemAttr.Chaos} />
       혼돈
     </label>
   </div>
 
   {#each integerInputs as integerInput}
     <div class="row">
-      <span>{integerInput.label}</span>
+      <span class="title">{integerInput.label}</span>
       {#each Array(integerInput.max - integerInput.min + 1) as _, i}
         <label>
           <input
@@ -59,10 +61,16 @@
             value={integerInput.min + i}
           />
           {integerInput.min + i}
+          {#if i != integerInput.max - integerInput.min}
+            -
+          {/if}
         </label>
       {/each}
     </div>
   {/each}
 
-  <button on:click={handleAdd} class="bg-blue-500 text-white px-3 py-2 rounded">Add</button>
+  <button on:click={handleAdd}>Add</button>
 </div>
+
+<style>
+</style>
