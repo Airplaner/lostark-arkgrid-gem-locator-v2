@@ -1,4 +1,5 @@
 import { get, writable, type Writable } from 'svelte/store';
+import { persisted } from 'svelte-persisted-store';
 
 export enum ArkGridGemAttr {
   Order = '질서',
@@ -28,9 +29,30 @@ export interface ArkgridGem {
   option2: ArkgridGemOption;
 }
 
-// 각각의 store 생성
-export const orderGems: Writable<ArkgridGem[]> = writable([]);
-export const chaosGems: Writable<ArkgridGem[]> = writable([]);
+// serializer object for svelte-persisted-store
+const bigIntSerializer = {
+  // bigInt의 경우 string으로 바꾼 뒤 가장 끝에 n을 붙여서 직렬화
+  stringify: (value: any) => {
+    return JSON.stringify(value, (_, v) => (typeof v === 'bigint' ? v.toString() + 'n' : v));
+  },
+
+  // string이고 n으로 끝나는 정수라면, BigInt화
+  parse: (text: string) => {
+    return JSON.parse(text, (_, v) => {
+      if (typeof v === 'string' && /^\d+n$/.test(v)) {
+        return BigInt(v.slice(0, -1));
+      }
+      return v;
+    });
+  },
+};
+
+export const orderGems: Writable<ArkgridGem[]> = persisted('orderGems', [], {
+  serializer: bigIntSerializer,
+});
+export const chaosGems: Writable<ArkgridGem[]> = persisted('chaosGems', [], {
+  serializer: bigIntSerializer,
+});
 
 // gem 추가 함수
 export function addGem(
