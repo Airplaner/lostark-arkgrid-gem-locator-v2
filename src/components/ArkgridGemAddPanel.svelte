@@ -43,18 +43,29 @@
     },
     {} as Record<string, number>
   );
+  // subOptionValues는 radio input에 의해서 값이 변경될 때 invalidate되어서
+  // 아래 selectedCount는 매번 계산되도록 반응형 변수로 설정
+  $: selectedCount = Object.values(subOptionValues).filter((v) => v > 0).length;
 
-  function selectedCount() {
-    // subOption 중 선택된 옵션 수 계산
-    return Object.values(subOptionValues).filter((v) => v > 0).length;
-  }
-
-  function canSelect(name: string, val: number) {
-    // 현재 name과 val에 해당하는 radio input을 수정할 수 있는가?
-    if (val === 0) return true; // 0은 항상 선택 가능 (값 해제용)
-    if (subOptionValues[name] > 0) return true; // 기존 선택은 항상 변경 가능
-    return selectedCount() < 2; // 현재 선택된 옵션이 2개 미만일 때만
-  }
+  // 특정 옵션 종류의 특정 값이 선택 가능한지 한 번에 계산
+  // 사용법: canSelectMap[옵션 종류][값] = true / false
+  $: canSelectMap = Object.fromEntries(
+    Object.entries(subOptionValues).map(([optionType, currentValue]) => [
+      optionType,
+      Array(6) // 값 범위는 0~5
+        .fill(false)
+        .map((_, i) => {
+          // 값 0은 항상 선택 가능 (선택 해제용)
+          if (i === 0) return true;
+          // 현재 옵션에 대해 이미 1이상으로 선택이 되어 있다면
+          // 옵션 내부에선 자유롭게 값을 변경 가능
+          if (currentValue > 0) return true;
+          // 이외 값들에 대해서는,
+          // 현재 선택된 값 종류가 2개 미만일 때만 선택 가능
+          return selectedCount < 2;
+        }),
+    ])
+  );
 
   function handleAdd() {
     const selectedOptions = Object.entries(subOptionValues)
@@ -128,7 +139,7 @@
             name={integerInput.key}
             bind:group={subOptionValues[integerInput.key]}
             value={integerInput.min + i}
-            disabled={!canSelect(integerInput.key, integerInput.min + i)}
+            disabled={!canSelectMap[integerInput.key][integerInput.min + i]}
           />
           {integerInput.min + i}
           {#if i != integerInput.max - integerInput.min}
@@ -139,7 +150,7 @@
     </div>
   {/each}
 
-  <button on:click={handleAdd}>추가</button>
+  <button on:click={handleAdd} disabled={selectedCount != 2}>추가</button>
 </div>
 
 <style>
