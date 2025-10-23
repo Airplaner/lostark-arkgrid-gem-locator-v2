@@ -2,9 +2,9 @@
   import {
     addGem,
     ArkGridGemAttr,
-    ArkgridGemOptionType,
-    type ArkgridGemOption,
-  } from '../stores/arkgridGems';
+    ArkGridGemOptionType,
+    type ArkGridGemOption,
+  } from '../stores/arkGridGems';
 
   let gemAttr: ArkGridGemAttr = ArkGridGemAttr.Order;
   let name: string = '테스트젬';
@@ -30,7 +30,7 @@
   );
 
   /* 공용 옵션 입력 */
-  const subOptionInputs: IntegerInputDef[] = Object.values(ArkgridGemOptionType).map((v) => ({
+  const subOptionInputs: IntegerInputDef[] = Object.values(ArkGridGemOptionType).map((v) => ({
     key: v as string,
     min: 0,
     max: 5,
@@ -70,7 +70,7 @@
   function handleAdd() {
     const selectedOptions = Object.entries(subOptionValues)
       .filter(([key, value]) => value > 0)
-      .map(([key, value]) => ({ optionType: key as ArkgridGemOptionType, value: value }));
+      .map(([key, value]) => ({ optionType: key as ArkGridGemOptionType, value: value }));
 
     if (selectedOptions.length != 2) {
       window.alert('값 두 개 필요!');

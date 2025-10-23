@@ -5,7 +5,7 @@ export enum ArkGridGemAttr {
   Order = '질서',
   Chaos = '혼돈',
 }
-export enum ArkgridGemOptionType {
+export enum ArkGridGemOptionType {
   ATTACK = '공격력',
   SKILL_DAMAGE = '추가 피해',
   BOSS_DAMAGE = '보스 피해',
@@ -14,19 +14,19 @@ export enum ArkgridGemOptionType {
   PARTY_ATTACK = '아군 공격 강화',
 }
 
-export type ArkgridGemOption = {
-  optionType: ArkgridGemOptionType;
+export type ArkGridGemOption = {
+  optionType: ArkGridGemOptionType;
   value: number;
 };
 
-export interface ArkgridGem {
+export interface ArkGridGem {
   id: bigint;
   gemAttr: ArkGridGemAttr;
   name: string;
   req: number;
   point: number;
-  option1: ArkgridGemOption;
-  option2: ArkgridGemOption;
+  option1: ArkGridGemOption;
+  option2: ArkGridGemOption;
 }
 
 // serializer object for svelte-persisted-store
@@ -47,10 +47,10 @@ const bigIntSerializer = {
   },
 };
 
-export const orderGems: Writable<ArkgridGem[]> = persisted('orderGems', [], {
+export const orderGems: Writable<ArkGridGem[]> = persisted('orderGems', [], {
   serializer: bigIntSerializer,
 });
-export const chaosGems: Writable<ArkgridGem[]> = persisted('chaosGems', [], {
+export const chaosGems: Writable<ArkGridGem[]> = persisted('chaosGems', [], {
   serializer: bigIntSerializer,
 });
 
@@ -60,8 +60,8 @@ export function addGem(
   gemAttr: ArkGridGemAttr,
   req: number,
   point: number,
-  option1: ArkgridGemOption,
-  option2: ArkgridGemOption
+  option1: ArkGridGemOption,
+  option2: ArkGridGemOption
 ) {
   const targetGems = gemAttr == ArkGridGemAttr.Order ? orderGems : chaosGems;
   const gem = { id: BigInt(Date.now()), gemAttr, name, req, point, option1, option2 };

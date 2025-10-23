@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { orderGems, chaosGems, ArkGridGemAttr } from '../stores/arkgridGems';
-  import ArkgridGemDetail from './ArkgridGemDetail.svelte';
+  import { orderGems, chaosGems, ArkGridGemAttr } from '../stores/arkGridGems';
+  import ArkGridGemDetail from './ArkGridGemDetail.svelte';
 
   // 탭 상태
   let activeTab = 0;
@@ -38,7 +38,7 @@
 
   <div class="gems">
     {#each currentGems as gem (gem.id)}
-      <ArkgridGemDetail {gem} />
+      <ArkGridGemDetail {gem} />
     {/each}
   </div>
 </div>

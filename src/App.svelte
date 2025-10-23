@@ -1,6 +1,6 @@
 <script lang="ts">
-  import AddPanel from './components/ArkgridGemAddPanel.svelte';
-  import ObjectList from './components/ArkgridGemList.svelte';
+  import AddPanel from './components/ArkGridGemAddPanel.svelte';
+  import ObjectList from './components/ArkGridGemList.svelte';
 </script>
 
 <main>

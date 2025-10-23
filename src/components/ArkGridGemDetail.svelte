@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { ArkgridGem } from '../stores/arkgridGems';
+  import type { ArkGridGem } from '../stores/arkGridGems';
   /* Svelte에서는 export let이 입력을 선언 */
-  export let gem: ArkgridGem;
+  export let gem: ArkGridGem;
   const iconIndex = gem.gemAttr === '질서' ? 202 : 205;
 </script>
 
