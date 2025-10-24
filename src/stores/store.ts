@@ -3,7 +3,7 @@ import { ArkGridCoreType, type ArkGridCore } from '../lib/models/arkGridCores';
 import type { ArkGridGem } from '../lib/models/arkGridGems';
 import { persisted, type Persisted } from 'svelte-persisted-store';
 import { ArkGridAttr } from '../lib/constants/enums';
-import { type openAPIConfigDef } from '../lib/openapi/openapi';
+import { apiClient } from '../lib/openapi/openapi';
 // serializer object for svelte-persisted-store
 const bigIntSerializer = {
   // bigInt의 경우 string으로 바꾼 뒤 가장 끝에 n을 붙여서 직렬화
@@ -48,7 +48,18 @@ export const arkGridCores: Persisted<
   Record<ArkGridAttr, Record<ArkGridCoreType, ArkGridCore | null>>
 > = persisted('arkGridCores', initArkGridCores());
 
-export const openAPIConfig: Persisted<openAPIConfigDef> = persisted('openAPIConfig', {
+interface openApiConfig {
+  jwt: string | null;
+  charname: string | null;
+}
+export const globalOpenApiConfig: Persisted<openApiConfig> = persisted('openApiConfig', {
   jwt: null,
   charname: null,
+});
+
+globalOpenApiConfig.subscribe((config) => {
+  // 해당 store가 변할 때 apiClient의 토큰 갱신
+  if (config.jwt) {
+    apiClient.setSecurityData({ jwt: config.jwt });
+  }
 });

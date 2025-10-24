@@ -6,9 +6,9 @@
     createCore,
     resetCoreCoeff,
   } from '../lib/models/arkGridCores';
-  import { getCharArkPassive } from '../lib/openapi/openapi';
-  import { arkGridCores, initArkGridCores, openAPIConfig } from '../stores/store';
+  import { arkGridCores, globalOpenApiConfig, initArkGridCores } from '../stores/store';
   import { reverseLookup } from '../lib/constants/enums';
+  import { apiClient } from '../lib/openapi/openapi';
 
   const arkGridCoreTierName: Record<ArkGridCoreType, Array<string>> = {
     [ArkGridCoreType.SUN]: ['현란한 공격', '안정적인/재빠른 공격', '그 외'],
@@ -48,25 +48,59 @@
     Grade: string; // 전설
   }
   async function importCoreFromOpenAPI() {
-    importing = true;
-    const res = await getCharArkPassive($openAPIConfig);
-    importing = false;
+    if (!$globalOpenApiConfig.charname) return;
 
-    resetAllCores();
+    importing = true; // spinner 켜기
 
-    for (let coreSlot of res.Slots as OpenAPIArkGridCoreSlots[]) {
-      const attr = reverseLookup(ArkGridAttr, coreSlot.Name.slice(0, 2));
-      const ctype = reverseLookup(ArkGridCoreType, coreSlot.Name[4]);
-      const grade = reverseLookup(ArkGridGrade, coreSlot.Grade);
-      const tier = ArkGridCoreNameTierMap[coreSlot.Name.slice(11)] ?? 2;
-      if (!attr || !ctype || !grade) {
-        console.warn('코어명 파싱 실패', coreSlot);
-        continue;
+    try {
+      // fetch
+      const res = await apiClient.armories.armoriesGetArkGrid($globalOpenApiConfig.charname);
+      // apiClient가 ok가 아니라면 알아서 error로 던져줌
+      // 하지만 데이터가 없는 경우 null로 오는 걸 캐치
+      if (!res.data) {
+        window.alert(`${$globalOpenApiConfig.charname}의 정보를 가져올 수 없습니다.`);
+        return;
       }
-      arkGridCores.update((cores) => {
-        cores[attr][ctype] = createCore(attr, ctype, grade, attr == ArkGridAttr.Chaos ? tier : 0);
-        return cores;
-      });
+
+      if (res.data.Slots) {
+        // 코어 데이터가 존재하는 경우 갱신 시작
+        resetAllCores();
+        for (let coreSlot of res.data.Slots) {
+          if (!coreSlot.Name || !coreSlot.Grade) {
+            window.alert(`Open API 응답이 이상합니다. 콘솔 로그를 확인해주세요.`);
+            console.log(coreSlot);
+            continue;
+          }
+
+          // Open API 응답 -> 내부 데이터로 변환
+          const attr = reverseLookup(ArkGridAttr, coreSlot.Name.slice(0, 2));
+          const ctype = reverseLookup(ArkGridCoreType, coreSlot.Name[4]);
+          const grade = reverseLookup(ArkGridGrade, coreSlot.Grade);
+          const tier = ArkGridCoreNameTierMap[coreSlot.Name.slice(11)] ?? 2;
+
+          if (!attr || !ctype || !grade) {
+            window.alert(`${coreSlot.Grade} ${coreSlot.Name} 파싱 실패`);
+            continue;
+          }
+
+          // 성공적으로 변환한 코어 저장
+          arkGridCores.update((cores) => {
+            cores[attr][ctype] = createCore(
+              attr,
+              ctype,
+              grade,
+              attr == ArkGridAttr.Chaos ? tier : 0 // 혼돈만 tier 사용
+            );
+            return cores;
+          });
+        }
+      }
+    } catch (e) {
+      window.alert('Open API 요청 실패!');
+      console.error(e);
+      return;
+    } finally {
+      importing = false;
     }
   }
   let expertMode = $state(true);

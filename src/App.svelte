@@ -3,7 +3,7 @@
   import ArkGridGemList from './components/ArkGridGemList.svelte';
   import ArkGridCoreEditPanel from './components/ArkGridCoreEditPanel.svelte';
   import Modal from './components/Modal.svelte';
-  import { openAPIConfig } from './stores/store';
+  import { globalOpenApiConfig } from './stores/store';
 
   let showModalEditJWT = $state(false);
 </script>
@@ -22,12 +22,12 @@
     {#snippet children()}
       <label>
         <span>JWT: </span>
-        <input bind:value={$openAPIConfig.jwt} />
+        <input bind:value={$globalOpenApiConfig.jwt} />
       </label>
       <br>
       <label>
         <span>캐릭터명: </span>
-        <input bind:value={$openAPIConfig.charname} />
+        <input bind:value={$globalOpenApiConfig.charname} />
       </label>
     {/snippet}
   </Modal>
