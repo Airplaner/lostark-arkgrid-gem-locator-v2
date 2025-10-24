@@ -3,7 +3,7 @@ import { ArkGridCoreType, type ArkGridCore } from '../lib/models/arkGridCores';
 import type { ArkGridGem } from '../lib/models/arkGridGems';
 import { persisted, type Persisted } from 'svelte-persisted-store';
 import { ArkGridAttr } from '../lib/constants/enums';
-
+import { type openAPIConfigDef } from '../lib/openapi/openapi';
 // serializer object for svelte-persisted-store
 const bigIntSerializer = {
   // bigInt의 경우 string으로 바꾼 뒤 가장 끝에 n을 붙여서 직렬화
@@ -29,7 +29,10 @@ export const chaosGems: Persisted<ArkGridGem[]> = persisted('chaosGems', [], {
   serializer: bigIntSerializer,
 });
 
-export function initArkGridCores(): Record<ArkGridAttr, Record<ArkGridCoreType, ArkGridCore | null>> {
+export function initArkGridCores(): Record<
+  ArkGridAttr,
+  Record<ArkGridCoreType, ArkGridCore | null>
+> {
   const cores = {} as Record<ArkGridAttr, Record<ArkGridCoreType, ArkGridCore | null>>;
 
   for (const attr of Object.values(ArkGridAttr)) {
@@ -44,3 +47,8 @@ export function initArkGridCores(): Record<ArkGridAttr, Record<ArkGridCoreType, 
 export const arkGridCores: Persisted<
   Record<ArkGridAttr, Record<ArkGridCoreType, ArkGridCore | null>>
 > = persisted('arkGridCores', initArkGridCores());
+
+export const openAPIConfig: Persisted<openAPIConfigDef> = persisted('openAPIConfig', {
+  jwt: null,
+  charname: null,
+});

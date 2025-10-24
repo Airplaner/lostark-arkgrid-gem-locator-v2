@@ -6,6 +6,17 @@ export enum ArkGridCoreType {
   STAR = '별',
 }
 
+export const ArkGridCoreNameTierMap: Record<string, number> = {
+  '현란한 공격': 0,
+  '안정적인 공격': 1,
+  '재빠른 공격': 1,
+  '불타는 일격': 0,
+  '흡수의 일격': 1,
+  '부수는 일격': 1,
+  공격: 0,
+  무기: 1,
+};
+
 type ArkGridCoreCoeffs = {
   p10: number;
   p14: number;
@@ -125,7 +136,7 @@ export function getDefaultCoreCoeff(core: ArkGridCore): ArkGridCoreCoeffs {
           p18: 230,
           p19: 241,
           p20: 253,
-        }
+        };
       }
     }
   }
@@ -142,7 +153,8 @@ export function getDefaultCoreCoeff(core: ArkGridCore): ArkGridCoreCoeffs {
 export function createCore(
   attr: ArkGridAttr,
   type: ArkGridCoreType,
-  grade: ArkGridGrade
+  grade: ArkGridGrade,
+  tier?: number
 ): ArkGridCore {
   const core: ArkGridCore = {
     attr,
@@ -156,7 +168,7 @@ export function createCore(
       p19: 0,
       p20: 0,
     },
-    tier: 0,
+    tier: tier ? tier : 0,
   };
   resetCoreCoeff(core);
   return core;
