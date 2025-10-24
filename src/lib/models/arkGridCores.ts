@@ -20,10 +20,11 @@ export interface ArkGridCore {
   type: ArkGridCoreType;
   grade: ArkGridGrade;
   coeffs: ArkGridCoreCoeffs;
+  tier: number; // 0: 현란, 불타, 1: 안정,재빠,흡수,부수, 2: 그 외
 }
 
 export function resetCoreCoeff(core: ArkGridCore) {
-  core.coeffs = getDefaultCoreCoeff(core.attr, core.type);
+  core.coeffs = getDefaultCoreCoeff(core);
   adjustCoeff(core);
 }
 
@@ -42,7 +43,7 @@ function adjustCoeff(core: ArkGridCore) {
     core.coeffs.p18 = core.coeffs.p14;
     core.coeffs.p19 = core.coeffs.p14;
     core.coeffs.p20 = core.coeffs.p14;
-  } else if (core.grade == ArkGridGrade.ANCIENT) {
+  } else if (core.grade == ArkGridGrade.ANCIENT && core.coeffs.p17) {
     // 고대 등급 : 17-20P 옵션 계수 +100
     core.coeffs.p17 += 100;
     core.coeffs.p18 += 100;
@@ -51,9 +52,14 @@ function adjustCoeff(core: ArkGridCore) {
   }
 }
 
-export function getDefaultCoreCoeff(attr: ArkGridAttr, type: ArkGridCoreType): ArkGridCoreCoeffs {
+export function getDefaultCoreCoeff(core: ArkGridCore): ArkGridCoreCoeffs {
+  const attr = core.attr,
+    type = core.type,
+    tier = core.tier;
+
   if (attr == ArkGridAttr.Order) {
     if (type == ArkGridCoreType.SUN || type == ArkGridCoreType.MOON) {
+      // 질서의 해, 달
       return {
         p10: 150,
         p14: 400,
@@ -63,6 +69,7 @@ export function getDefaultCoreCoeff(attr: ArkGridAttr, type: ArkGridCoreType): A
         p20: 800,
       };
     } else if (type == ArkGridCoreType.STAR) {
+      // 질서의 별
       return {
         p10: 100,
         p14: 250,
@@ -71,6 +78,55 @@ export function getDefaultCoreCoeff(attr: ArkGridAttr, type: ArkGridCoreType): A
         p19: 483,
         p20: 500,
       };
+    }
+  } else if (attr == ArkGridAttr.Chaos) {
+    if (type == ArkGridCoreType.SUN || type == ArkGridCoreType.MOON) {
+      // 혼돈의 해, 달
+      if (tier == 0) {
+        // 현란한 공격, 불타는 일격
+        return {
+          p10: 50,
+          p14: 100,
+          p17: 250,
+          p18: 267,
+          p19: 283,
+          p20: 300,
+        };
+      } else if (tier == 1) {
+        // 안정적인 공격, 재빠른 공격, 흡수의 일격, 부수는 일격
+        return {
+          p10: 0,
+          p14: 50,
+          p17: 150,
+          p18: 167,
+          p19: 183,
+          p20: 200,
+        };
+      }
+    } else if (type == ArkGridCoreType.STAR) {
+      // 혼돈의 별
+      if (tier == 0) {
+        // 공격
+        return {
+          p10: 50,
+          p14: 100,
+          p17: 250,
+          p18: 267,
+          p19: 283,
+          p20: 300,
+        };
+      }
+      if (tier == 1) {
+        // 무기
+        return {
+          p10: 35,
+          p14: 70,
+          p17: 220,
+          p18: 230,
+          p19: 241,
+          p20: 253,
+        }
+      }
     }
   }
   return {
@@ -84,10 +140,24 @@ export function getDefaultCoreCoeff(attr: ArkGridAttr, type: ArkGridCoreType): A
 }
 
 export function createCore(
-  attr: ArkGridAttr, type: ArkGridCoreType, grade: ArkGridGrade,
+  attr: ArkGridAttr,
+  type: ArkGridCoreType,
+  grade: ArkGridGrade
 ): ArkGridCore {
-  const coeffs = getDefaultCoreCoeff(attr, type);
-  const core: ArkGridCore = {attr, type, grade, coeffs};
-  adjustCoeff(core);
+  const core: ArkGridCore = {
+    attr,
+    type,
+    grade,
+    coeffs: {
+      p10: 0,
+      p14: 0,
+      p17: 0,
+      p18: 0,
+      p19: 0,
+      p20: 0,
+    },
+    tier: 0,
+  };
+  resetCoreCoeff(core);
   return core;
 }
