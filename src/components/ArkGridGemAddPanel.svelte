@@ -1,12 +1,8 @@
 <script lang="ts">
-  import {
-    addGem,
-    ArkGridGemAttr,
-    ArkGridGemOptionType,
-    type ArkGridGemOption,
-  } from '../stores/arkGridGems';
+  import { ArkGridAttr } from '../lib/constants/enums';
+  import { ArkGridGemOptionType, addGem } from '../lib/models/arkGridGems';
 
-  let gemAttr: ArkGridGemAttr = ArkGridGemAttr.Order;
+  let gemAttr: ArkGridAttr = ArkGridAttr.Order;
   let name: string = '테스트젬';
 
   // 라디오 버튼 형태로 주어진 범위만큼 입력 가능하게 하는 것들
@@ -73,7 +69,6 @@
       .map(([key, value]) => ({ optionType: key as ArkGridGemOptionType, value: value }));
 
     if (selectedOptions.length != 2) {
-      window.alert('값 두 개 필요!');
       return;
     }
     addGem(
@@ -99,11 +94,11 @@
   <div class="row">
     <span class="title">젬 타입</span>
     <label>
-      <input type="radio" name="gemAttr" bind:group={gemAttr} value={ArkGridGemAttr.Order} />
+      <input type="radio" name="gemAttr" bind:group={gemAttr} value={ArkGridAttr.Order} />
       질서
     </label>
     <label>
-      <input type="radio" name="gemAttr" bind:group={gemAttr} value={ArkGridGemAttr.Chaos} />
+      <input type="radio" name="gemAttr" bind:group={gemAttr} value={ArkGridAttr.Chaos} />
       혼돈
     </label>
   </div>

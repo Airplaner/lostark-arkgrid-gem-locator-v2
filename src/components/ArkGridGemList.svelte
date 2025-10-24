@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { orderGems, chaosGems, ArkGridGemAttr } from '../stores/arkGridGems';
+  import { orderGems, chaosGems } from '../stores/store';
   import ArkGridGemDetail from './ArkGridGemDetail.svelte';
 
   // 탭 상태
