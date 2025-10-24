@@ -15,12 +15,12 @@
   gap: 0.8rem;
 }
 
-.panel .row {
+.panel > .row {
   /* row 내부 요소들은 가로 정렬 */
   display: flex;
 }
 
-.panel .row .title {
+.panel > .row > .title {
   /* row를 설명하는 title */
   font-weight: 500;
   min-width: 10em; /* 고정폭 */
