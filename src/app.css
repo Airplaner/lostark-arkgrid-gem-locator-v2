@@ -1,27 +1,58 @@
+:root {
+  /* 전역 색상 정의 */
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --border: #e2e8f0;
+  --muted: #64748b;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --text: #1e293b;
+}
+
+body {
+  background: var(--bg);
+}
+
+#app {
+  background: var(--bg);
+  color: var(--text);
+  /* 중앙 정렬 */
+  max-width: 1100px;
+  margin: auto auto;
+}
+
 .panel {
   /* 외관 */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border: 1px solid black;
   min-width: 30rem;
   max-width: 40rem;
-  margin: 1rem; /* panel 자체가 외부와 떨어진 거리 */
-  padding: 2rem; /* 내부 요소들이 테두리와 떨어진 거리 */
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.4rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+  /* margin: panel 자체가 외부와 떨어진 거리 */
+  margin: 1rem;
+  /* padding: 내부 요소들이 테두리와 떨어진 거리 */
+  padding: 2rem;
 
   /* 내부 요소들은 상하 정렬 */
   display: flex;
   flex-direction: column;
 
   /* panel 내부 요소들 사이의 상하 간격 */
-  gap: 0.8rem;
+  gap: 0.7rem;
 }
 
-.panel > .row {
-  /* row 내부 요소들은 가로 정렬 */
-  display: flex;
-}
-
-.panel > .row > .title {
-  /* row를 설명하는 title */
+button {
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.4rem;
+  border: 1px solid var(--border);
+  background: #f8fafc;
   font-weight: 500;
-  min-width: 10em; /* 고정폭 */
+}
+
+button:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
 }

@@ -172,7 +172,7 @@
               <span class="title">계수</span>
               {#each coeffKeys as coeffKey}
                 <label class="core-coeff">
-                  {coeffKey.slice(1)}
+                  {coeffKey.slice(1)}P
                   <input
                     type="number"
                     name="{attr} {ctype} {coeffKey}"
@@ -235,22 +235,25 @@
 
   /* 개별 코어 슬롯 */
   .core-slot {
-    border: 1px solid black;
-    padding: 0.5rem;
+    border-radius: 0.4rem;
+    border: 1px solid var(--border);
+    padding: 0.75rem;
     min-height: 3rem;
 
     /* 내부 요소 */
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: 0.4rem;
   }
   .core-slot > .core-name {
     font-weight: 700;
+    align-self: center;
   }
   .core-slot > .row {
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
+    gap: 0.8rem;
   }
 
   .core-slot > .row > .title {
@@ -258,15 +261,18 @@
     min-width: 5em;
   }
   .core-slot > .core-coeffs {
-    gap: 0.8rem;
+    gap: 0.7rem;
     flex-wrap: wrap;
   }
   .core-slot > .core-coeffs > .core-coeff {
-    display: flex;
+    display: inline-flex;
     flex-wrap: nowrap;
     gap: 0.2em;
+    align-items: center;
   }
   .core-slot > .core-coeffs > .core-coeff > input {
-    width: 3rem;
+    width: 2.4rem;
+    border: 1px solid var(--border);
+    height: 1.3rem;
   }
 </style>

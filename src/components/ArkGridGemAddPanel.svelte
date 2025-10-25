@@ -149,7 +149,19 @@
 </div>
 
 <style>
-  button {
+  .panel > .row {
+    /* row 내부 요소들은 가로 정렬 */
+    display: flex;
+    gap: 0.2rem;
+  }
+
+  .panel > .row > .title {
+    /* row를 설명하는 title */
+    font-weight: 500;
+    min-width: 10em;
+    /* 고정폭 */
+  }
+  .panel > button {
     /* 너비는 자동이지만 최소 5em */
     width: auto;
     min-width: 5em;
