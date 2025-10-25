@@ -1,14 +1,18 @@
 <script lang="ts">
   import { ArkGridAttr, ArkGridGrade } from '../lib/constants/enums';
+  import { reverseLookup } from '../lib/constants/enums';
   import {
     ArkGridCoreNameTierMap,
     ArkGridCoreType,
     createCore,
     resetCoreCoeff,
   } from '../lib/models/arkGridCores';
-  import { arkGridCores, globalOpenApiConfig, initArkGridCores } from '../stores/store';
-  import { reverseLookup } from '../lib/constants/enums';
   import { apiClient } from '../lib/openapi/openapi';
+  import {
+    arkGridCores,
+    globalOpenApiConfig,
+    initArkGridCores,
+  } from '../stores/store';
 
   const arkGridCoreTierName: Record<ArkGridCoreType, Array<string>> = {
     [ArkGridCoreType.SUN]: ['현란한 공격', '안정적인/재빠른 공격', '그 외'],
@@ -38,7 +42,7 @@
     const key = `../assets/cores/${attrMap[attr]}_${typeMap[ctype]}.png`;
     return coreImages[key];
   };
-  
+
   function createNewCore(attr: ArkGridAttr, ctype: ArkGridCoreType) {
     // 코어가 없을 때 새로운 코어 추가
     // 기본 영웅 등급
@@ -53,7 +57,10 @@
     // arkGridCores.reset(); // 이상하게 안 됨
     return;
   }
-  function resetCoeffWhenCoreChanges(attr: ArkGridAttr, ctype: ArkGridCoreType) {
+  function resetCoeffWhenCoreChanges(
+    attr: ArkGridAttr,
+    ctype: ArkGridCoreType
+  ) {
     arkGridCores.update((cores) => {
       const core = cores[attr][ctype];
       if (!core) return cores;
@@ -73,11 +80,15 @@
 
     try {
       // fetch
-      const res = await apiClient.armories.armoriesGetArkGrid($globalOpenApiConfig.charname);
+      const res = await apiClient.armories.armoriesGetArkGrid(
+        $globalOpenApiConfig.charname
+      );
       // apiClient가 ok가 아니라면 알아서 error로 던져줌
       // 하지만 데이터가 없는 경우 null로 오는 걸 캐치
       if (!res.data) {
-        window.alert(`${$globalOpenApiConfig.charname}의 정보를 가져올 수 없습니다.`);
+        window.alert(
+          `${$globalOpenApiConfig.charname}의 정보를 가져올 수 없습니다.`
+        );
         return;
       }
 
@@ -86,7 +97,9 @@
         resetAllCores();
         for (let coreSlot of res.data.Slots) {
           if (!coreSlot.Name || !coreSlot.Grade) {
-            window.alert(`Open API 응답이 이상합니다. 콘솔 로그를 확인해주세요.`);
+            window.alert(
+              `Open API 응답이 이상합니다. 콘솔 로그를 확인해주세요.`
+            );
             console.log(coreSlot);
             continue;
           }
@@ -140,14 +153,18 @@
     >
       전투력 계수 {expertMode ? '숨기기' : '보이기'}
     </button>
-    <button onclick={resetAllCores}>전체 초기화</button>
+    <button onclick={resetAllCores}>코어 초기화</button>
     <button onclick={importCoreFromOpenAPI}>Open API에서 가져오기</button>
   </div>
   {#each attrs as attr}
     {#each ctypes as ctype}
       <div class="core-slot">
         <div class="row core-name">
-          <img src={getCoreImage(attr, ctype)} alt="{attr} {ctype}" />
+          <img
+            src={getCoreImage(attr, ctype)}
+            alt="{attr} {ctype}"
+            data-grade={$arkGridCores[attr][ctype]?.grade}
+          />
           {attr}의 {ctype}
         </div>
 
@@ -249,6 +266,8 @@
   }
   .core-slot > .core-name > img {
     height: 2.5rem;
+    border-radius: 0.5rem;
+    padding: 0.1rem;
   }
   .core-slot > .row {
     display: flex;
@@ -275,5 +294,22 @@
     width: 2.4rem;
     border: 1px solid var(--border);
     height: 1.3rem;
+  }
+
+  /* 공홈 코어 css*/
+  .core-slot > .core-name > img[data-grade='영웅'] {
+    background: linear-gradient(135deg, #261331, #480d5d);
+  }
+
+  .core-slot > .core-name > img[data-grade='전설'] {
+    background: linear-gradient(135deg, #362003, #9e5f04);
+  }
+
+  .core-slot > .core-name > img[data-grade='유물'] {
+    background: linear-gradient(135deg, #341a09, #a24006);
+  }
+
+  .core-slot > .core-name > img[data-grade='고대'] {
+    background: linear-gradient(135deg, #3d3325, #dcc999);
   }
 </style>
