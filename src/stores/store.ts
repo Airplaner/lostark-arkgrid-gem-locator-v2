@@ -8,7 +8,9 @@ import { apiClient } from '../lib/openapi/openapi';
 const bigIntSerializer = {
   // bigInt의 경우 string으로 바꾼 뒤 가장 끝에 n을 붙여서 직렬화
   stringify: (value: any) => {
-    return JSON.stringify(value, (_, v) => (typeof v === 'bigint' ? v.toString() + 'n' : v));
+    return JSON.stringify(value, (_, v) =>
+      typeof v === 'bigint' ? v.toString() + 'n' : v
+    );
   },
 
   // string이고 n으로 끝나는 정수라면, BigInt화
@@ -33,7 +35,10 @@ export function initArkGridCores(): Record<
   ArkGridAttr,
   Record<ArkGridCoreType, ArkGridCore | null>
 > {
-  const cores = {} as Record<ArkGridAttr, Record<ArkGridCoreType, ArkGridCore | null>>;
+  const cores = {} as Record<
+    ArkGridAttr,
+    Record<ArkGridCoreType, ArkGridCore | null>
+  >;
 
   for (const attr of Object.values(ArkGridAttr)) {
     cores[attr] = {} as Record<ArkGridCoreType, ArkGridCore | null>;
@@ -52,10 +57,13 @@ interface openApiConfig {
   jwt: string | null;
   charname: string | null;
 }
-export const globalOpenApiConfig: Persisted<openApiConfig> = persisted('openApiConfig', {
-  jwt: null,
-  charname: null,
-});
+export const globalOpenApiConfig: Persisted<openApiConfig> = persisted(
+  'openApiConfig',
+  {
+    jwt: null,
+    charname: null,
+  }
+);
 
 globalOpenApiConfig.subscribe((config) => {
   // 해당 store가 변할 때 apiClient의 토큰 갱신

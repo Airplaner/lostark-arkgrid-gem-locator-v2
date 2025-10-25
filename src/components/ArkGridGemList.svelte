@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { orderGems, chaosGems } from '../stores/store';
+  import { chaosGems, orderGems } from '../stores/store';
   import ArkGridGemDetail from './ArkGridGemDetail.svelte';
 
   // 탭 상태
@@ -23,22 +23,29 @@
 
   // reactive variable
   let currentGems = $derived(
-    activeTab === 0 ? [...$orderGems, ...$chaosGems] : activeTab == 1 ? $orderGems : $chaosGems
+    activeTab === 0
+      ? [...$orderGems, ...$chaosGems]
+      : activeTab == 1
+        ? $orderGems
+        : $chaosGems
   );
 </script>
 
 <div class="panel">
   <div class="tab-container">
     {#each tabs as tab, i}
-      <button class="tab {activeTab === i ? 'active' : ''}" onclick={() => selectTab(i)}>
+      <button
+        class="tab {activeTab === i ? 'active' : ''}"
+        onclick={() => selectTab(i)}
+      >
         {tab}
       </button>
     {/each}
   </div>
-  <button onclick={() => deleteGems()}>삭제</button>
+  <button onclick={() => deleteGems()}>젬 초기화</button>
 
   <div class="gems">
-    {#each currentGems as gem (`${gem.gemAttr}-${gem.id}`)}
+    {#each currentGems as gem}
       <ArkGridGemDetail {gem} />
     {/each}
   </div>
@@ -67,9 +74,14 @@
   }
 
   .gems {
-     /* 세로 스크롤 */
     max-height: 600px;
+
+    padding-right: 0.5rem;
+    display: flex;
+    flex-direction: column;
+
     overflow-y: auto;
+    gap: 0.5rem;
   }
 
   button {

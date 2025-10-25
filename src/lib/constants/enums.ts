@@ -8,9 +8,15 @@ export enum ArkGridGrade {
   RELIC = '유물',
   ANCIENT = '고대',
 }
-export function reverseLookup<T>(enumType: T, value: string): T[keyof T] | undefined {
+export function reverseLookup<T>(
+  enumType: T,
+  value: string
+): T[keyof T] | undefined {
   for (const key in enumType) {
-    if (Object.hasOwnProperty.call(enumType, key) && (enumType[key] as any) === value) {
+    if (
+      Object.hasOwnProperty.call(enumType, key) &&
+      (enumType[key] as any) === value
+    ) {
       return enumType[key];
     }
   }

@@ -1,12 +1,18 @@
 <script lang="ts">
-  import { ArkGridAttr } from '../lib/constants/enums';
-  import { ArkGridGemOptionType, addGem, type ArkGridGemOption } from '../lib/models/arkGridGems';
+  import { ArkGridAttr, ArkGridGrade } from '../lib/constants/enums';
+  import {
+    ArkGridGemNames,
+    type ArkGridGemOption,
+    ArkGridGemOptionType,
+    addGem,
+  } from '../lib/models/arkGridGems';
+  import { type ArkGridGem } from '../lib/models/arkGridGems';
+  import { LostArkOpenAPI } from '../lib/openapi/Api';
   import { apiClient } from '../lib/openapi/openapi';
   import { globalOpenApiConfig } from '../stores/store';
 
-
   // 젬 추가
-  
+
   // 라디오 버튼 형태로 주어진 범위만큼 입력 가능하게 하는 것들
   type IntegerInputDef = {
     key: string;
@@ -19,19 +25,20 @@
     { key: '활성 포인트', min: 1, max: 5 },
   ];
   /* 공용 옵션 입력 */
-  const subOptionInputs: IntegerInputDef[] = Object.values(ArkGridGemOptionType).map((v) => ({
+  const subOptionInputs: IntegerInputDef[] = Object.values(
+    ArkGridGemOptionType
+  ).map((v) => ({
     key: v as string,
     min: 0,
     max: 5,
   }));
-  
+
   // states
-  
+
   // 젬 로딩
   let importing: boolean = $state(false);
 
   let gemAttr: ArkGridAttr = $state(ArkGridAttr.Order);
-  let name: string = '테스트젬';
   const mainOptionValues: Record<string, number> = $state(
     mainOptionInputs.reduce(
       (acc, f) => {
@@ -52,7 +59,9 @@
   );
   // subOptionValues는 radio input에 의해서 값이 변경될 때 invalidate되어서
   // 아래 selectedCount는 매번 계산되도록 반응형 변수로 설정
-  let selectedCount: number = $derived(Object.values(subOptionValues).filter((v) => v > 0).length);
+  let selectedCount: number = $derived(
+    Object.values(subOptionValues).filter((v) => v > 0).length
+  );
 
   // 특정 옵션 종류의 특정 값이 선택 가능한지 한 번에 계산
   // 사용법: canSelectMap[옵션 종류][값] = true / false
@@ -79,29 +88,47 @@
   function handleAdd() {
     const selectedOptions = Object.entries(subOptionValues)
       .filter(([key, value]) => value > 0)
-      .map(([key, value]) => ({ optionType: key as ArkGridGemOptionType, value: value }));
+      .map(([key, value]) => ({
+        optionType: key as ArkGridGemOptionType,
+        value: value,
+      }));
 
     if (selectedOptions.length != 2) {
       return;
     }
-    addGem(
-      name,
+    addGem({
       gemAttr,
-      mainOptionValues['필요 의지력'],
-      mainOptionValues['활성 포인트'],
-      selectedOptions[0],
-      selectedOptions[1]
-    );
+      req: mainOptionValues['필요 의지력'],
+      point: mainOptionValues['활성 포인트'],
+      option1: selectedOptions[0],
+      option2: selectedOptions[1],
+    });
     /* subOption들은 리셋 */
     subOptionInputs.forEach((e) => {
       subOptionValues[e.key] = e.min;
     });
   }
-  function parseGemTooltip(tooltip: string) {
+
+  function parseOpenApiGem(gem: LostArkOpenAPI.ArkGridGem): ArkGridGem {
     // OpenAPI Gem의 tooltip 파싱
 
     // 1️⃣ HTML 태그 제거
-    const textOnly = tooltip.replace(/<[^>]*>/g, '');
+    if (!gem.Tooltip) {
+      throw Error('ToolTip 존재');
+    }
+    const textOnly = gem.Tooltip.replace(/<[^>]*>/g, '');
+
+    let gemName: string | undefined = undefined;
+    for (const candidateName of ArkGridGemNames) {
+      if (textOnly.includes(candidateName)) {
+        gemName = candidateName;
+      }
+    }
+    if (!gemName) {
+      throw Error('이름 없음');
+    }
+
+    const gemGrade = Object.values(ArkGridGrade).find((v) => v === gem.Grade);
 
     // 2️⃣ 특정 문구에서 정수 추출
     let req = 0,
@@ -139,7 +166,9 @@
     while ((match = keyLevelRegex.exec(textOnly)) !== null) {
       const key = match[1].trim();
       const value = parseInt(match[2], 10);
-      const optionType = Object.values(ArkGridGemOptionType).find((v) => v === key);
+      const optionType = Object.values(ArkGridGemOptionType).find(
+        (v) => v === key
+      );
       if (!optionType) {
         throw Error('알 수 없는 효과');
       }
@@ -151,14 +180,15 @@
     if (gemOptions.length < 2) {
       throw Error('공용 옵션의 수가 부족합니다.');
     }
-    addGem(
-      '',
-      isOrder ? ArkGridAttr.Order : ArkGridAttr.Chaos,
+    return {
+      name: gemName,
+      grade: gemGrade,
+      gemAttr: isOrder ? ArkGridAttr.Order : ArkGridAttr.Chaos,
       req,
       point,
-      gemOptions[0],
-      gemOptions[1]
-    );
+      option1: gemOptions[0],
+      option2: gemOptions[1],
+    };
   }
 
   async function importGemFromOpenAPI() {
@@ -168,9 +198,13 @@
     importing = true; // spinner 켜기
 
     try {
-      const res = await apiClient.armories.armoriesGetArkGrid($globalOpenApiConfig.charname);
+      const res = await apiClient.armories.armoriesGetArkGrid(
+        $globalOpenApiConfig.charname
+      );
       if (!res.data) {
-        window.alert(`${$globalOpenApiConfig.charname}의 정보를 가져올 수 없습니다.`);
+        window.alert(
+          `${$globalOpenApiConfig.charname}의 정보를 가져올 수 없습니다.`
+        );
         return;
       }
       if (res.data.Slots) {
@@ -179,10 +213,7 @@
             continue;
           }
           for (let gem of coreSlot.Gems) {
-            if (!gem.Tooltip) {
-              continue;
-            }
-            parseGemTooltip(gem.Tooltip);
+            addGem(parseOpenApiGem(gem));
           }
         }
       }
@@ -197,9 +228,7 @@
 </script>
 
 <div class="panel">
-  <div class='title'>
-    수동 젬 추가
-  </div>
+  <div class="title">젬 추가</div>
   {#if importing}
     <div class="overlay">
       <div class="spinner"></div>
@@ -209,11 +238,21 @@
   <div class="row">
     <span class="title">젬 타입</span>
     <label>
-      <input type="radio" name="gemAttr" bind:group={gemAttr} value={ArkGridAttr.Order} />
+      <input
+        type="radio"
+        name="gemAttr"
+        bind:group={gemAttr}
+        value={ArkGridAttr.Order}
+      />
       질서
     </label>
     <label>
-      <input type="radio" name="gemAttr" bind:group={gemAttr} value={ArkGridAttr.Chaos} />
+      <input
+        type="radio"
+        name="gemAttr"
+        bind:group={gemAttr}
+        value={ArkGridAttr.Chaos}
+      />
       혼돈
     </label>
   </div>

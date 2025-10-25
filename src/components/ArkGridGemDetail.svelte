@@ -1,20 +1,38 @@
 <script lang="ts">
+  import { ArkGridAttr } from '../lib/constants/enums';
   import type { ArkGridGem } from '../lib/models/arkGridGems';
+
+  const gemImages = import.meta.glob<string>('../assets/gems/*.png', {
+    eager: true, // 바로 import (비동기 아님)
+    import: 'default', // 각 파일의 기본 export 경로 사용
+  });
+  const MapGemNameImage: Record<string, string> = {
+    '질서의 젬 : 안정': 'order_0',
+    '질서의 젬 : 견고': 'order_1',
+    '질서의 젬 : 불변': 'order_2',
+    '혼돈의 젬 : 침식': 'chaos_0',
+    '혼돈의 젬 : 왜곡': 'chaos_1',
+    '혼돈의 젬 : 붕괴': 'chaos_2',
+  };
+  function getGemImage(gem: ArkGridGem): string {
+    if (!gem.name) {
+      return gem.gemAttr == ArkGridAttr.Order
+        ? '/src/assets/gems/order_0.png'
+        : '/src/assets/gems/chaos_0.png';
+    }
+    return `/src/assets/gems/${MapGemNameImage[gem.name] ?? 'order_0'}.png`;
+  }
 
   interface Props {
     gem: ArkGridGem;
   }
 
   let { gem }: Props = $props();
-  const iconIndex = gem.gemAttr === '질서' ? 202 : 205;
 </script>
 
 <div class="gem">
   <div class="col">
-    <img
-      src="https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_13_{iconIndex}.png"
-      alt="이미지"
-    />
+    <img src={getGemImage(gem)} alt={gem.name} />
   </div>
   <div class="col">
     <div>
@@ -24,6 +42,7 @@
       {gem.point}P
     </div>
   </div>
+  <div class="vl"></div>
   <div class="col">
     <div>
       {gem.option1.optionType} Lv.{gem.option1.value}
@@ -36,30 +55,43 @@
 
 <style>
   .gem {
+    flex-shrink: 0;
     /* 외관 */
-    border: 1px solid black;
-    max-width: 22em;
-    margin-top: 0.5em;
-    padding: 0.2em 0.2em;
-    height: 4em;
+    border-radius: 0.4rem;
+    border: 1px solid var(--border);
+
+    min-width: 24rem;
+    max-width: 40rem;
+    height: 4rem;
 
     /* 내부 요소 */
     display: flex;
+    align-items: center;
+
+    padding: 0.4rem;
+
+    overflow: hidden;
   }
-  .col > img {
-    height: 100%; /* 컨테이너 높이에 맞춤 */
-    width: auto; /* 가로 비율 자동 */
-    object-fit: contain; /* 이미지 비율 유지, 비율 깨지지 않음 */
+  .gem > .col > img {
+    height: 90%;
   }
-  .gem .col {
+  .gem > .col {
     /* 외관 */
-    min-width: 5em;
-    display: flex;
-    flex-direction: column;
-    margin: 0.2em;
+    height: 100%;
+    min-width: 2rem;
+    margin: 1rem;
 
     /* 내부 요소들은 중앙 정렬 */
+    display: flex;
+    flex-direction: column;
     justify-content: center;
-    gap: 0.2em;
+    gap: 0.18em;
+  }
+  .vl {
+    border-left: 1px solid rgb(156, 156, 156);
+    height: 80%;
+    justify-content: center;
+    min-width: 0.1rem;
+    margin-right: 0.3rem;
   }
 </style>
