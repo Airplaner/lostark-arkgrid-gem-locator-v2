@@ -56,3 +56,12 @@ button:hover {
   background-color: #f1f5f9;
   border-color: #cbd5e1;
 }
+
+button:disabled {
+  /* 금지 표시 커서 */
+  cursor: not-allowed;
+  /* 흐리게 표시 */
+  opacity: 0.8;
+  /* hover, click 등 모든 마우스 이벤트 차단 */
+  pointer-events: none;
+}
