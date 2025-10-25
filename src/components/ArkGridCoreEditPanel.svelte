@@ -19,7 +19,26 @@
   const ctypes = Object.values(ArkGridCoreType);
   const grades = Object.values(ArkGridGrade);
   const coeffKeys = ['p10', 'p14', 'p17', 'p18', 'p19', 'p20'] as const;
-
+  const coreImages = import.meta.glob<string>('../assets/cores/*.png', {
+    eager: true, // 바로 import (비동기 아님)
+    import: 'default', // 각 파일의 기본 export 경로 사용
+  });
+  // enum 값 → 파일 이름 매핑
+  const attrMap = {
+    [ArkGridAttr.Order]: 'order',
+    [ArkGridAttr.Chaos]: 'chaos',
+  };
+  const typeMap = {
+    [ArkGridCoreType.SUN]: 'sun',
+    [ArkGridCoreType.MOON]: 'moon',
+    [ArkGridCoreType.STAR]: 'star',
+  };
+  // 조합 → 이미지 경로 함수
+  const getCoreImage = (attr: ArkGridAttr, ctype: ArkGridCoreType) => {
+    const key = `../assets/cores/${attrMap[attr]}_${typeMap[ctype]}.png`;
+    return coreImages[key];
+  };
+  
   function createNewCore(attr: ArkGridAttr, ctype: ArkGridCoreType) {
     // 코어가 없을 때 새로운 코어 추가
     // 기본 영웅 등급
@@ -128,7 +147,8 @@
     {#each ctypes as ctype}
       <div class="core-slot">
         <div class="row core-name">
-          {attr}의 {ctype} 코어
+          <img src={getCoreImage(attr, ctype)} alt="{attr} {ctype}" />
+          {attr}의 {ctype}
         </div>
 
         {#if $arkGridCores[attr][ctype]}
@@ -247,7 +267,12 @@
   }
   .core-slot > .core-name {
     font-weight: 700;
-    align-self: center;
+    margin-left: 0.2rem;
+    margin-top: 0.2rem;
+    margin-bottom: 1rem;
+  }
+  .core-slot > .core-name > img {
+    height: 2.5rem;
   }
   .core-slot > .row {
     display: flex;
