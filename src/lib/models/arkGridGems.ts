@@ -35,9 +35,9 @@ export function addGem(
   option2: ArkGridGemOption
 ) {
   const targetGems = gemAttr == ArkGridAttr.Order ? orderGems : chaosGems;
-  const gem = { id: BigInt(Date.now()), gemAttr, name, req, point, option1, option2 };
+  targetGems.update((gems) => {
 
-  targetGems.update((i) => {
-    return [...i, gem];
+    const gem = { id: gems.length, gemAttr, name, req, point, option1, option2 };
+    return [...gems, gem];
   });
 }

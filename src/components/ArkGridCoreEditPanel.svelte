@@ -216,30 +216,6 @@
   .panel {
     position: relative; /* overlay 위치 기준 */
   }
-  /* OpenAPI 사용 중 비활성화 */
-  .overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.3);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10;
-  }
-  /* 간단한 spinner */
-  .spinner {
-    width: 3rem;
-    height: 3rem;
-    border: 0.4rem solid rgba(255, 255, 255, 0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
 
   /* 버튼 모음 */
   .buttons {

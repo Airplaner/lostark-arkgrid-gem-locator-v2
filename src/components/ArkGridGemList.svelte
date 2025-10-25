@@ -3,7 +3,7 @@
   import ArkGridGemDetail from './ArkGridGemDetail.svelte';
 
   // 탭 상태
-  let activeTab = 0;
+  let activeTab = $state(0);
   const tabs = ['전체', '질서', '혼돈'];
 
   function selectTab(index: number) {
@@ -22,22 +22,23 @@
   }
 
   // reactive variable
-  $: currentGems =
-    activeTab === 0 ? [...$orderGems, ...$chaosGems] : activeTab == 1 ? $orderGems : $chaosGems;
+  let currentGems = $derived(
+    activeTab === 0 ? [...$orderGems, ...$chaosGems] : activeTab == 1 ? $orderGems : $chaosGems
+  );
 </script>
 
 <div class="panel">
   <div class="tab-container">
     {#each tabs as tab, i}
-      <button class="tab {activeTab === i ? 'active' : ''}" on:click={() => selectTab(i)}>
+      <button class="tab {activeTab === i ? 'active' : ''}" onclick={() => selectTab(i)}>
         {tab}
       </button>
     {/each}
   </div>
-  <button on:click={() => deleteGems()}>삭제</button>
+  <button onclick={() => deleteGems()}>삭제</button>
 
   <div class="gems">
-    {#each currentGems as gem (gem.id)}
+    {#each currentGems as gem (`${gem.gemAttr}-${gem.id}`)}
       <ArkGridGemDetail {gem} />
     {/each}
   </div>
@@ -63,6 +64,12 @@
   .tab.active {
     background: #fff;
     font-weight: bold;
+  }
+
+  .gems {
+     /* 세로 스크롤 */
+    max-height: 600px;
+    overflow-y: auto;
   }
 
   button {
