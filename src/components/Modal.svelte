@@ -1,5 +1,5 @@
 <script>
-  let { showModal = $bindable(), header, children } = $props();
+  let { showModal = $bindable(), header, children, onConfirm } = $props();
 
   let dialog = $state(); // HTMLDialogElement
 
@@ -12,17 +12,24 @@
 <dialog bind:this={dialog} onclose={() => (showModal = false)}>
   <div>
     {@render header?.()}
-    <hr />
     {@render children?.()}
-    <hr />
     <!-- svelte-ignore a11y_autofocus -->
-    <button autofocus onclick={() => dialog.close()}>Close</button>
+  </div>
+
+  <div class="buttons">
+    <button
+      onclick={() => {
+        onConfirm?.();
+        dialog.close();
+      }}>확인</button
+    >
+    <button onclick={() => dialog.close()}>취소</button>
   </div>
 </dialog>
 
 <style>
   dialog {
-    max-width: 32em;
+    min-width: 24em;
     border-radius: 0.2em;
     border: none;
     padding: 0;
@@ -55,8 +62,9 @@
       opacity: 1;
     }
   }
-  button {
-    justify-self: end;
-    display: block;
+  dialog > .buttons {
+    justify-self: center;
+    display: flex;
+    gap: 0.5rem;
   }
 </style>

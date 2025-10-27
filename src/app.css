@@ -9,6 +9,11 @@
   --text: #1e293b;
 }
 
+html {
+  font-size: 16px;
+  min-width: 360px;
+}
+
 body {
   background: var(--bg);
 }
@@ -17,13 +22,13 @@ body {
   background: var(--bg);
   color: var(--text);
   /* 중앙 정렬 */
-  max-width: 1100px;
+  min-width: 344px; /* 360px - 8px * 2 */
+  max-width: 46rem;
   margin: auto auto;
 }
 
 .panel {
   /* 외관 */
-  min-width: 30rem;
   max-width: 40rem;
   background: var(--card);
   border: 1px solid var(--border);
@@ -31,9 +36,10 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 
   /* margin: panel 자체가 외부와 떨어진 거리 */
-  margin: 1rem;
+  margin: clamp(1rem, 5vw, 2rem);
   /* padding: 내부 요소들이 테두리와 떨어진 거리 */
-  padding: 2rem;
+  padding: clamp(1rem, 5vw, 2rem);
+  /* padding: 2rem; */
 
   /* 내부 요소들은 상하 정렬 */
   display: flex;

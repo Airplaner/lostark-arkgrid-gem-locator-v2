@@ -1,8 +1,10 @@
 <script lang="ts">
-  import { chaosGems, orderGems } from '../stores/store';
+  import { globalAppConfig } from '../lib/store';
   import ArkGridGemDetail from './ArkGridGemDetail.svelte';
 
   // 탭 상태
+  const orderGems = $derived(globalAppConfig.current.orderGems);
+  const chaosGems = $derived(globalAppConfig.current.chaosGems);
   let activeTab = $state(0);
   const tabs = ['전체', '질서', '혼돈'];
 
@@ -12,22 +14,22 @@
 
   function deleteGems() {
     if (activeTab == 0) {
-      orderGems.set([]);
-      chaosGems.set([]);
+      orderGems.splice(0, orderGems.length);
+      chaosGems.splice(0, chaosGems.length);
     } else if (activeTab == 1) {
-      orderGems.set([]);
+      orderGems.splice(0, orderGems.length);
     } else if (activeTab == 2) {
-      chaosGems.set([]);
+      chaosGems.splice(0, chaosGems.length);
     }
   }
 
   // reactive variable
   let currentGems = $derived(
     activeTab === 0
-      ? [...$orderGems, ...$chaosGems]
+      ? [...orderGems, ...chaosGems]
       : activeTab == 1
-        ? $orderGems
-        : $chaosGems
+        ? orderGems
+        : chaosGems
   );
 </script>
 
@@ -45,9 +47,13 @@
   <button onclick={() => deleteGems()}>젬 초기화</button>
 
   <div class="gems">
-    {#each currentGems as gem}
-      <ArkGridGemDetail {gem} />
-    {/each}
+    {#if currentGems.length > 0}
+      {#each currentGems as gem}
+        <ArkGridGemDetail {gem} />
+      {/each}
+    {:else}
+      <span> 젬을 추가해주세요. </span>
+    {/if}
   </div>
 </div>
 
@@ -74,7 +80,7 @@
   }
 
   .gems {
-    max-height: 600px;
+    max-height: 21.5rem;
 
     padding-right: 0.5rem;
     display: flex;

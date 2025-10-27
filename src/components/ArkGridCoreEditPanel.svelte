@@ -1,19 +1,11 @@
 <script lang="ts">
   import { ArkGridAttr, ArkGridGrade } from '../lib/constants/enums';
-  import { reverseLookup } from '../lib/constants/enums';
   import {
-    ArkGridCoreNameTierMap,
     ArkGridCoreType,
     createCore,
     resetCoreCoeff,
   } from '../lib/models/arkGridCores';
-  import { apiClient } from '../lib/openapi/openapi';
-  import {
-    arkGridCores,
-    globalAppConfig,
-    globalOpenApiConfig,
-    initArkGridCores,
-  } from '../stores/store';
+  import { globalAppConfig, initArkGridCores } from '../lib/store';
 
   const arkGridCoreTierName: Record<ArkGridCoreType, Array<string>> = {
     [ArkGridCoreType.SUN]: ['현란한 공격', '안정적인/재빠른 공격', '그 외'],
@@ -44,116 +36,44 @@
     return coreImages[key];
   };
 
+  let arkGridCores = $derived(globalAppConfig.current.cores);
   function createNewCore(attr: ArkGridAttr, ctype: ArkGridCoreType) {
     // 코어가 없을 때 새로운 코어 추가
     // 기본 영웅 등급
-    arkGridCores.update((cores) => {
-      cores[attr][ctype] = createCore(attr, ctype, ArkGridGrade.EPIC);
-      return cores;
-    });
-  }
-  function resetAllCores() {
-    // 모든 코어 초기화
-    arkGridCores.set(initArkGridCores());
-    // arkGridCores.reset(); // 이상하게 안 됨
-    return;
+    globalAppConfig.current.cores[attr][ctype] = createCore(
+      attr,
+      ctype,
+      ArkGridGrade.EPIC
+    );
   }
   function resetCoeffWhenCoreChanges(
     attr: ArkGridAttr,
     ctype: ArkGridCoreType
   ) {
-    arkGridCores.update((cores) => {
-      const core = cores[attr][ctype];
-      if (!core) return cores;
+    const core = globalAppConfig.current.cores[attr][ctype];
+    if (core) {
       resetCoreCoeff(core);
-      return cores;
-    });
-  }
-
-  interface OpenAPIArkGridCoreSlots {
-    Name: string; // 질서의 별 : 지옥 뒤집기
-    Grade: string; // 전설
-  }
-  async function importCoreFromOpenAPI() {
-    if (!$globalOpenApiConfig.charname) return;
-
-    importing = true; // spinner 켜기
-
-    try {
-      // fetch
-      const res = await apiClient.armories.armoriesGetArkGrid(
-        $globalOpenApiConfig.charname
-      );
-      // apiClient가 ok가 아니라면 알아서 error로 던져줌
-      // 하지만 데이터가 없는 경우 null로 오는 걸 캐치
-      if (!res.data) {
-        window.alert(
-          `${$globalOpenApiConfig.charname}의 정보를 가져올 수 없습니다.`
-        );
-        return;
-      }
-
-      if (res.data.Slots) {
-        // 코어 데이터가 존재하는 경우 갱신 시작
-        resetAllCores();
-        for (let coreSlot of res.data.Slots) {
-          if (!coreSlot.Name || !coreSlot.Grade) {
-            window.alert(
-              `Open API 응답이 이상합니다. 콘솔 로그를 확인해주세요.`
-            );
-            console.log(coreSlot);
-            continue;
-          }
-
-          // Open API 응답 -> 내부 데이터로 변환
-          const attr = reverseLookup(ArkGridAttr, coreSlot.Name.slice(0, 2));
-          const ctype = reverseLookup(ArkGridCoreType, coreSlot.Name[4]);
-          const grade = reverseLookup(ArkGridGrade, coreSlot.Grade);
-          const tier = ArkGridCoreNameTierMap[coreSlot.Name.slice(11)] ?? 2;
-
-          if (!attr || !ctype || !grade) {
-            window.alert(`${coreSlot.Grade} ${coreSlot.Name} 파싱 실패`);
-            continue;
-          }
-
-          // 성공적으로 변환한 코어 저장
-          arkGridCores.update((cores) => {
-            cores[attr][ctype] = createCore(
-              attr,
-              ctype,
-              grade,
-              attr == ArkGridAttr.Chaos ? tier : 0 // 혼돈만 tier 사용
-            );
-            return cores;
-          });
-        }
-      }
-    } catch (e) {
-      window.alert('Open API 요청 실패!');
-      console.error(e);
-      return;
-    } finally {
-      importing = false;
     }
   }
-  let importing: boolean = $state(false);
 </script>
 
 <div class="panel">
-  {#if importing}
-    <div class="overlay">
-      <div class="spinner"></div>
-    </div>
-  {/if}
   <div class="buttons">
     <button
       onclick={() => {
-        $globalAppConfig.showCoreCoeff = !$globalAppConfig.showCoreCoeff;
+        globalAppConfig.current.uiConfig.showCoreCoeff =
+          !globalAppConfig.current.uiConfig.showCoreCoeff;
       }}
     >
-      전투력 계수 {$globalAppConfig.showCoreCoeff ? '숨김' : '수정'}
+      전투력 계수 {globalAppConfig.current.uiConfig.showCoreCoeff
+        ? '숨김'
+        : '수정'}
     </button>
-    <button onclick={resetAllCores}>모든 코어 초기화</button>
+    <button
+      onclick={() => {
+        globalAppConfig.current.cores = initArkGridCores();
+      }}>모든 코어 초기화</button
+    >
   </div>
   {#each attrs as attr}
     {#each ctypes as ctype}
@@ -162,12 +82,12 @@
           <img
             src={getCoreImage(attr, ctype)}
             alt="{attr} {ctype}"
-            data-grade={$arkGridCores[attr][ctype]?.grade}
+            data-grade={arkGridCores[attr][ctype]?.grade}
           />
           {attr}의 {ctype}
         </div>
 
-        {#if $arkGridCores[attr][ctype]}
+        {#if arkGridCores[attr][ctype]}
           <div class="row core-grade">
             <span class="title">등급</span>
             {#each grades as grade}
@@ -175,7 +95,7 @@
                 <input
                   type="radio"
                   name="{attr} {ctype} grade"
-                  bind:group={$arkGridCores[attr][ctype].grade}
+                  bind:group={arkGridCores[attr][ctype].grade}
                   onchange={() => resetCoeffWhenCoreChanges(attr, ctype)}
                   value={grade}
                 />
@@ -192,7 +112,7 @@
                   <input
                     type="radio"
                     name="{attr} {ctype} tier"
-                    bind:group={$arkGridCores[attr][ctype].tier}
+                    bind:group={arkGridCores[attr][ctype].tier}
                     onchange={() => resetCoeffWhenCoreChanges(attr, ctype)}
                     value={tier}
                   />
@@ -202,20 +122,22 @@
             </div>
           {/if}
 
-          {#if $globalAppConfig.showCoreCoeff}
+          {#if globalAppConfig.current.uiConfig.showCoreCoeff}
             <!-- 계수 숨기면 보이지 않음 -->
             <div class="row core-coeffs">
               <span class="title">계수</span>
-              {#each coeffKeys as coeffKey}
-                <label class="core-coeff">
-                  {coeffKey.slice(1)}P
-                  <input
-                    type="number"
-                    name="{attr} {ctype} {coeffKey}"
-                    bind:value={$arkGridCores[attr][ctype].coeffs[coeffKey]}
-                  />
-                </label>
-              {/each}
+              <div class="coeff-inputs">
+                {#each coeffKeys as coeffKey}
+                  <label class="coeff-input">
+                    {coeffKey.slice(1)}P
+                    <input
+                      type="number"
+                      name="{attr} {ctype} {coeffKey}"
+                      bind:value={arkGridCores[attr][ctype].coeffs[coeffKey]}
+                    />
+                  </label>
+                {/each}
+              </div>
             </div>
           {/if}
         {:else}
@@ -280,16 +202,22 @@
     min-width: 5em;
   }
   .core-slot > .core-coeffs {
-    gap: 0.7rem;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
   }
-  .core-slot > .core-coeffs > .core-coeff {
+  .core-slot > .core-coeffs > .coeff-inputs {
+    /* coeff-input을 담고 있는 객체, wrap되어도 된다. */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem;
+  }
+  .core-slot > .core-coeffs > .coeff-inputs > .coeff-input {
+    /* label + input으로 이루어진 쌍 */
     display: inline-flex;
     flex-wrap: nowrap;
     gap: 0.2em;
     align-items: center;
   }
-  .core-slot > .core-coeffs > .core-coeff > input {
+  .core-slot > .core-coeffs > .coeff-inputs > .coeff-input > input {
     width: 2.4rem;
     border: 1px solid var(--border);
     height: 1.3rem;

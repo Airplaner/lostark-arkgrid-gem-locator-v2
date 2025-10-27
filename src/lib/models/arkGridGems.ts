@@ -1,5 +1,4 @@
 import { ArkGridAttr, ArkGridGrade } from '../constants/enums';
-import { chaosGems, orderGems } from '../../stores/store';
 
 export enum ArkGridGemOptionType {
   ATTACK = '공격력',
@@ -34,7 +33,7 @@ export interface ArkGridGem {
   option2: ArkGridGemOption;
 }
 
-function determineGemGrade(gem: ArkGridGem) {
+export function determineGemGrade(gem: ArkGridGem) {
   const totalPoint =
     gem.req + gem.point + gem.option1.value + gem.option2.value;
   gem.grade =
@@ -43,15 +42,4 @@ function determineGemGrade(gem: ArkGridGem) {
       : totalPoint < 19
         ? ArkGridGrade.RELIC
         : ArkGridGrade.ANCIENT;
-}
-
-// gem 추가 함수
-export function addGem(gem: ArkGridGem) {
-  if (!gem.grade) {
-    determineGemGrade(gem);
-  }
-  const targetGems = gem.gemAttr == ArkGridAttr.Order ? orderGems : chaosGems;
-  targetGems.update((gems) => {
-    return [...gems, gem];
-  });
 }
