@@ -10,6 +10,7 @@
   import { apiClient } from '../lib/openapi/openapi';
   import {
     arkGridCores,
+    globalAppConfig,
     globalOpenApiConfig,
     initArkGridCores,
   } from '../stores/store';
@@ -135,7 +136,6 @@
       importing = false;
     }
   }
-  let expertMode = $state(true);
   let importing: boolean = $state(false);
 </script>
 
@@ -148,13 +148,12 @@
   <div class="buttons">
     <button
       onclick={() => {
-        expertMode = !expertMode;
+        $globalAppConfig.showCoreCoeff = !$globalAppConfig.showCoreCoeff;
       }}
     >
-      전투력 계수 {expertMode ? '숨기기' : '보이기'}
+      전투력 계수 {$globalAppConfig.showCoreCoeff ? '숨김' : '수정'}
     </button>
-    <button onclick={resetAllCores}>코어 초기화</button>
-    <button onclick={importCoreFromOpenAPI}>Open API에서 가져오기</button>
+    <button onclick={resetAllCores}>모든 코어 초기화</button>
   </div>
   {#each attrs as attr}
     {#each ctypes as ctype}
@@ -203,7 +202,7 @@
             </div>
           {/if}
 
-          {#if expertMode}
+          {#if $globalAppConfig.showCoreCoeff}
             <!-- 계수 숨기면 보이지 않음 -->
             <div class="row core-coeffs">
               <span class="title">계수</span>

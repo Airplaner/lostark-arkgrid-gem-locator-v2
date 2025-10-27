@@ -75,10 +75,12 @@ globalOpenApiConfig.subscribe((config) => {
 
 type AppConfig = {
   showGemAddPanel: boolean;
+  showCoreCoeff: boolean;
 };
 export const globalAppConfig: Persisted<AppConfig> = persisted<AppConfig>(
   'appConfig',
   {
     showGemAddPanel: false,
+    showCoreCoeff: false,
   }
 );
