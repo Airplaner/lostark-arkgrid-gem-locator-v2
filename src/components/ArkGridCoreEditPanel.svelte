@@ -77,16 +77,15 @@
   </div>
   {#each attrs as attr}
     {#each ctypes as ctype}
-      <div class="core-slot">
-        <div class="row core-name">
+      <fieldset class="core-slot">
+        <legend class="core-name">
           <img
             src={getCoreImage(attr, ctype)}
             alt="{attr} {ctype}"
             data-grade={arkGridCores[attr][ctype]?.grade}
           />
           {attr}의 {ctype}
-        </div>
-
+        </legend>
         {#if arkGridCores[attr][ctype]}
           <div class="row core-grade">
             <span class="title">등급</span>
@@ -146,10 +145,15 @@
           {/if}
         {:else}
           <div class="row">
-            <button onclick={() => createNewCore(attr, ctype)}>+</button>
+            <button
+              class="add-button"
+              onclick={() => createNewCore(attr, ctype)}
+            >
+              +
+            </button>
           </div>
         {/if}
-      </div>
+      </fieldset>
     {/each}
   {/each}
 </div>
@@ -173,7 +177,6 @@
 
   /* 개별 코어 슬롯 */
   .core-slot {
-    flex-shrink: 0; /* 깨지지 않게 */
     border-radius: 0.4rem;
     border: 1px solid var(--border);
     padding: 0.75rem;
@@ -181,14 +184,17 @@
 
     /* 내부 요소 */
     display: flex;
+    flex-shrink: 0; /* 깨지지 않게 */
     flex-direction: column;
     gap: 0.4rem;
   }
   .core-slot > .core-name {
     font-weight: 700;
-    margin-left: 0.2rem;
-    margin-top: 0.2rem;
-    margin-bottom: 1rem;
+
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0rem 0.5rem 0rem 0.5rem;
   }
   .core-slot > .core-name > img {
     height: 2.5rem;
@@ -220,13 +226,19 @@
 
   .core-slot > .row > .title {
     font-weight: 500;
-    min-width: clamp(2rem, 10%, 4rem);
+    min-width: clamp(2rem, 10%, 3rem);
   }
   .core-slot > .core-coeffs input {
     /* 테두리까지 포함해서 크기 계산 */
     box-sizing: border-box;
     font-size: 0.9rem;
     width: 3rem;
+  }
+  .core-slot > .row > button.add-button {
+    display: flex;
+    align-items: center; /* 세로 중앙정렬 */
+
+    height: 1.5rem;
   }
 
   /* 공홈 코어 css*/

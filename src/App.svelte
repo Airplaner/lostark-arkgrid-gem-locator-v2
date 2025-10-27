@@ -56,7 +56,7 @@
   }
 
   /* 화면이 600px 이하로 좁아지면 세로 배치 */
-  @media (max-width: 900px) {
+  @media (max-width: 960px) {
     .dual-panel {
       grid-template-columns: 1fr; /* 한 줄에 1개 */
     }
