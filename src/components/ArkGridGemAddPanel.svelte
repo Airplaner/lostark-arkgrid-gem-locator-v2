@@ -135,41 +135,45 @@
     {#each mainOptionInputs as integerInput}
       <div class="row">
         <span class="title">{integerInput.key}</span>
-        {#each Array(integerInput.max - integerInput.min + 1) as _, i}
-          <label>
-            <input
-              type="radio"
-              name={integerInput.key}
-              bind:group={mainOptionValues[integerInput.key]}
-              value={integerInput.min + i}
-            />
-            {integerInput.min + i}
-            {#if i != integerInput.max - integerInput.min}
-              -
-            {/if}
-          </label>
-        {/each}
+        <div class="input-title-tuples">
+          {#each Array(integerInput.max - integerInput.min + 1) as _, i}
+            <label class="input-title-tuple">
+              <input
+                type="radio"
+                name={integerInput.key}
+                bind:group={mainOptionValues[integerInput.key]}
+                value={integerInput.min + i}
+              />
+              {integerInput.min + i}
+              {#if i != integerInput.max - integerInput.min}
+                -
+              {/if}
+            </label>
+          {/each}
+        </div>
       </div>
     {/each}
     <br />
     {#each subOptionInputs as integerInput}
       <div class="row">
         <span class="title">{integerInput.key}</span>
-        {#each Array(integerInput.max - integerInput.min + 1) as _, i}
-          <label>
-            <input
-              type="radio"
-              name={integerInput.key}
-              bind:group={subOptionValues[integerInput.key]}
-              value={integerInput.min + i}
-              disabled={!canSelectMap[integerInput.key][integerInput.min + i]}
-            />
-            {integerInput.min + i}
-            {#if i != integerInput.max - integerInput.min}
-              -
-            {/if}
-          </label>
-        {/each}
+        <div class="input-title-tuples">
+          {#each Array(integerInput.max - integerInput.min + 1) as _, i}
+            <label class="input-title-tuple">
+              <input
+                type="radio"
+                name={integerInput.key}
+                bind:group={subOptionValues[integerInput.key]}
+                value={integerInput.min + i}
+                disabled={!canSelectMap[integerInput.key][integerInput.min + i]}
+              />
+              {integerInput.min + i}
+              {#if i != integerInput.max - integerInput.min}
+                -
+              {/if}
+            </label>
+          {/each}
+        </div>
       </div>
     {/each}
 
@@ -182,15 +186,17 @@
     position: relative; /* overlay 위치 기준 */
   }
   .panel > .row {
-    /* row 내부 요소들은 가로 정렬 */
+    /* row 내부 요소들은 가로 정렬, wrap 가능 */
     display: flex;
-    gap: 0.2rem;
+    flex-wrap: wrap;
+    /* wrap하게 되면 세로 gap은 0.5로 살짝 더 넓게 */
+    gap: 0.5rem 0.2rem;
   }
 
   .panel > .row > .title {
     /* row를 설명하는 title */
     font-weight: 500;
-    min-width: 10em;
+    min-width: clamp(2rem, 30%, 10rem);
     /* 고정폭 */
   }
   .panel > button {
@@ -200,5 +206,20 @@
 
     /* panel 내부에서 우측 정렬 */
     align-self: flex-end;
+  }
+  .panel > .row .input-title-tuples {
+    /* input-title-tuple을 담고 있는 객체, wrap되어도 된다. */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem;
+  }
+
+  .input-title-tuples > .input-title-tuple {
+    /* label + input으로 이루어진 tuple, nowrap */
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.2em;
+    /* white-space: nowrap; */
   }
 </style>
