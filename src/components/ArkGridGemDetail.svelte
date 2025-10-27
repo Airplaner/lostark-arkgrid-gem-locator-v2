@@ -45,10 +45,10 @@
     </div>
     <div class="vl"></div>
     <div class="col sub-options">
-      <div>
+      <div class="sub-option">
         {gem.option1.optionType} Lv.{gem.option1.value}
       </div>
-      <div>
+      <div class="sub-option">
         {gem.option2.optionType} Lv.{gem.option2.value}
       </div>
     </div>
@@ -86,38 +86,47 @@
   .gem > .col.image {
     flex: 1;
     min-width: 1.5rem;
+    max-width: 2.5rem;
   }
+  .gem > .col > img {
+    height: 100%;
+    object-fit: contain;
+  }
+
   .gem > .col.main-options {
     flex: 1;
     min-width: 1.5rem;
+    max-width: 2.5rem;
   }
+
   .gem > .vl {
-    flex: 0.1;
-    min-width: 0.1rem;
+    width: 0px;
     border-left: 1px solid rgb(156, 156, 156);
     height: 80%;
     justify-content: center;
-    /* margin-right: 0.3rem; */
   }
+
   .gem > .col.sub-options {
-    flex: 8;
-    min-width: 9rem;
+    flex: 4;
+    min-width: 4rem;
   }
-  .gem > .col > img {
-    height: 90%;
-    object-fit: contain;
+  .gem > .col.sub-options > .sub-option {
+    /* 아군 공격 강화 Lv.3  이런 문구는 반드시 한 줄 */
+    white-space: nowrap;
   }
+
   .gem > .col {
     /* 디버깅 */
     /* border: 1px solid red; */
     /* 외관 */
-    /* height: 100%; */
+    height: 100%;
     margin: 0.5rem;
 
     /* 내부 요소들은 중앙 정렬 */
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 0.18em;
+    gap: 0.1em;
+    flex-wrap: nowrap;
   }
 </style>
