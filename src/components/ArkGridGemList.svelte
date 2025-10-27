@@ -13,14 +13,11 @@
   }
 
   function deleteGems() {
-    if (activeTab == 0) {
+    if (window.confirm('모든 젬을 삭제하겠습니까?')) {
       orderGems.splice(0, orderGems.length);
-      chaosGems.splice(0, chaosGems.length);
-    } else if (activeTab == 1) {
-      orderGems.splice(0, orderGems.length);
-    } else if (activeTab == 2) {
       chaosGems.splice(0, chaosGems.length);
     }
+    return;
   }
 
   // reactive variable
@@ -41,6 +38,9 @@
         class="tab {activeTab === i ? 'active' : ''}"
         onclick={() => selectTab(i)}
       >
+        {#if activeTab === i}
+          &gt
+        {/if}
         {tab}
       </button>
     {/each}
@@ -52,26 +52,26 @@
         <ArkGridGemDetail {gem} />
       {/each}
     {:else}
-      <span> 젬을 추가해주세요. </span>
+      <span class="epmty-description">보유한 젬이 없습니다.</span>
     {/if}
   </div>
 </div>
 
 <style>
+  .panel {
+    /* override gap and use margin*/
+    gap: 0px;
+  }
   .tab-container {
     display: flex;
-    border-bottom: 2px solid #ccc;
-    gap: 0.15em;
+    gap: 0.3em;
   }
 
   .tab {
-    padding: 0.5rem 1rem;
     border: 1px solid #ccc;
-    border-bottom: none;
-    border-radius: 5px 5px 0 0;
-    background: #eee;
+    margin-bottom: 0.5rem;
+
     cursor: pointer;
-    margin-right: 2px;
   }
 
   .tab.active {
@@ -80,14 +80,24 @@
   }
 
   .gems {
+    /* 남은 공간을 최대한 차지 */
     flex: 1;
     max-height: 100rem;
-    padding-right: 0.5rem;
+
+    /* 테두리 */
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 0.5rem 0.5rem 0.5rem 0;
+
+    /* 내부 배치 */
     display: flex;
     flex-direction: column;
-
     overflow-y: auto;
     gap: 0.5rem;
+  }
+
+  .gems > .epmty-description {
+    align-self: center;
   }
 
   button {
