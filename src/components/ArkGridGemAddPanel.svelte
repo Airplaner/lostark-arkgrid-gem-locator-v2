@@ -9,7 +9,7 @@
   import { type ArkGridGem } from '../lib/models/arkGridGems';
   import { LostArkOpenAPI } from '../lib/openapi/Api';
   import { apiClient } from '../lib/openapi/openapi';
-  import { globalOpenApiConfig } from '../stores/store';
+  import { globalAppConfig, globalOpenApiConfig } from '../stores/store';
 
   // 젬 추가
 
@@ -228,78 +228,86 @@
 </script>
 
 <div class="panel">
-  <div class="title">젬 추가</div>
+  <div class="title">
+    <span>수동 젬 추가</span>
+    <button
+      onclick={() => {
+        $globalAppConfig.showGemAddPanel = !$globalAppConfig.showGemAddPanel;
+      }}>{$globalAppConfig.showGemAddPanel ? '▲' : '▼'}</button
+    >
+  </div>
   {#if importing}
     <div class="overlay">
       <div class="spinner"></div>
     </div>
   {/if}
-  <button onclick={importGemFromOpenAPI}>Open API에서 가져오기</button>
-  <div class="row">
-    <span class="title">젬 타입</span>
-    <label>
-      <input
-        type="radio"
-        name="gemAttr"
-        bind:group={gemAttr}
-        value={ArkGridAttr.Order}
-      />
-      질서
-    </label>
-    <label>
-      <input
-        type="radio"
-        name="gemAttr"
-        bind:group={gemAttr}
-        value={ArkGridAttr.Chaos}
-      />
-      혼돈
-    </label>
-  </div>
-
-  <br />
-  {#each mainOptionInputs as integerInput}
+  {#if $globalAppConfig.showGemAddPanel}
     <div class="row">
-      <span class="title">{integerInput.key}</span>
-      {#each Array(integerInput.max - integerInput.min + 1) as _, i}
-        <label>
-          <input
-            type="radio"
-            name={integerInput.key}
-            bind:group={mainOptionValues[integerInput.key]}
-            value={integerInput.min + i}
-          />
-          {integerInput.min + i}
-          {#if i != integerInput.max - integerInput.min}
-            -
-          {/if}
-        </label>
-      {/each}
+      <span class="title">젬 타입</span>
+      <label>
+        <input
+          type="radio"
+          name="gemAttr"
+          bind:group={gemAttr}
+          value={ArkGridAttr.Order}
+        />
+        질서
+      </label>
+      <label>
+        <input
+          type="radio"
+          name="gemAttr"
+          bind:group={gemAttr}
+          value={ArkGridAttr.Chaos}
+        />
+        혼돈
+      </label>
     </div>
-  {/each}
-  <br />
-  {#each subOptionInputs as integerInput}
-    <div class="row">
-      <span class="title">{integerInput.key}</span>
-      {#each Array(integerInput.max - integerInput.min + 1) as _, i}
-        <label>
-          <input
-            type="radio"
-            name={integerInput.key}
-            bind:group={subOptionValues[integerInput.key]}
-            value={integerInput.min + i}
-            disabled={!canSelectMap[integerInput.key][integerInput.min + i]}
-          />
-          {integerInput.min + i}
-          {#if i != integerInput.max - integerInput.min}
-            -
-          {/if}
-        </label>
-      {/each}
-    </div>
-  {/each}
 
-  <button onclick={handleAdd} disabled={selectedCount != 2}>추가</button>
+    <br />
+    {#each mainOptionInputs as integerInput}
+      <div class="row">
+        <span class="title">{integerInput.key}</span>
+        {#each Array(integerInput.max - integerInput.min + 1) as _, i}
+          <label>
+            <input
+              type="radio"
+              name={integerInput.key}
+              bind:group={mainOptionValues[integerInput.key]}
+              value={integerInput.min + i}
+            />
+            {integerInput.min + i}
+            {#if i != integerInput.max - integerInput.min}
+              -
+            {/if}
+          </label>
+        {/each}
+      </div>
+    {/each}
+    <br />
+    {#each subOptionInputs as integerInput}
+      <div class="row">
+        <span class="title">{integerInput.key}</span>
+        {#each Array(integerInput.max - integerInput.min + 1) as _, i}
+          <label>
+            <input
+              type="radio"
+              name={integerInput.key}
+              bind:group={subOptionValues[integerInput.key]}
+              value={integerInput.min + i}
+              disabled={!canSelectMap[integerInput.key][integerInput.min + i]}
+            />
+            {integerInput.min + i}
+            {#if i != integerInput.max - integerInput.min}
+              -
+            {/if}
+          </label>
+        {/each}
+      </div>
+    {/each}
+
+    <button onclick={handleAdd} disabled={selectedCount != 2}>추가</button>
+  {/if}
 </div>
 
 <style>

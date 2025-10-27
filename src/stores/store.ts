@@ -1,9 +1,10 @@
-import type { Writable } from 'svelte/store';
-import { ArkGridCoreType, type ArkGridCore } from '../lib/models/arkGridCores';
-import type { ArkGridGem } from '../lib/models/arkGridGems';
-import { persisted, type Persisted } from 'svelte-persisted-store';
+import { type Persisted, persisted } from 'svelte-persisted-store';
+
 import { ArkGridAttr } from '../lib/constants/enums';
+import { type ArkGridCore, ArkGridCoreType } from '../lib/models/arkGridCores';
+import type { ArkGridGem } from '../lib/models/arkGridGems';
 import { apiClient } from '../lib/openapi/openapi';
+
 // serializer object for svelte-persisted-store
 const bigIntSerializer = {
   // bigInt의 경우 string으로 바꾼 뒤 가장 끝에 n을 붙여서 직렬화
@@ -71,3 +72,13 @@ globalOpenApiConfig.subscribe((config) => {
     apiClient.setSecurityData({ jwt: config.jwt });
   }
 });
+
+type AppConfig = {
+  showGemAddPanel: boolean;
+};
+export const globalAppConfig: Persisted<AppConfig> = persisted<AppConfig>(
+  'appConfig',
+  {
+    showGemAddPanel: false,
+  }
+);
