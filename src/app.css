@@ -7,6 +7,7 @@
   --primary: #3b82f6;
   --primary-hover: #2563eb;
   --text: #1e293b;
+  --global-gap: clamp(1rem, 2vw, 2rem);
 }
 
 html {
@@ -38,8 +39,6 @@ body {
   border-radius: 0.4rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 
-  /* margin: panel 자체가 외부와 떨어진 거리 */
-  margin: clamp(1rem, 2vw, 2rem) clamp(1rem, 2vw, 2rem) clamp(1rem, 2vw, 2rem) clamp(1rem, 2vw, 2rem);
   /* padding: 내부 요소들이 테두리와 떨어진 거리 */
   padding: clamp(1rem, 2vw, 2rem);
 

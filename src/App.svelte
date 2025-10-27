@@ -12,17 +12,7 @@
 
   function matchHeight() {
     if (originRef && otherRef) {
-      const child = originRef.querySelector('div');
-      if (!child) return;
-      const originHeight = originRef.offsetHeight;
-      // originRef margin 제외. border-box는 margin을 포함하지 않음
-      const childStyle = getComputedStyle(child);
-      const originMarginTop = parseFloat(childStyle.marginTop);
-      const originMarginBottom = parseFloat(childStyle.marginBottom);
-
-      const adjustedHeight =
-        originHeight - originMarginTop - originMarginBottom;
-      otherRef.style.height = adjustedHeight + 'px';
+      otherRef.style.height = originRef.offsetHeight + 'px';
     }
   }
 
@@ -35,23 +25,33 @@
 </script>
 
 <main>
-  <!-- <h3>아크그리드 젬 배치기</h3> -->
-  <AppConfiguration></AppConfiguration>
-  <ArkgridGemAddPanel />
-  <div class="dual-panel">
-    <div bind:this={originRef as HTMLDivElement}>
-      <ArkGridCoreEditPanel />
-    </div>
-    <div bind:this={otherRef as HTMLDivElement}>
-      <ArkGridGemList />
+  <div class="contents">
+    <!-- <h3>아크그리드 젬 배치기</h3> -->
+    <AppConfiguration></AppConfiguration>
+    <ArkgridGemAddPanel />
+    <div class="dual-panel">
+      <div bind:this={originRef as HTMLDivElement}>
+        <ArkGridCoreEditPanel />
+      </div>
+      <div bind:this={otherRef as HTMLDivElement}>
+        <ArkGridGemList />
+      </div>
     </div>
   </div>
 </main>
 
 <style>
+  .contents {
+    display: flex;
+    flex-direction: column;
+    gap: var(--global-gap);
+    /* 넓을 땐 20px 패딩, 960px 이후 (세로 레아이웃) 점점 좁아짐 */
+    padding: clamp(8px, 2.083vw, 20px);
+  }
   .dual-panel {
+    gap: var(--global-gap);
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1.1fr 1fr;
     align-items: start;
   }
 
