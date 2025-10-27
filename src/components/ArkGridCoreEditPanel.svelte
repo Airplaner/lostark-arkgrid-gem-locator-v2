@@ -90,35 +90,39 @@
         {#if arkGridCores[attr][ctype]}
           <div class="row core-grade">
             <span class="title">등급</span>
-            {#each grades as grade}
-              <label>
-                <input
-                  type="radio"
-                  name="{attr} {ctype} grade"
-                  bind:group={arkGridCores[attr][ctype].grade}
-                  onchange={() => resetCoeffWhenCoreChanges(attr, ctype)}
-                  value={grade}
-                />
-                {grade}
-              </label>
-            {/each}
+            <div class="input-title-tuples">
+              {#each grades as grade}
+                <label class="input-title-tuple">
+                  <input
+                    type="radio"
+                    name="{attr} {ctype} grade"
+                    bind:group={arkGridCores[attr][ctype].grade}
+                    onchange={() => resetCoeffWhenCoreChanges(attr, ctype)}
+                    value={grade}
+                  />
+                  {grade}
+                </label>
+              {/each}
+            </div>
           </div>
 
           {#if attr == ArkGridAttr.Chaos}
             <div class="row core-tier">
               <span class="title">종류</span>
-              {#each [0, 1, 2] as tier}
-                <label>
-                  <input
-                    type="radio"
-                    name="{attr} {ctype} tier"
-                    bind:group={arkGridCores[attr][ctype].tier}
-                    onchange={() => resetCoeffWhenCoreChanges(attr, ctype)}
-                    value={tier}
-                  />
-                  {arkGridCoreTierName[ctype][tier]}
-                </label>
-              {/each}
+              <div class="input-title-tuples">
+                {#each [0, 1, 2] as tier}
+                  <label class="input-title-tuple">
+                    <input
+                      type="radio"
+                      name="{attr} {ctype} tier"
+                      bind:group={arkGridCores[attr][ctype].tier}
+                      onchange={() => resetCoeffWhenCoreChanges(attr, ctype)}
+                      value={tier}
+                    />
+                    {arkGridCoreTierName[ctype][tier]}
+                  </label>
+                {/each}
+              </div>
             </div>
           {/if}
 
@@ -126,9 +130,9 @@
             <!-- 계수 숨기면 보이지 않음 -->
             <div class="row core-coeffs">
               <span class="title">계수</span>
-              <div class="coeff-inputs">
+              <div class="input-title-tuples">
                 {#each coeffKeys as coeffKey}
-                  <label class="coeff-input">
+                  <label class="input-title-tuple">
                     {coeffKey.slice(1)}P
                     <input
                       type="number"
@@ -197,30 +201,31 @@
     gap: 0.8rem;
   }
 
-  .core-slot > .row > .title {
-    font-weight: 500;
-    min-width: 5em;
-  }
-  .core-slot > .core-coeffs {
-    flex-wrap: nowrap;
-  }
-  .core-slot > .core-coeffs > .coeff-inputs {
-    /* coeff-input을 담고 있는 객체, wrap되어도 된다. */
+  .core-slot .input-title-tuples {
+    /* input-title-tuple을 담고 있는 객체, wrap되어도 된다. */
     display: flex;
     flex-wrap: wrap;
     gap: 0.2rem;
   }
-  .core-slot > .core-coeffs > .coeff-inputs > .coeff-input {
-    /* label + input으로 이루어진 쌍 */
-    display: inline-flex;
+
+  .core-slot .input-title-tuples > .input-title-tuple {
+    /* label + input으로 이루어진 tuple, nowrap */
+    display: flex;
     flex-wrap: nowrap;
-    gap: 0.2em;
     align-items: center;
+    gap: 0.2em;
+    /* white-space: nowrap; */
   }
-  .core-slot > .core-coeffs > .coeff-inputs > .coeff-input > input {
-    width: 2.4rem;
-    border: 1px solid var(--border);
-    height: 1.3rem;
+
+  .core-slot > .row > .title {
+    font-weight: 500;
+    min-width: clamp(2rem, 10%, 4rem);
+  }
+  .core-slot > .core-coeffs input {
+    /* 테두리까지 포함해서 크기 계산 */
+    box-sizing: border-box;
+    font-size: 0.9rem;
+    width: 3rem;
   }
 
   /* 공홈 코어 css*/
