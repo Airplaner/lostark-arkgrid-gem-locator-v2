@@ -24,13 +24,15 @@ body {
   /* 중앙 정렬 */
   min-width: 344px;
   /* 360px - 8px * 2 */
-  max-width: 46rem;
+  max-width: 90rem;
   margin: auto auto;
 }
 
 .panel {
   /* 외관 */
-  max-width: 40rem;
+  box-sizing: border-box;
+  height: 100%;
+  max-width: 90rem;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 0.4rem;
@@ -40,7 +42,6 @@ body {
   margin: clamp(1rem, 2vw, 2rem) clamp(1rem, 2vw, 2rem) clamp(1rem, 2vw, 2rem) clamp(1rem, 2vw, 2rem);
   /* padding: 내부 요소들이 테두리와 떨어진 거리 */
   padding: clamp(1rem, 2vw, 2rem);
-  /* padding: 2rem; */
 
   /* 내부 요소들은 상하 정렬 */
   display: flex;
@@ -48,6 +49,7 @@ body {
 
   /* panel 내부 요소들 사이의 상하 간격 */
   gap: 0.7rem;
+  overflow-y: hidden;
 }
 
 button {

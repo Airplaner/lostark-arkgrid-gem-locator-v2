@@ -173,6 +173,7 @@
 
   /* 개별 코어 슬롯 */
   .core-slot {
+    flex-shrink: 0; /* 깨지지 않게 */
     border-radius: 0.4rem;
     border: 1px solid var(--border);
     padding: 0.75rem;

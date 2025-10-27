@@ -34,6 +34,7 @@
 </script>
 
 <div class="panel">
+  <button onclick={() => deleteGems()}>젬 초기화</button>
   <div class="tab-container">
     {#each tabs as tab, i}
       <button
@@ -44,7 +45,6 @@
       </button>
     {/each}
   </div>
-  <button onclick={() => deleteGems()}>젬 초기화</button>
 
   <div class="gems">
     {#if currentGems.length > 0}
@@ -80,8 +80,8 @@
   }
 
   .gems {
-    max-height: 21.5rem;
-
+    flex: 1;
+    max-height: 100rem;
     padding-right: 0.5rem;
     display: flex;
     flex-direction: column;
