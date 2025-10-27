@@ -72,7 +72,7 @@
     <button
       onclick={() => {
         globalAppConfig.current.cores = initArkGridCores();
-      }}>모든 코어 초기화</button
+      }}>코어 초기화</button
     >
   </div>
   {#each attrs as attr}
