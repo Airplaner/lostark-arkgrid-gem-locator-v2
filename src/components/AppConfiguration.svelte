@@ -1,15 +1,16 @@
 <script lang="ts">
-  import { ArkGridAttr, ArkGridGrade } from '../lib/constants/enums';
+  import { ArkGridAttrs, LostArkGrades } from '../lib/constants/enums';
   import { reverseLookup } from '../lib/constants/enums';
   import {
     ArkGridCoreNameTierMap,
-    ArkGridCoreType,
+    ArkGridCoreTypes,
     createCore,
   } from '../lib/models/arkGridCores';
   import {
     ArkGridGemNames,
     type ArkGridGemOption,
-    ArkGridGemOptionType,
+    ArkGridGemOptionTypes,
+    determineGemGrade,
   } from '../lib/models/arkGridGems';
   import { type ArkGridGem } from '../lib/models/arkGridGems';
   import { LostArkOpenAPI } from '../lib/openapi/Api';
@@ -54,8 +55,6 @@
       throw Error('이름 없음');
     }
 
-    const gemGrade = Object.values(ArkGridGrade).find((v) => v === gem.Grade);
-
     // 2️⃣ 특정 문구에서 정수 추출
     let req = 0,
       point = 0,
@@ -92,11 +91,9 @@
     while ((match = keyLevelRegex.exec(textOnly)) !== null) {
       const key = match[1].trim();
       const value = parseInt(match[2], 10);
-      const optionType = Object.values(ArkGridGemOptionType).find(
-        (v) => v === key
-      );
+      const optionType = reverseLookup(ArkGridGemOptionTypes, key);
       if (!optionType) {
-        throw Error('알 수 없는 효과');
+        throw Error('옵션 파싱 실패!');
       }
       gemOptions.push({
         optionType,
@@ -108,8 +105,10 @@
     }
     return {
       name: gemName,
-      grade: gemGrade,
-      gemAttr: isOrder ? ArkGridAttr.Order : ArkGridAttr.Chaos,
+      grade: gem.Grade
+        ? reverseLookup(LostArkGrades, gem.Grade)
+        : determineGemGrade(req, point, gemOptions[0], gemOptions[1]),
+      gemAttr: isOrder ? ArkGridAttrs.Order : ArkGridAttrs.Chaos,
       req,
       point,
       option1: gemOptions[0],
@@ -156,9 +155,9 @@
           }
 
           // Open API 응답 -> 내부 데이터로 변환
-          const attr = reverseLookup(ArkGridAttr, coreSlot.Name.slice(0, 2));
-          const ctype = reverseLookup(ArkGridCoreType, coreSlot.Name[4]);
-          const grade = reverseLookup(ArkGridGrade, coreSlot.Grade);
+          const attr = reverseLookup(ArkGridAttrs, coreSlot.Name.slice(0, 2));
+          const ctype = reverseLookup(ArkGridCoreTypes, coreSlot.Name[4]);
+          const grade = reverseLookup(LostArkGrades, coreSlot.Grade);
           const tier = ArkGridCoreNameTierMap[coreSlot.Name.slice(11)] ?? 2;
 
           if (!attr || !ctype || !grade) {
@@ -171,7 +170,7 @@
             attr,
             ctype,
             grade,
-            attr == ArkGridAttr.Chaos ? tier : 0 // 혼돈만 tier 사용
+            attr == ArkGridAttrs.Chaos ? tier : 0 // 혼돈만 tier 사용
           );
 
           // 장착 중인 젬들만 우선 추가

@@ -1,7 +1,11 @@
 import { persistedState } from 'svelte-persisted-state';
 
-import { ArkGridAttr } from './constants/enums';
-import { type ArkGridCore, ArkGridCoreType } from './models/arkGridCores';
+import { type ArkGridAttr, ArkGridAttrs } from './constants/enums';
+import {
+  type ArkGridCore,
+  type ArkGridCoreType,
+  ArkGridCoreTypes,
+} from './models/arkGridCores';
 import { type ArkGridGem, determineGemGrade } from './models/arkGridGems';
 
 export interface OpenApiConfig {
@@ -66,9 +70,9 @@ export function initArkGridCores(): Record<
     Record<ArkGridCoreType, ArkGridCore | null>
   >;
 
-  for (const attr of Object.values(ArkGridAttr)) {
+  for (const attr of Object.values(ArkGridAttrs)) {
     cores[attr] = {} as Record<ArkGridCoreType, ArkGridCore | null>;
-    for (const type of Object.values(ArkGridCoreType)) {
+    for (const type of Object.values(ArkGridCoreTypes)) {
       cores[attr][type] = null; // 코어가 아직 없는 상태
     }
   }
@@ -78,10 +82,10 @@ export function initArkGridCores(): Record<
 // gem 추가 함수
 export function addGem(gem: ArkGridGem) {
   if (!gem.grade) {
-    determineGemGrade(gem);
+    determineGemGrade(gem.req, gem.point, gem.option1, gem.option2);
   }
   const targetGems =
-    gem.gemAttr == ArkGridAttr.Order
+    gem.gemAttr == ArkGridAttrs.Order
       ? globalAppConfig.current.orderGems
       : globalAppConfig.current.chaosGems;
   targetGems.push(gem);

@@ -1,10 +1,17 @@
-import { ArkGridAttr, ArkGridGrade } from '../constants/enums';
+import {
+  type ArkGridAttr,
+  ArkGridAttrs,
+  type LostArkGrade,
+  LostArkGrades,
+} from '../constants/enums';
 
-export enum ArkGridCoreType {
-  SUN = '해',
-  MOON = '달',
-  STAR = '별',
-}
+export const ArkGridCoreTypes = {
+  SUN: '해',
+  MOON: '달',
+  STAR: '별',
+} as const;
+export type ArkGridCoreType =
+  (typeof ArkGridCoreTypes)[keyof typeof ArkGridCoreTypes];
 
 export const ArkGridCoreNameTierMap: Record<string, number> = {
   '현란한 공격': 0,
@@ -29,7 +36,7 @@ type ArkGridCoreCoeffs = {
 export interface ArkGridCore {
   attr: ArkGridAttr;
   type: ArkGridCoreType;
-  grade: ArkGridGrade;
+  grade: LostArkGrade;
   coeffs: ArkGridCoreCoeffs;
   tier: number; // 0: 현란, 불타, 1: 안정,재빠,흡수,부수, 2: 그 외
 }
@@ -41,20 +48,20 @@ export function resetCoreCoeff(core: ArkGridCore) {
 
 function adjustCoeff(core: ArkGridCore) {
   // 코어 등급에 따라 계수 조정
-  if (core.grade == ArkGridGrade.EPIC) {
+  if (core.grade === LostArkGrades.EPIC) {
     // 영웅 등급: 10P 옵션까지만 존재
     core.coeffs.p14 = core.coeffs.p10;
     core.coeffs.p17 = core.coeffs.p10;
     core.coeffs.p18 = core.coeffs.p10;
     core.coeffs.p19 = core.coeffs.p10;
     core.coeffs.p20 = core.coeffs.p10;
-  } else if (core.grade == ArkGridGrade.LEGENDARY) {
+  } else if (core.grade === LostArkGrades.LEGENDARY) {
     // 전설 등급 : 14P 옵션까지만 존재
     core.coeffs.p17 = core.coeffs.p14;
     core.coeffs.p18 = core.coeffs.p14;
     core.coeffs.p19 = core.coeffs.p14;
     core.coeffs.p20 = core.coeffs.p14;
-  } else if (core.grade == ArkGridGrade.ANCIENT && core.coeffs.p17) {
+  } else if (core.grade === LostArkGrades.ANCIENT && core.coeffs.p17) {
     // 고대 등급 : 17-20P 옵션 계수 +100
     core.coeffs.p17 += 100;
     core.coeffs.p18 += 100;
@@ -68,8 +75,8 @@ export function getDefaultCoreCoeff(core: ArkGridCore): ArkGridCoreCoeffs {
     type = core.type,
     tier = core.tier;
 
-  if (attr == ArkGridAttr.Order) {
-    if (type == ArkGridCoreType.SUN || type == ArkGridCoreType.MOON) {
+  if (attr == ArkGridAttrs.Order) {
+    if (type == ArkGridCoreTypes.SUN || type == ArkGridCoreTypes.MOON) {
       // 질서의 해, 달
       return {
         p10: 150,
@@ -79,7 +86,7 @@ export function getDefaultCoreCoeff(core: ArkGridCore): ArkGridCoreCoeffs {
         p19: 783,
         p20: 800,
       };
-    } else if (type == ArkGridCoreType.STAR) {
+    } else if (type == ArkGridCoreTypes.STAR) {
       // 질서의 별
       return {
         p10: 100,
@@ -90,8 +97,8 @@ export function getDefaultCoreCoeff(core: ArkGridCore): ArkGridCoreCoeffs {
         p20: 500,
       };
     }
-  } else if (attr == ArkGridAttr.Chaos) {
-    if (type == ArkGridCoreType.SUN || type == ArkGridCoreType.MOON) {
+  } else if (attr == ArkGridAttrs.Chaos) {
+    if (type == ArkGridCoreTypes.SUN || type == ArkGridCoreTypes.MOON) {
       // 혼돈의 해, 달
       if (tier == 0) {
         // 현란한 공격, 불타는 일격
@@ -114,7 +121,7 @@ export function getDefaultCoreCoeff(core: ArkGridCore): ArkGridCoreCoeffs {
           p20: 200,
         };
       }
-    } else if (type == ArkGridCoreType.STAR) {
+    } else if (type == ArkGridCoreTypes.STAR) {
       // 혼돈의 별
       if (tier == 0) {
         // 공격
@@ -153,7 +160,7 @@ export function getDefaultCoreCoeff(core: ArkGridCore): ArkGridCoreCoeffs {
 export function createCore(
   attr: ArkGridAttr,
   type: ArkGridCoreType,
-  grade: ArkGridGrade,
+  grade: LostArkGrade,
   tier?: number
 ): ArkGridCore {
   const core: ArkGridCore = {

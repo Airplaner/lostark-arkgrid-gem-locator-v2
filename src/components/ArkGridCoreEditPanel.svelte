@@ -1,20 +1,25 @@
 <script lang="ts">
-  import { ArkGridAttr, ArkGridGrade } from '../lib/constants/enums';
   import {
-    ArkGridCoreType,
+    type ArkGridAttr,
+    ArkGridAttrs,
+    LostArkGrades,
+  } from '../lib/constants/enums';
+  import {
+    type ArkGridCoreType,
+    ArkGridCoreTypes,
     createCore,
     resetCoreCoeff,
   } from '../lib/models/arkGridCores';
   import { globalAppConfig, initArkGridCores } from '../lib/store';
 
   const arkGridCoreTierName: Record<ArkGridCoreType, Array<string>> = {
-    [ArkGridCoreType.SUN]: ['현란한 공격', '안정적인/재빠른 공격', '그 외'],
-    [ArkGridCoreType.MOON]: ['불타는 일격', '흡수의/부수는 일격', '그 외'],
-    [ArkGridCoreType.STAR]: ['공격', '무기', '그 외'],
+    [ArkGridCoreTypes.SUN]: ['현란한 공격', '안정적인/재빠른 공격', '그 외'],
+    [ArkGridCoreTypes.MOON]: ['불타는 일격', '흡수의/부수는 일격', '그 외'],
+    [ArkGridCoreTypes.STAR]: ['공격', '무기', '그 외'],
   } as const;
-  const attrs = Object.values(ArkGridAttr);
-  const ctypes = Object.values(ArkGridCoreType);
-  const grades = Object.values(ArkGridGrade);
+  const attrs = Object.values(ArkGridAttrs);
+  const ctypes = Object.values(ArkGridCoreTypes);
+  const grades = Object.values(LostArkGrades);
   const coeffKeys = ['p10', 'p14', 'p17', 'p18', 'p19', 'p20'] as const;
   const coreImages = import.meta.glob<string>('../assets/cores/*.png', {
     eager: true, // 바로 import (비동기 아님)
@@ -22,13 +27,13 @@
   });
   // enum 값 → 파일 이름 매핑
   const attrMap = {
-    [ArkGridAttr.Order]: 'order',
-    [ArkGridAttr.Chaos]: 'chaos',
+    [ArkGridAttrs.Order]: 'order',
+    [ArkGridAttrs.Chaos]: 'chaos',
   };
   const typeMap = {
-    [ArkGridCoreType.SUN]: 'sun',
-    [ArkGridCoreType.MOON]: 'moon',
-    [ArkGridCoreType.STAR]: 'star',
+    [ArkGridCoreTypes.SUN]: 'sun',
+    [ArkGridCoreTypes.MOON]: 'moon',
+    [ArkGridCoreTypes.STAR]: 'star',
   };
   // 조합 → 이미지 경로 함수
   const getCoreImage = (attr: ArkGridAttr, ctype: ArkGridCoreType) => {
@@ -43,7 +48,7 @@
     globalAppConfig.current.cores[attr][ctype] = createCore(
       attr,
       ctype,
-      ArkGridGrade.EPIC
+      LostArkGrades.EPIC
     );
   }
   function resetCoeffWhenCoreChanges(
@@ -105,7 +110,7 @@
             </div>
           </div>
 
-          {#if attr == ArkGridAttr.Chaos}
+          {#if attr == ArkGridAttrs.Chaos}
             <div class="row core-tier">
               <span class="title">종류</span>
               <div class="input-title-tuples">

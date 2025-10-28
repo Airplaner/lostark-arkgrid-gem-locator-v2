@@ -1,11 +1,7 @@
 <script lang="ts">
-  import { ArkGridAttr } from '../lib/constants/enums';
+  import { ArkGridAttrs } from '../lib/constants/enums';
   import type { ArkGridGem } from '../lib/models/arkGridGems';
 
-  const gemImages = import.meta.glob<string>('../assets/gems/*.png', {
-    eager: true, // 바로 import (비동기 아님)
-    import: 'default', // 각 파일의 기본 export 경로 사용
-  });
   const MapGemNameImage: Record<string, string> = {
     '질서의 젬 : 안정': 'order_0',
     '질서의 젬 : 견고': 'order_1',
@@ -16,7 +12,7 @@
   };
   function getGemImage(gem: ArkGridGem): string {
     if (!gem.name) {
-      return gem.gemAttr == ArkGridAttr.Order
+      return gem.gemAttr == ArkGridAttrs.Order
         ? '/src/assets/gems/order_0.png'
         : '/src/assets/gems/chaos_0.png';
     }

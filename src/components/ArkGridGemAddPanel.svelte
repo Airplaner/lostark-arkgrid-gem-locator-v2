@@ -1,6 +1,9 @@
 <script lang="ts">
-  import { ArkGridAttr } from '../lib/constants/enums';
-  import { ArkGridGemOptionType } from '../lib/models/arkGridGems';
+  import { ArkGridAttrs } from '../lib/constants/enums';
+  import {
+    type ArkGridGemOptionType,
+    ArkGridGemOptionTypes,
+  } from '../lib/models/arkGridGems';
   import { addGem, globalAppConfig } from '../lib/store';
 
   // 젬 추가
@@ -18,32 +21,20 @@
   ];
   /* 공용 옵션 입력 */
   const subOptionInputs: IntegerInputDef[] = Object.values(
-    ArkGridGemOptionType
+    ArkGridGemOptionTypes
   ).map((v) => ({
-    key: v as string,
+    key: v,
     min: 0,
     max: 5,
   }));
 
   // states
-  let gemAttr: ArkGridAttr = $state(ArkGridAttr.Order);
+  let gemAttr = $state(ArkGridAttrs.Order);
   const mainOptionValues: Record<string, number> = $state(
-    mainOptionInputs.reduce(
-      (acc, f) => {
-        acc[f.key] = f.min;
-        return acc;
-      },
-      {} as Record<string, number>
-    )
+    Object.fromEntries(mainOptionInputs.map((f) => [f.key, f.min]))
   );
   const subOptionValues: Record<string, number> = $state(
-    subOptionInputs.reduce(
-      (acc, f) => {
-        acc[f.key] = f.min;
-        return acc;
-      },
-      {} as Record<string, number>
-    )
+    Object.fromEntries(subOptionInputs.map((f) => [f.key, f.min]))
   );
   // subOptionValues는 radio input에 의해서 값이 변경될 때 invalidate되어서
   // 아래 selectedCount는 매번 계산되도록 반응형 변수로 설정
@@ -116,7 +107,7 @@
           type="radio"
           name="gemAttr"
           bind:group={gemAttr}
-          value={ArkGridAttr.Order}
+          value={ArkGridAttrs.Order}
         />
         질서
       </label>
@@ -125,7 +116,7 @@
           type="radio"
           name="gemAttr"
           bind:group={gemAttr}
-          value={ArkGridAttr.Chaos}
+          value={ArkGridAttrs.Chaos}
         />
         혼돈
       </label>
