@@ -49,6 +49,9 @@ body {
   /* panel 내부 요소들 사이의 상하 간격 */
   gap: 0.7rem;
   overflow-y: hidden;
+
+  /* 드래그 불가능 */
+  user-select: none;
 }
 
 button {
