@@ -5,6 +5,7 @@
   import ArkGridCoreEditPanel from './components/ArkGridCoreEditPanel.svelte';
   import ArkgridGemAddPanel from './components/ArkGridGemAddPanel.svelte';
   import ArkGridGemList from './components/ArkGridGemList.svelte';
+  import SolvePanel from './components/SolvePanel.svelte';
 
   /* origin (왼쪽 코어) 패널의 높이에 맞춰서 other (오른쪽 젬) 패널의 높이 조절*/
   let originRef = $state<HTMLDivElement | undefined>();
@@ -60,6 +61,7 @@
         <ArkGridGemList />
       </div>
     </div>
+    <SolvePanel></SolvePanel>
   </div>
 </main>
 

@@ -24,7 +24,7 @@ export const ArkGridCoreNameTierMap: Record<string, number> = {
   무기: 1,
 };
 
-type ArkGridCoreCoeffs = {
+export type ArkGridCoreCoeffs = {
   p10: number;
   p14: number;
   p17: number;
@@ -155,6 +155,37 @@ export function getDefaultCoreCoeff(core: ArkGridCore): ArkGridCoreCoeffs {
     p19: 0,
     p20: 0,
   };
+}
+
+export function getDefaultCoreEnergy(core: ArkGridCore | undefined): number {
+  if (!core) return 0;
+  switch (core.grade) {
+    case LostArkGrades.EPIC:
+      return 9;
+    case LostArkGrades.LEGENDARY:
+      return 12;
+    case LostArkGrades.RELIC:
+      return 15;
+    case LostArkGrades.ANCIENT:
+      return 17;
+    default:
+      return 0;
+  }
+}
+export function getDefaultCoreGoalPoint(core: ArkGridCore | undefined): number {
+  if (!core) return 0;
+  switch (core.grade) {
+    case LostArkGrades.EPIC:
+      return 10;
+    case LostArkGrades.LEGENDARY:
+      return 14;
+    case LostArkGrades.RELIC:
+      return 17;
+    case LostArkGrades.ANCIENT:
+      return 17;
+    default:
+      return 0;
+  }
 }
 
 export function createCore(
