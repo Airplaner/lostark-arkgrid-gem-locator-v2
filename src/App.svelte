@@ -17,10 +17,33 @@
   }
 
   let observer: ResizeObserver;
+  let mediaQuery: MediaQueryList;
+  function setupObserver() {
+    if (!originRef) return;
+    if (observer) observer.disconnect(); // 기존 옵저버 해제
+
+    // 화면이 960px 초과일 때만 옵저버 연결
+    if (!mediaQuery.matches) {
+      observer = new ResizeObserver(matchHeight);
+      observer.observe(originRef);
+      matchHeight(); // 초기 1회 맞춤
+    } else {
+      // 모바일 모드면 높이 초기화
+      if (otherRef) otherRef.style.height = 'auto';
+    }
+  }
+
   onMount(() => {
-    observer = new ResizeObserver(matchHeight);
-    if (originRef) observer.observe(originRef);
-    return () => window.removeEventListener('resize', matchHeight);
+    mediaQuery = window.matchMedia('(max-width: 960px)');
+    setupObserver(); // 초기 상태에 맞게 셋업
+
+    // 뷰포트 크기 변화 감지 시 다시 셋업
+    mediaQuery.addEventListener('change', setupObserver);
+
+    return () => {
+      if (observer) observer.disconnect();
+      mediaQuery.removeEventListener('change', setupObserver);
+    };
   });
 </script>
 
@@ -55,7 +78,7 @@
     align-items: start;
   }
 
-  /* 화면이 600px 이하로 좁아지면 세로 배치 */
+  /* 화면이 960px 이하로 좁아지면 세로 배치 */
   @media (max-width: 960px) {
     .dual-panel {
       grid-template-columns: 1fr; /* 한 줄에 1개 */
