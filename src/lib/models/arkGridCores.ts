@@ -187,6 +187,21 @@ export function getDefaultCoreGoalPoint(core: ArkGridCore | undefined): number {
       return 0;
   }
 }
+export function getMaxCorePoint(core: ArkGridCore | undefined): number {
+  if (!core) return 0;
+  switch (core.grade) {
+    case LostArkGrades.EPIC:
+      return 10;
+    case LostArkGrades.LEGENDARY:
+      return 14;
+    case LostArkGrades.RELIC:
+      return 20;
+    case LostArkGrades.ANCIENT:
+      return 20;
+    default:
+      return 0;
+  }
+}
 
 export function createCore(
   attr: ArkGridAttr,
