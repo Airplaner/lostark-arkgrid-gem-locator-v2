@@ -37,6 +37,7 @@ export interface ArkGridGem {
   point: number;
   option1: ArkGridGemOption;
   option2: ArkGridGemOption;
+  assign?: number;
 }
 
 export function determineGemGrade(

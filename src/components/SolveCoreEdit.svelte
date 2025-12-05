@@ -12,9 +12,15 @@
   interface Props {
     core: ArkGridCore;
   }
-  let { core }: Props = $props();
-  let energy = $state(getDefaultCoreEnergy(core));
-  let point = $state(getDefaultCoreGoalPoint(core));
+  let { core } = $props();
+
+  let energy = $state(0);
+  let point = $state(0);
+
+  $effect(() => {
+    energy = getDefaultCoreEnergy(core);
+    point = getDefaultCoreGoalPoint(core);
+  });
 
   function buildCoreArray(coeffs: ArkGridCoreCoeffs): number[] {
     const arr = new Array(21).fill(0);

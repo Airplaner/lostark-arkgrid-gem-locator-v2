@@ -82,7 +82,7 @@
   .gems {
     /* 남은 공간을 최대한 차지 */
     flex: 1;
-    max-height: 100rem;
+    max-height: 40rem;
 
     /* 테두리 */
     border-top: 1px solid var(--border);
