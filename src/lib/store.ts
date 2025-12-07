@@ -89,4 +89,7 @@ export function addGem(gem: ArkGridGem) {
       ? globalAppConfig.current.orderGems
       : globalAppConfig.current.chaosGems;
   targetGems.push(gem);
+  // 의지력 오름차순, 포인트 내림차순 정렬 및 모든 assign 제거
+  targetGems.sort((a, b) => a.req - b.req || b.point - a.point);
+  targetGems.forEach((g) => delete g.assign);
 }

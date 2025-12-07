@@ -1,16 +1,9 @@
 export class Core {
-  att: number;
-  skill: number;
-  boss: number;
   constructor(
     public energy: number,
     public point: number,
     public coeff: number[]
-  ) {
-    this.att = 0;
-    this.skill = 0;
-    this.boss = 0;
-  }
+  ) {}
 }
 
 export class Gem {
@@ -49,10 +42,13 @@ export class GemSet {
       this.boss += gem.boss;
       this.point += gem.point;
     }
-    this.coreCoeff = core.coeff[this.point] || 0;
+    this.coreCoeff = core.coeff[this.point];
+    if (this.coreCoeff == undefined) {
+      throw Error('Core coeffient is incorrect.');
+    }
     this.core = core;
-    this.maxScore = 0;
-    this.minScore = 0;
+    this.minScore = -1;
+    this.maxScore = -1;
   }
   setScoreRange(attMax: number, skillMax: number, bossMax: number) {
     // 모든 시스템에서 얻을 수 있는 최대 공격력, 추가 피해, 보스 피해를 알 수 있으면
@@ -85,22 +81,22 @@ export class GemSetPack {
   minScore: number;
   maxScore: number;
   constructor(
-    public gs1: GemSet | undefined,
-    public gs2: GemSet | undefined,
-    public gs3: GemSet | undefined,
+    public gs1: GemSet | null,
+    public gs2: GemSet | null,
+    public gs3: GemSet | null,
     attMax: number,
     skillMax: number,
     bossMax: number
   ) {
-    this.att = (gs1?.att || 0) + (gs2?.att || 0) + (gs3?.att || 0);
-    this.skill = (gs1?.skill || 0) + (gs2?.skill || 0) + (gs3?.skill || 0);
-    this.boss = (gs1?.boss || 0) + (gs2?.boss || 0) + (gs3?.boss || 0);
+    this.att = (gs1?.att ?? 0) + (gs2?.att ?? 0) + (gs3?.att ?? 0);
+    this.skill = (gs1?.skill ?? 0) + (gs2?.skill ?? 0) + (gs3?.skill ?? 0);
+    this.boss = (gs1?.boss ?? 0) + (gs2?.boss ?? 0) + (gs3?.boss ?? 0);
 
     this.coreScore =
-      (((((gs1?.coreCoeff || 0 + 10000) / 10000) *
-        (gs2?.coreCoeff || 0 + 10000)) /
+      ((((((gs1?.coreCoeff ?? 0) + 10000) / 10000) *
+        ((gs2?.coreCoeff ?? 0) + 10000)) /
         10000) *
-        (gs3?.coreCoeff || 0 + 10000)) /
+        ((gs3?.coreCoeff ?? 0) + 10000)) /
       10000;
 
     this.maxScore =
@@ -126,17 +122,15 @@ export class GemSetPackTuple {
   boss: number;
   score: number;
   constructor(
-    public gsp1: GemSetPack,
-    public gsp2: GemSetPack
+    public gsp1: GemSetPack | null,
+    public gsp2: GemSetPack | null
   ) {
-    this.gsp1 = gsp1;
-    this.gsp2 = gsp2;
-    this.att = gsp1.att + gsp2.att;
-    this.skill = gsp1.skill + gsp2.skill;
-    this.boss = gsp1.boss + gsp2.boss;
+    this.att = (gsp1?.att ?? 0) + (gsp2?.att ?? 0);
+    this.skill = (gsp1?.skill ?? 0) + (gsp2?.skill ?? 0);
+    this.boss = (gsp1?.boss ?? 0) + (gsp2?.boss ?? 0);
     this.score =
-      (((((gsp1.coreScore *
-        gsp2.coreScore *
+      ((((((gsp1?.coreScore ?? 1) *
+        (gsp2?.coreScore ?? 1) *
         (Math.floor((this.att * 400) / 120) + 10000)) /
         10000) *
         (Math.floor((this.skill * 700) / 120) + 10000)) /
