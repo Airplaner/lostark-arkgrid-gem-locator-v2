@@ -61,7 +61,7 @@ export function getBestGemSetPacks(
 
   // validate
   [gss1, gss2, gss3].forEach((gss) => {
-    if (!gss) return;
+    if (gss === undefined) return;
     if (
       gss.some((gs) => {
         gs.maxScore == -1 || gs.minScore == -1;
@@ -94,16 +94,17 @@ export function getBestGemSetPacks(
     return res;
   }
   /* 코어 0개 */
-  if (!gss1 && !gss2 && !gss3) return [];
+  if (gssList.length == 0) return [];
+
   /* 코어 1개 */
-  if (!gss2 && !gss3) {
+  if (gssList.length == 1) {
     return gss1.map(
       (gs) => new GemSetPack(gs, null, null, attMax, skillMax, bossMax)
     );
   }
 
   /* 코어 2개 */
-  if (gss2 && !gss3) {
+  if (gssList.length == 2) {
     const gm2 = gss2[0].maxScore;
     for (const gs1 of gss1) {
       if (gs1.maxScore * gm2 < targetMin) break;
@@ -127,7 +128,7 @@ export function getBestGemSetPacks(
   }
 
   /* 코어 3개 */
-  if (gss2 && gss3) {
+  if (gssList.length == 3) {
     const gm2 = gss2[0].maxScore;
     const gm3 = gss3[0].maxScore;
 

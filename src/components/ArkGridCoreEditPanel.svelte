@@ -60,6 +60,9 @@
       resetCoreCoeff(core);
     }
   }
+  function resetCore(attr: ArkGridAttr, ctype: ArkGridCoreType) {
+    globalAppConfig.current.cores[attr][ctype] = null;
+  }
 </script>
 
 <div class="panel">
@@ -74,22 +77,31 @@
         ? '숨김'
         : '수정'}
     </button>
-    <button
+    <!-- <button
       onclick={() => {
         globalAppConfig.current.cores = initArkGridCores();
       }}>코어 초기화</button
-    >
+    > -->
   </div>
   {#each attrs as attr}
     {#each ctypes as ctype}
       <fieldset class="core-slot">
-        <legend class="core-name">
-          <img
-            src={getCoreImage(attr, ctype)}
-            alt="{attr} {ctype}"
-            data-grade={arkGridCores[attr][ctype]?.grade}
-          />
-          {attr}의 {ctype}
+        <legend class="core-title">
+          <div class="core-img-name-tuple">
+            <img
+              src={getCoreImage(attr, ctype)}
+              alt="{attr} {ctype}"
+              data-grade={arkGridCores[attr][ctype]?.grade}
+            />
+            {attr}의 {ctype}
+          </div>
+          {#if globalAppConfig.current.cores[attr][ctype]}
+            <button
+              class="close"
+              aria-label="닫기"
+              onclick={() => resetCore(attr, ctype)}>x</button
+            >
+          {/if}
         </legend>
         {#if arkGridCores[attr][ctype]}
           <div class="row core-grade">
@@ -193,7 +205,7 @@
     flex-direction: column;
     gap: 0.4rem;
   }
-  .core-slot > .core-name {
+  .core-slot > .core-title {
     font-weight: 700;
 
     display: flex;
@@ -201,10 +213,21 @@
     gap: 0.5rem;
     padding: 0rem 0.5rem 0rem 0.5rem;
   }
-  .core-slot > .core-name > img {
+  .core-slot > .core-title > .core-img-name-tuple {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: none;
+  }
+  .core-slot > .core-title > .core-img-name-tuple > img {
     height: 2.5rem;
     border-radius: 0.5rem;
     padding: 0.1rem;
+  }
+  .core-slot > .core-title > button.close {
+    display: flex;
+    align-items: center; /* 세로 중앙정렬 */
+    height: 1.5rem;
   }
   .core-slot > .row {
     display: flex;
@@ -247,19 +270,19 @@
   }
 
   /* 공홈 코어 css*/
-  .core-slot > .core-name > img[data-grade='영웅'] {
+  .core-slot > .core-title > .core-img-name-tuple > img[data-grade='영웅'] {
     background: linear-gradient(135deg, #261331, #480d5d);
   }
 
-  .core-slot > .core-name > img[data-grade='전설'] {
+  .core-slot > .core-title > .core-img-name-tuple > img[data-grade='전설'] {
     background: linear-gradient(135deg, #362003, #9e5f04);
   }
 
-  .core-slot > .core-name > img[data-grade='유물'] {
+  .core-slot > .core-title > .core-img-name-tuple > img[data-grade='유물'] {
     background: linear-gradient(135deg, #341a09, #a24006);
   }
 
-  .core-slot > .core-name > img[data-grade='고대'] {
+  .core-slot > .core-title > .core-img-name-tuple > img[data-grade='고대'] {
     background: linear-gradient(135deg, #3d3325, #dcc999);
   }
 </style>
