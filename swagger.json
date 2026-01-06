@@ -760,9 +760,6 @@
           "format": "int32",
           "type": "integer"
         },
-        "PvpGradeName": {
-          "type": "string"
-        },
         "TownLevel": {
           "format": "int32",
           "default": "null",
@@ -1237,18 +1234,6 @@
     "ColosseumInfo": {
       "type": "object",
       "properties": {
-        "Rank": {
-          "format": "int32",
-          "type": "integer"
-        },
-        "PreRank": {
-          "format": "int32",
-          "type": "integer"
-        },
-        "Exp": {
-          "format": "int64",
-          "type": "integer"
-        },
         "Colosseums": {
           "type": "array",
           "items": {
