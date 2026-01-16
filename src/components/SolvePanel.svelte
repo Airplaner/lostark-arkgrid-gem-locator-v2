@@ -90,6 +90,7 @@
   }
 
   function solve() {
+    console.log('-------풀이 시작-------');
     /* sovler.Core로 변경 */
     const orderCores: Core[] = [];
     const chaosCores: Core[] = [];
@@ -105,6 +106,8 @@
         }
       }
     }
+    console.log('질서 코어', orderCores);
+    console.log('혼돈 코어', chaosCores);
 
     /* sovler.Gem으로 변경 */
     const { gems: orderGems, reverseMap: orderGemReverseMap } =
@@ -205,7 +208,12 @@
         }
       }
     }
-    console.log('정답', answer);
+    if (answer.gsp1 === null) {
+      console.log('🚗 질서 배치 실패!');
+    }
+    if (answer.gsp2 === null) {
+      console.log('🚗 혼돈 배치 실패!');
+    }
 
     function assignGem(
       gs: GemSet | null | undefined,
