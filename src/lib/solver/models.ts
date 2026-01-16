@@ -17,6 +17,32 @@ export class Gem {
   ) {}
 }
 
+export function buildScoreMap(coeff: number, maxLevel: number) {
+  const result: [number, number][] = [];
+  for (let v = 0; v <= maxLevel; v++) {
+    // 현재 주어진 공격력 레벨이 v일 때, 해당 v로 실제로 올릴 수 있는데 최소 및 최대 점수
+    let minScore = 100;
+    let maxScore = 0;
+    for (let base = 0; v + base <= maxLevel; base++) {
+      // 현재 공격력 레벨의 합이 base일 때
+
+      // 전투력 증가량 전후를 구한다.
+      const coeffAfter = Math.floor(((base + v) * coeff) / 120) + 10000;
+      const coeffBefore = Math.floor((base * coeff) / 120) + 10000;
+
+      const upgradeValue = coeffAfter / coeffBefore;
+      if (upgradeValue > maxScore) {
+        maxScore = upgradeValue;
+      }
+      if (upgradeValue < minScore) {
+        minScore = upgradeValue;
+      }
+    }
+    result[v] = [minScore, maxScore];
+  }
+  return result;
+}
+
 export class GemSet {
   // 코어에 젬을 장착한 상태
   att: number;
@@ -50,26 +76,29 @@ export class GemSet {
     this.minScore = -1;
     this.maxScore = -1;
   }
-  setScoreRange(attMax: number, skillMax: number, bossMax: number) {
+  setScoreRange(scoreMaps: [number, number][][]) {
     // 모든 시스템에서 얻을 수 있는 최대 공격력, 추가 피해, 보스 피해를 알 수 있으면
     // 이 GemSet으로 얻을 수 있는 전투력의 범위를 한정할 수 있다.
     const coreScore = (this.coreCoeff + 10000) / 10000;
 
-    // 전투력 증가 최대치: Lv. 0 -> Lv. {레벨합산}일 때
+    // 전투력 증가 최대치
     this.maxScore =
-      (((((coreScore * (Math.floor((this.att * 400) / 120) + 10000)) / 10000) *
-        (Math.floor((this.skill * 700) / 120) + 10000)) /
-        10000) *
-        (Math.floor((this.boss * 1000) / 120) + 10000)) /
-      10000;
-    // 전투력 증가 최소치: Lv. {최대레벨 - 레벨합산} -> Lv. {최대레벨}일 때
+      coreScore *
+      scoreMaps[0][this.att][1] *
+      scoreMaps[1][this.skill][1] *
+      scoreMaps[2][this.boss][1];
+
+    // 전투력 증가 최소치
     this.minScore =
-      (((((coreScore * (Math.floor((attMax * 400) / 120) + 10000)) /
-        (Math.floor(((attMax - this.att) * 400) / 120) + 10000)) *
-        (Math.floor((skillMax * 700) / 120) + 10000)) /
-        (Math.floor(((skillMax - this.skill) * 700) / 120) + 10000)) *
-        (Math.floor((bossMax * 1000) / 120) + 10000)) /
-      (Math.floor(((bossMax - this.boss) * 1000) / 120) + 10000);
+      coreScore *
+      scoreMaps[0][this.att][0] *
+      scoreMaps[1][this.skill][0] *
+      scoreMaps[2][this.boss][0];
+
+    if (this.maxScore < this.minScore) {
+      console.log(this);
+      throw Error(`${this.maxScore}이 ${this.minScore}보다 작습니다.`);
+    }
   }
 }
 export class GemSetPack {
@@ -84,9 +113,7 @@ export class GemSetPack {
     public gs1: GemSet | null,
     public gs2: GemSet | null,
     public gs3: GemSet | null,
-    attMax: number,
-    skillMax: number,
-    bossMax: number
+    scoreMaps: [number, number][][]
   ) {
     this.att = (gs1?.att ?? 0) + (gs2?.att ?? 0) + (gs3?.att ?? 0);
     this.skill = (gs1?.skill ?? 0) + (gs2?.skill ?? 0) + (gs3?.skill ?? 0);
@@ -99,20 +126,24 @@ export class GemSetPack {
         ((gs3?.coreCoeff ?? 0) + 10000)) /
       10000;
 
+    // 전투력 증가 최대치
     this.maxScore =
-      (((((this.coreScore * (Math.floor((this.att * 400) / 120) + 10000)) /
-        10000) *
-        (Math.floor((this.skill * 700) / 120) + 10000)) /
-        10000) *
-        (Math.floor((this.boss * 1000) / 120) + 10000)) /
-      10000;
+      this.coreScore *
+      scoreMaps[0][this.att][1] *
+      scoreMaps[1][this.skill][1] *
+      scoreMaps[2][this.boss][1];
+
+    // 전투력 증가 최소치
     this.minScore =
-      (((((this.coreScore * (Math.floor((attMax * 400) / 120) + 10000)) /
-        (Math.floor(((attMax - this.att) * 400) / 120) + 10000)) *
-        (Math.floor((skillMax * 700) / 120) + 10000)) /
-        (Math.floor(((skillMax - this.skill) * 700) / 120) + 10000)) *
-        (Math.floor((bossMax * 1000) / 120) + 10000)) /
-      (Math.floor(((bossMax - this.boss) * 1000) / 120) + 10000);
+      this.coreScore *
+      scoreMaps[0][this.att][0] *
+      scoreMaps[1][this.skill][0] *
+      scoreMaps[2][this.boss][0];
+
+    if (this.maxScore < this.minScore) {
+      console.log(this);
+      throw Error(`${this.maxScore}이 ${this.minScore}보다 작습니다.`);
+    }
   }
 }
 export class GemSetPackTuple {

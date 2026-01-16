@@ -14,6 +14,7 @@
     GemSet,
     GemSetPack,
     GemSetPackTuple,
+    buildScoreMap,
   } from '../lib/solver/models';
   import { getBestGemSetPacks, getPossibleGemSets } from '../lib/solver/solver';
   import { globalAppConfig } from '../lib/store';
@@ -142,33 +143,28 @@
       bossMax += getMaxStat(gss, 'boss');
     }
     console.log('시스템 전체 공, 추, 보', attMax, skillMax, bossMax);
+    const scoreMaps = [
+      buildScoreMap(400, attMax),
+      buildScoreMap(700, skillMax),
+      buildScoreMap(1000, bossMax),
+    ];
 
-    // 앞서 구한 최대 수치를 활용하여 각 GemSet의 전투력 범위 설정
+    // 각 GemSet의 전투력 범위 설정
     for (const gss of allGssList) {
       for (const gs of gss) {
-        gs.setScoreRange(attMax, skillMax, bossMax);
+        gs.setScoreRange(scoreMaps);
       }
     }
 
     // 질서와 혼돈 코어에 대해서 중복을 고려한, 장착 가능한 GemSet들이 3개 모인 GemSetPack 계산
     let start = performance.now();
-    const orderGspList = getBestGemSetPacks(
-      orderGssList,
-      attMax,
-      skillMax,
-      bossMax
-    );
+    const orderGspList = getBestGemSetPacks(orderGssList, scoreMaps);
     console.log('질서 배치 개수', orderGspList.length);
-    console.log(`Execution time: ${performance.now() - start} ms`);
+    console.log(`질서 배치 실행 시간: ${performance.now() - start} ms`);
     start = performance.now();
-    const chaosGspList = getBestGemSetPacks(
-      chaosGssList,
-      attMax,
-      skillMax,
-      bossMax
-    );
+    const chaosGspList = getBestGemSetPacks(chaosGssList, scoreMaps);
     console.log('혼돈 배치 개수', chaosGspList.length);
-    console.log(`Execution time: ${performance.now() - start} ms`);
+    console.log(`혼돈 배치 실행 시간: ${performance.now() - start} ms`);
 
     // gspList는 maxScore 기준으로 내림차순 정렬되어 있음
     // 서로의 영향력이 적을 수록 실제 전투력은 maxScore와 가까우니, 우선 각 첫 번째 원소를 대상으로 시작 설정
@@ -198,9 +194,7 @@
         }
       }
     }
-    console.log(`Execution time: ${performance.now() - start} ms`);
-    console.log(GemSetPackSet);
-
+    console.log(`중복 제거 실행 시간: ${performance.now() - start} ms`);
     if (GemSetPackSet[0].length > 0 && GemSetPackSet[1].length > 0) {
       for (const gsp1 of GemSetPackSet[0]) {
         for (const gsp2 of GemSetPackSet[1]) {
@@ -211,7 +205,7 @@
         }
       }
     }
-    console.log(answer);
+    console.log('정답', answer);
 
     function assignGem(
       gs: GemSet | null | undefined,

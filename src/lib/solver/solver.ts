@@ -48,9 +48,7 @@ export function getPossibleGemSets(core: Core, gems: Gem[]): GemSet[] {
 
 export function getBestGemSetPacks(
   gssList: GemSet[][],
-  attMax: number,
-  skillMax: number,
-  bossMax: number
+  scoreMaps: [number, number][][]
 ): GemSetPack[] {
   if (gssList.length > 3)
     throw Error('length of gsss should be one of 1, 2, 3');
@@ -61,7 +59,7 @@ export function getBestGemSetPacks(
 
   // validate
   [gss1, gss2, gss3].forEach((gss) => {
-    if (!gss) return;
+    if (gss === undefined || gss.length == 0) return;
     if (
       gss.some((gs) => {
         gs.maxScore == -1 || gs.minScore == -1;
@@ -94,16 +92,14 @@ export function getBestGemSetPacks(
     return res;
   }
   /* 코어 0개 */
-  if (!gss1 && !gss2 && !gss3) return [];
+  if (gssList.length == 0) return [];
   /* 코어 1개 */
-  if (!gss2 && !gss3) {
-    return gss1.map(
-      (gs) => new GemSetPack(gs, null, null, attMax, skillMax, bossMax)
-    );
+  if (gssList.length == 1) {
+    return gss1.map((gs) => new GemSetPack(gs, null, null, scoreMaps));
   }
 
   /* 코어 2개 */
-  if (gss2 && !gss3) {
+  if (gssList.length == 2) {
     const gm2 = gss2[0].maxScore;
     for (const gs1 of gss1) {
       if (gs1.maxScore * gm2 < targetMin) break;
@@ -114,7 +110,7 @@ export function getBestGemSetPacks(
         gs1.maxScore,
         targetMin
       )) {
-        const gsp = new GemSetPack(gs1, gs2, null, attMax, skillMax, bossMax);
+        const gsp = new GemSetPack(gs1, gs2, null, scoreMaps);
         if (gsp.maxScore > targetMin) {
           answer.push(gsp);
         }
@@ -127,7 +123,7 @@ export function getBestGemSetPacks(
   }
 
   /* 코어 3개 */
-  if (gss2 && gss3) {
+  if (gssList.length == 3) {
     const gm2 = gss2[0].maxScore;
     const gm3 = gss3[0].maxScore;
 
@@ -148,7 +144,7 @@ export function getBestGemSetPacks(
         )) {
           if (gs1.maxScore * gs2.maxScore * gs3.maxScore < targetMin) break;
           // 세 개의 GemSet으로 얻을 수 있는 전투력 범위 구함
-          const gsp = new GemSetPack(gs1, gs2, gs3, attMax, skillMax, bossMax);
+          const gsp = new GemSetPack(gs1, gs2, gs3, scoreMaps);
           const maxScore = gsp.maxScore;
           const minScore = gsp.minScore;
 
