@@ -5,6 +5,7 @@
   import ArkGridCoreEditPanel from './components/ArkGridCoreEditPanel.svelte';
   import ArkgridGemAddPanel from './components/ArkGridGemAddPanel.svelte';
   import ArkGridGemList from './components/ArkGridGemList.svelte';
+  import ProfileEdit from './components/ProfileEdit.svelte';
   import SolvePanel from './components/SolvePanel.svelte';
 
   /* origin (왼쪽 코어) 패널의 높이에 맞춰서 other (오른쪽 젬) 패널의 높이 조절*/
@@ -52,6 +53,7 @@
   <div class="contents">
     <!-- <h3>아크그리드 젬 배치기</h3> -->
     <AppConfiguration></AppConfiguration>
+    <ProfileEdit></ProfileEdit>
     <ArkgridGemAddPanel />
     <div class="dual-panel">
       <div bind:this={originRef as HTMLDivElement}>

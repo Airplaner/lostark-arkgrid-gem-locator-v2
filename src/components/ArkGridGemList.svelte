@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { globalAppConfig } from '../lib/store';
+  import { currentCharacterProfile } from '../lib/store';
   import ArkGridGemDetail from './ArkGridGemDetail.svelte';
 
   // 탭 상태
-  const orderGems = $derived(globalAppConfig.current.orderGems);
-  const chaosGems = $derived(globalAppConfig.current.chaosGems);
+  const orderGems = $derived(currentCharacterProfile().orderGems);
+  const chaosGems = $derived(currentCharacterProfile().chaosGems);
   let activeTab = $state(0);
   const tabs = ['전체', '질서', '혼돈'];
 

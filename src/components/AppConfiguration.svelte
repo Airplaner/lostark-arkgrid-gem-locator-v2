@@ -18,7 +18,9 @@
   import {
     type OpenApiConfig,
     addGem,
-    globalAppConfig,
+    appConfig,
+    currentCharacterProfile,
+    currentProfileName,
     initArkGridCores,
   } from '../lib/store';
   import Modal from './Modal.svelte';
@@ -27,11 +29,11 @@
   let templateOpenApiConfig = $state<OpenApiConfig>({});
 
   $effect(() => {
-    if (globalAppConfig.current.openApiConfig.jwt) {
-      globalAppConfig.current.openApiConfig.jwt =
-        globalAppConfig.current.openApiConfig.jwt.trim();
+    if (appConfig.current.openApiConfig.jwt !== undefined) {
+      const trimedJwt = appConfig.current.openApiConfig.jwt.trim();
+      appConfig.current.openApiConfig.jwt = trimedJwt;
       apiClient.setSecurityData({
-        jwt: globalAppConfig.current.openApiConfig.jwt,
+        jwt: trimedJwt,
       });
     }
   });
@@ -117,11 +119,11 @@
   }
 
   async function importFromOpenAPI() {
-    if (!globalAppConfig.current.openApiConfig.charname) {
-      window.alert('캐릭터명 설정 필요!');
+    if (currentProfileName.current == '기본') {
+      window.alert('기본 프로필에서는 가져올 수 없습니다!');
       return;
     }
-    if (!globalAppConfig.current.openApiConfig.jwt) {
+    if (!appConfig.current.openApiConfig.jwt) {
       window.alert('JWT 설정 필요!');
       return;
     }
@@ -129,20 +131,20 @@
     try {
       // fetch
       const res = await apiClient.armories.armoriesGetArkGrid(
-        globalAppConfig.current.openApiConfig.charname
+        currentProfileName.current
       );
       // apiClient가 ok가 아니라면 알아서 error로 던져줌
       // 하지만 데이터가 없는 경우 null로 오는 걸 캐치
       if (!res.data) {
         window.alert(
-          `${globalAppConfig.current.openApiConfig.charname}의 정보를 가져올 수 없습니다.`
+          `${currentProfileName.current}의 정보를 가져올 수 없습니다.`
         );
         return;
       }
 
       if (res.data.Slots) {
         // 코어 데이터가 존재하는 경우 갱신 시작
-        globalAppConfig.current.cores = initArkGridCores();
+        currentCharacterProfile().cores = initArkGridCores();
 
         // 모든 slot에 대해서
         for (let coreSlot of res.data.Slots) {
@@ -166,7 +168,7 @@
           }
 
           // 성공적으로 변환한 코어 저장
-          globalAppConfig.current.cores[attr][ctype] = createCore(
+          currentCharacterProfile().cores[attr][ctype] = createCore(
             attr,
             ctype,
             grade,
@@ -194,12 +196,12 @@
 
   function updateOpenApiConfig() {
     // 값 반영하기
-    globalAppConfig.current.openApiConfig = { ...templateOpenApiConfig };
+    appConfig.current.openApiConfig = { ...templateOpenApiConfig };
   }
 
   $effect(() => {
     // 처음 열 때 가져오기
-    templateOpenApiConfig = { ...globalAppConfig.current.openApiConfig };
+    templateOpenApiConfig = { ...appConfig.current.openApiConfig };
   });
 </script>
 
@@ -213,12 +215,6 @@
         <label>
           <span class="title">JWT: </span>
           <input bind:value={templateOpenApiConfig.jwt} />
-        </label>
-      </div>
-      <div class="row">
-        <label>
-          <span class="title">캐릭터명: </span>
-          <input bind:value={templateOpenApiConfig.charname} />
         </label>
       </div>
       <div class="row">

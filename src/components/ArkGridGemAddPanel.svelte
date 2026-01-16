@@ -4,7 +4,7 @@
     type ArkGridGemOptionType,
     ArkGridGemOptionTypes,
   } from '../lib/models/arkGridGems';
-  import { addGem, globalAppConfig } from '../lib/store';
+  import { addGem, appConfig } from '../lib/store';
 
   // 젬 추가
 
@@ -94,12 +94,12 @@
     <span>수동 젬 추가</span>
     <button
       onclick={() => {
-        globalAppConfig.current.uiConfig.showGemAddPanel =
-          !globalAppConfig.current.uiConfig.showGemAddPanel;
-      }}>{globalAppConfig.current.uiConfig.showGemAddPanel ? '▲' : '▼'}</button
+        appConfig.current.uiConfig.showGemAddPanel =
+          !appConfig.current.uiConfig.showGemAddPanel;
+      }}>{appConfig.current.uiConfig.showGemAddPanel ? '▲' : '▼'}</button
     >
   </div>
-  {#if globalAppConfig.current.uiConfig.showGemAddPanel}
+  {#if appConfig.current.uiConfig.showGemAddPanel}
     <div class="row">
       <span class="title">젬 타입</span>
       <label>

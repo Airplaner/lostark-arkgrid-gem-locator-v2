@@ -10,7 +10,7 @@
     createCore,
     resetCoreCoeff,
   } from '../lib/models/arkGridCores';
-  import { globalAppConfig, initArkGridCores } from '../lib/store';
+  import { appConfig, currentCharacterProfile } from '../lib/store';
 
   const arkGridCoreTierName: Record<ArkGridCoreType, Array<string>> = {
     [ArkGridCoreTypes.SUN]: ['현란한 공격', '안정적인/재빠른 공격', '그 외'],
@@ -41,11 +41,11 @@
     return coreImages[key];
   };
 
-  let arkGridCores = $derived(globalAppConfig.current.cores);
+  let arkGridCores = $derived(currentCharacterProfile().cores);
   function createNewCore(attr: ArkGridAttr, ctype: ArkGridCoreType) {
     // 코어가 없을 때 새로운 코어 추가
     // 기본 영웅 등급
-    globalAppConfig.current.cores[attr][ctype] = createCore(
+    currentCharacterProfile().cores[attr][ctype] = createCore(
       attr,
       ctype,
       LostArkGrades.EPIC
@@ -55,13 +55,13 @@
     attr: ArkGridAttr,
     ctype: ArkGridCoreType
   ) {
-    const core = globalAppConfig.current.cores[attr][ctype];
+    const core = currentCharacterProfile().cores[attr][ctype];
     if (core) {
       resetCoreCoeff(core);
     }
   }
   function resetCore(attr: ArkGridAttr, ctype: ArkGridCoreType) {
-    globalAppConfig.current.cores[attr][ctype] = null;
+    currentCharacterProfile().cores[attr][ctype] = null;
   }
 </script>
 
@@ -69,19 +69,12 @@
   <div class="buttons">
     <button
       onclick={() => {
-        globalAppConfig.current.uiConfig.showCoreCoeff =
-          !globalAppConfig.current.uiConfig.showCoreCoeff;
+        appConfig.current.uiConfig.showCoreCoeff =
+          !appConfig.current.uiConfig.showCoreCoeff;
       }}
     >
-      전투력 계수 {globalAppConfig.current.uiConfig.showCoreCoeff
-        ? '숨김'
-        : '수정'}
+      전투력 계수 {appConfig.current.uiConfig.showCoreCoeff ? '숨김' : '수정'}
     </button>
-    <!-- <button
-      onclick={() => {
-        globalAppConfig.current.cores = initArkGridCores();
-      }}>코어 초기화</button
-    > -->
   </div>
   {#each attrs as attr}
     {#each ctypes as ctype}
@@ -95,7 +88,7 @@
             />
             {attr}의 {ctype}
           </div>
-          {#if globalAppConfig.current.cores[attr][ctype]}
+          {#if currentCharacterProfile().cores[attr][ctype]}
             <button
               class="close"
               aria-label="닫기"
@@ -142,7 +135,7 @@
             </div>
           {/if}
 
-          {#if globalAppConfig.current.uiConfig.showCoreCoeff}
+          {#if appConfig.current.uiConfig.showCoreCoeff}
             <!-- 계수 숨기면 보이지 않음 -->
             <div class="row core-coeffs">
               <span class="title">계수</span>

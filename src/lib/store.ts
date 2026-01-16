@@ -10,16 +10,19 @@ import { type ArkGridGem, determineGemGrade } from './models/arkGridGems';
 
 export interface OpenApiConfig {
   jwt?: string;
-  charname?: string;
 }
 interface UIConfig {
   showGemAddPanel: boolean;
   showCoreCoeff: boolean;
 }
-interface AppConfig {
+interface CharacterInformation {
+  characterName: string;
   orderGems: ArkGridGem[];
   chaosGems: ArkGridGem[];
   cores: Record<ArkGridAttr, Record<ArkGridCoreType, ArkGridCore | null>>;
+}
+interface AppConfig {
+  characterProfiles: CharacterInformation[];
   openApiConfig: OpenApiConfig;
   uiConfig: UIConfig;
 }
@@ -44,12 +47,21 @@ const bigIntSerializer = {
   },
 };
 
-export const globalAppConfig = persistedState<AppConfig>(
+export let currentProfileName = persistedState<string>(
+  'currentProfileName',
+  '기본'
+);
+export const appConfig = persistedState<AppConfig>(
   'appConfig',
   {
-    orderGems: [],
-    chaosGems: [],
-    cores: initArkGridCores(),
+    characterProfiles: [
+      {
+        characterName: '기본',
+        orderGems: [],
+        chaosGems: [],
+        cores: initArkGridCores(),
+      },
+    ],
     openApiConfig: {},
     uiConfig: {
       showGemAddPanel: false,
@@ -60,6 +72,17 @@ export const globalAppConfig = persistedState<AppConfig>(
     serializer: bigIntSerializer,
   }
 );
+export function currentCharacterProfile() {
+  for (const profile of appConfig.current.characterProfiles) {
+    if (profile.characterName == currentProfileName.current) {
+      return profile;
+    }
+  }
+  if (appConfig.current.characterProfiles.length == 0) {
+    throw Error;
+  }
+  return appConfig.current.characterProfiles[0];
+}
 
 export function initArkGridCores(): Record<
   ArkGridAttr,
@@ -86,8 +109,8 @@ export function addGem(gem: ArkGridGem) {
   }
   const targetGems =
     gem.gemAttr == ArkGridAttrs.Order
-      ? globalAppConfig.current.orderGems
-      : globalAppConfig.current.chaosGems;
+      ? currentCharacterProfile().orderGems
+      : currentCharacterProfile().chaosGems;
   targetGems.push(gem);
   // 의지력 오름차순, 포인트 내림차순 정렬 및 모든 assign 제거
   targetGems.sort((a, b) => a.req - b.req || b.point - a.point);

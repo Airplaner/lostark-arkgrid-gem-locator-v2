@@ -17,7 +17,7 @@
     buildScoreMap,
   } from '../lib/solver/models';
   import { getBestGemSetPacks, getPossibleGemSets } from '../lib/solver/solver';
-  import { globalAppConfig } from '../lib/store';
+  import { appConfig, currentCharacterProfile } from '../lib/store';
   import SolveCoreEdit from './SolveCoreEdit.svelte';
 
   const coreComponents: Record<
@@ -111,9 +111,9 @@
 
     /* sovler.Gem으로 변경 */
     const { gems: orderGems, reverseMap: orderGemReverseMap } =
-      convertToSolverGems(globalAppConfig.current.orderGems);
+      convertToSolverGems(currentCharacterProfile().orderGems);
     const { gems: chaosGems, reverseMap: chaosGemReverseMap } =
-      convertToSolverGems(globalAppConfig.current.chaosGems);
+      convertToSolverGems(currentCharacterProfile().chaosGems);
     console.log(`질서 젬 ${orderGems.length}개, 혼돈 젬 ${chaosGems.length}개`);
 
     /* 각 코어별 장착 가능한 조합 (GemSet) 수집 */
@@ -236,10 +236,10 @@
       return result;
     }
 
-    globalAppConfig.current.orderGems.forEach((g) => {
+    currentCharacterProfile().orderGems.forEach((g) => {
       delete g.assign;
     });
-    globalAppConfig.current.chaosGems.forEach((g) => {
+    currentCharacterProfile().chaosGems.forEach((g) => {
       delete g.assign;
     });
     assignGem(answer.gsp1?.gs1, orderGemReverseMap, 0);
@@ -258,7 +258,7 @@
     {#each Object.values(ArkGridAttrs) as attr}
       {#each Object.values(ArkGridCoreTypes) as ctype}
         <SolveCoreEdit
-          core={globalAppConfig.current.cores[attr][ctype]}
+          core={currentCharacterProfile().cores[attr][ctype]}
           bind:this={coreComponents[attr][ctype]}
         ></SolveCoreEdit>
       {/each}
