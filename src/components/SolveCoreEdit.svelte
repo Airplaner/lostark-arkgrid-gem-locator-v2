@@ -52,7 +52,7 @@
         <input type="number" bind:value={energy} />
       </label> -->
       <label>
-        {#each [10, 14, 17, 18, 19, 20] as targetPoint}
+        {#each [0, 10, 14, 17, 18, 19, 20] as targetPoint}
           <label class="input-title-tuple">
             <input
               type="radio"
