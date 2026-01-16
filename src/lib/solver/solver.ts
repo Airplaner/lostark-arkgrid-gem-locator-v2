@@ -10,9 +10,16 @@ export function getPossibleGemSets(core: Core, gems: Gem[]): GemSet[] {
   const point = core.point;
   const result: GemSet[] = [];
 
+  if (point == 0) {
+    result.push(new GemSet([], core));
+  }
+
   for (let i = 0; i < n; i++) {
     const ei = energy - g[i].req;
     const pi = g[i].point;
+
+    if (pi >= point && ei >= 0) result.push(new GemSet((gems = [g[i]]), core));
+
     if (ei < 3) break;
     if (pi + 15 < point) continue;
 
@@ -100,7 +107,7 @@ export function getBestGemSetPacks(
 
   /* 코어 2개 */
   if (gssList.length == 2) {
-    const gm2 = gss2[0].maxScore;
+    const gm2 = gss2.length > 0 ? gss2[0].maxScore : 1;
     for (const gs1 of gss1) {
       if (gs1.maxScore * gm2 < targetMin) break;
 
@@ -124,8 +131,8 @@ export function getBestGemSetPacks(
 
   /* 코어 3개 */
   if (gssList.length == 3) {
-    const gm2 = gss2[0].maxScore;
-    const gm3 = gss3[0].maxScore;
+    const gm2 = gss2.length > 0 ? gss2[0].maxScore : 1;
+    const gm3 = gss3.length > 0 ? gss3[0].maxScore : 1;
 
     for (const gs1 of gss1) {
       if (gs1.maxScore * gm2 * gm3 < targetMin) break;
