@@ -32,11 +32,11 @@
       <img src={getGemImage(gem)} alt={gem.name} />
     </div>
     <div class="col main-options">
-      <div>
-        {gem.req}W
+      <div class="main-option">
+        {gem.req}<img src="/src/assets/willpower.png" alt="W" />
       </div>
-      <div>
-        {gem.point}P
+      <div class="main-option">
+        {gem.point}<img src="/src/assets/corepoint.png" alt="P" />
       </div>
     </div>
     <div class="vl"></div>
@@ -97,6 +97,14 @@
 
     flex-shrink: 0;
     /* 외관 */
+  }
+  .gem > .col.main-options > .main-option {
+    display: flex;
+    align-items: center;
+  }
+  .gem > .col.main-options img {
+    height: 80%;
+    margin-top: 1px;
   }
   .gem > .col.image {
     flex: 1;
