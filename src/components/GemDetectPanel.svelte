@@ -76,21 +76,10 @@
     return mat;
   }
 
-  function debugRect(
-    frame: any,
-    rect: Rect,
-    r: number,
-    g: number,
-    b: number,
-    size: number
-  ) {
-    cv.rectangle(
-      frame,
-      new cv.Point(rect.x, rect.y),
-      new cv.Point(rect.x + rect.w, rect.y + rect.h),
-      new cv.Scalar(r, g, b, 255),
-      size
-    );
+  function debugRectJS(rect: Rect, color = 'red', lineWidth = 1) {
+    debugCtx.strokeStyle = color;
+    debugCtx.lineWidth = lineWidth;
+    debugCtx.strokeRect(rect.x, rect.y, rect.w, rect.h);
   }
   /* ===============================
         5️⃣ 화면 공유 시작
@@ -188,9 +177,9 @@
     async function loop() {
       if (!ctx) throw Error;
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      debugCtx.clearRect(0, 0, debugCanvas.width, debugCanvas.height);
 
-      const frameRGBA = cv.matFromImageData(imgData); // debug
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const frame = cv.matFromImageData(imgData);
       cv.cvtColor(frame, frame, cv.COLOR_RGBA2GRAY);
 
@@ -213,7 +202,7 @@
           w: 1613 - 1166,
           h: 233 - 210,
         };
-        debugRect(frameRGBA, gemAttrRect, 255, 0, 0, 1);
+        debugRectJS(gemAttrRect);
         const gemAttr = findBestMatch(frame, gemAttrRect, matGemAttr);
 
         // 9개의 젬을 찾아서 이미지 매칭
@@ -224,7 +213,7 @@
             w: 1586 - 1176, // 410
             h: 391 - 331, // 60
           };
-          debugRect(frameRGBA, rowRect, 255, 0, 0, 1);
+          debugRectJS(rowRect);
 
           const willPowerRect = {
             x: rowRect.x + (1240 - 1176),
@@ -232,7 +221,8 @@
             w: 1264 - 1240,
             h: 30,
           };
-          debugRect(frameRGBA, willPowerRect, 0, 255, 0, 1);
+
+          debugRectJS(willPowerRect);
           const willPower = findBestMatch(frame, willPowerRect, matNumeric);
 
           const corePointRect = {
@@ -241,7 +231,7 @@
             w: willPowerRect.w,
             h: willPowerRect.h,
           };
-          debugRect(frameRGBA, corePointRect, 0, 255, 0, 1);
+          debugRectJS(corePointRect);
           const corePoint = findBestMatch(frame, corePointRect, matNumeric);
 
           const optionARect = {
@@ -250,7 +240,7 @@
             w: 1447 - 1301,
             h: willPowerRect.h,
           };
-          debugRect(frameRGBA, optionARect, 0, 255, 0, 1);
+          debugRectJS(optionARect);
           const optionAType = findBestMatch(
             frame,
             optionARect,
@@ -264,7 +254,7 @@
             w: optionARect.w,
             h: optionARect.h,
           };
-          debugRect(frameRGBA, optionBRect, 0, 255, 0, 1);
+          debugRectJS(optionBRect);
           const optionBType = findBestMatch(
             frame,
             optionBRect,
@@ -394,10 +384,8 @@
       } else {
         // console.log(mm.maxVal);
       }
-      cv.imshow(debugCanvas, frameRGBA);
 
       frame.delete();
-      frameRGBA.delete();
       result.delete();
 
       setTimeout(() => {
@@ -424,7 +412,7 @@
     <button onclick={startCapture}>화면 공유 시작</button>
   </div>
   <div
-    style="position: relative; height: 540px; 
+    style="position: relative; height: 1080px; 
     border: 1px solid #aaa;"
   >
     <canvas class="ov" bind:this={debugCanvas}></canvas>
