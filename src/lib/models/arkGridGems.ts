@@ -53,3 +53,18 @@ export function determineGemGrade(
       ? LostArkGrades.RELIC
       : LostArkGrades.ANCIENT;
 }
+
+export function isSameArkGridGem(a: ArkGridGem | undefined, b: ArkGridGem | undefined): boolean {
+  if (a === undefined || b === undefined) return false;
+  return (
+    a.gemAttr === b.gemAttr &&
+    a.req === b.req &&
+    a.point === b.point &&
+    isSameOption(a.option1, b.option1) &&
+    isSameOption(a.option2, b.option2)
+  );
+}
+
+function isSameOption(a: ArkGridGemOption, b: ArkGridGemOption): boolean {
+  return a.optionType === b.optionType && a.value === b.value;
+}

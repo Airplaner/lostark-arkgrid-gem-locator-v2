@@ -5,6 +5,7 @@
   import ArkGridCoreEditPanel from './components/ArkGridCoreEditPanel.svelte';
   import ArkgridGemAddPanel from './components/ArkGridGemAddPanel.svelte';
   import ArkGridGemList from './components/ArkGridGemList.svelte';
+  import GemDetectPanel from './components/GemDetectPanel.svelte';
   import ProfileEdit from './components/ProfileEdit.svelte';
   import SolvePanel from './components/SolvePanel.svelte';
 
@@ -54,6 +55,7 @@
     <!-- <h3>아크그리드 젬 배치기</h3> -->
     <AppConfiguration></AppConfiguration>
     <ProfileEdit></ProfileEdit>
+    <GemDetectPanel></GemDetectPanel>
     <ArkgridGemAddPanel />
     <div class="dual-panel">
       <div bind:this={originRef as HTMLDivElement}>
