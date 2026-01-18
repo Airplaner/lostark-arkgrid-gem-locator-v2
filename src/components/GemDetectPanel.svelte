@@ -7,6 +7,8 @@
     ArkGridGemOptionTypes,
     isSameArkGridGem,
   } from '../lib/models/arkGridGems';
+  import { currentCharacterProfile } from '../lib/store';
+  import ArkGridGemDetail from './ArkGridGemDetail.svelte';
 
   /* ===============================
         1️⃣ 라이브러리 경로
@@ -19,11 +21,13 @@
 
   let video: HTMLVideoElement;
   let debugCanvas: HTMLCanvasElement;
-  let debugCtx: CanvasRenderingContext2D;
+  let debugCtx: CanvasRenderingContext2D | null;
+  let totalOrderGems: ArkGridGem[] = $state([]);
+  let totalChaosGems: ArkGridGem[] = $state([]);
 
-  $: if (debugCanvas) {
-    debugCtx = debugCanvas.getContext('2d', { willReadFrequently: true })!;
-  }
+  $effect(() => {
+    debugCtx = debugCanvas.getContext('2d', { willReadFrequently: true });
+  });
 
   interface Rect {
     x: number;
@@ -76,10 +80,29 @@
     return mat;
   }
 
-  function debugRectJS(rect: Rect, color = 'red', lineWidth = 1) {
+  function debugRectJS(
+    rect: Rect,
+    color = 'red',
+    lineWidth = 1,
+    key: any = null,
+    score: number | null = null
+  ) {
+    // Rect영역을 color로 표시하고,
+    // 탐지된 key와 score를 표시합니다.
+    if (!debugCtx) return;
     debugCtx.strokeStyle = color;
     debugCtx.lineWidth = lineWidth;
     debugCtx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+
+    if (key && score !== null) {
+      debugCtx.font = '14px 굴림'; // 폰트 설정
+      debugCtx.fillStyle = color; // 색 지정
+      debugCtx.textBaseline = 'top'; // y 기준을 rect.y로 맞춤
+      debugCtx.fillText(key, rect.x, rect.y); // 조금 위로 올려 표시
+
+      debugCtx.font = '12px 굴림'; // 폰트 설정
+      debugCtx.fillText(score.toFixed(2), rect.x, rect.y + 14); // 조금 위로 올려 표시
+    }
   }
   /* ===============================
         5️⃣ 화면 공유 시작
@@ -106,18 +129,25 @@
       [ArkGridGemOptionTypes.PARTY_ATTACK]: await loadAsset('아군공격강화'),
       [ArkGridGemOptionTypes.PARTY_DAMAGE]: await loadAsset('아군피해강화'),
     };
+    const matOptionValue = {
+      1: await loadAsset('1'),
+      2: await loadAsset('2'),
+      3: await loadAsset('3'),
+      4: await loadAsset('4'),
+      5: await loadAsset('5'),
+    };
     const matGemAttr = {
       [ArkGridAttrs.Order]: await loadAsset('질서'),
       [ArkGridAttrs.Chaos]: await loadAsset('혼돈'),
     };
 
     type CvMat = any;
-    type TemplateMap<T extends string | number> = Record<T, CvMat>;
-    function findBestMatch<T extends string | number>(
+    type TemplateMap<T extends string> = Record<T, CvMat>;
+    function findBestMatch<T extends string>(
       frame: CvMat,
       rect: Rect,
       templates: TemplateMap<T>,
-      threshold = 0.8
+      threshold = 0.85
     ): T | null {
       if (
         rect.x < 0 ||
@@ -151,9 +181,10 @@
       roi.delete();
 
       if (bestKey !== null && bestScore >= threshold) {
+        debugRectJS(rect, 'green', 1, bestKey, bestScore);
         return bestKey;
       } else {
-        // console.log('cannot find!', bestScore, bestKey);
+        debugRectJS(rect, 'red', 1, bestKey, bestScore);
       }
       return null;
     }
@@ -169,16 +200,17 @@
     });
     video.srcObject = stream;
     let currentGems: ArkGridGem[] = [];
-    let totalGems: ArkGridGem[] = [];
 
     /* ===============================
         6️⃣ 메인 루프
     =============================== */
     async function loop() {
       if (!ctx) throw Error;
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      debugCtx.clearRect(0, 0, debugCanvas.width, debugCanvas.height);
 
+      if (debugCtx !== null)
+        debugCtx.clearRect(0, 0, debugCanvas.width, debugCanvas.height);
+
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const frame = cv.matFromImageData(imgData);
       cv.cvtColor(frame, frame, cv.COLOR_RGBA2GRAY);
@@ -188,13 +220,18 @@
       cv.matchTemplate(frame, matAnchor, result, cv.TM_CCOEFF_NORMED);
       const mm = cv.minMaxLoc(result);
 
-      if (mm.maxVal > 0.85) {
+      if (mm.maxVal > 0.9) {
         // TODO threshold 조절 가능하게
 
         currentGems = [];
         const anchorX = mm.maxLoc.x;
         const anchorY = mm.maxLoc.y;
 
+        // anchor 위치 표시
+        debugRectJS(
+          { x: anchorX, y: anchorY, w: matAnchor.cols, h: matAnchor.rows },
+          'green'
+        );
         // 질서 혹은 혼돈 판단
         const gemAttrRect = {
           x: anchorX,
@@ -202,8 +239,9 @@
           w: 1613 - 1166,
           h: 233 - 210,
         };
-        debugRectJS(gemAttrRect);
         const gemAttr = findBestMatch(frame, gemAttrRect, matGemAttr);
+        let totalGems =
+          gemAttr == ArkGridAttrs.Order ? totalOrderGems : totalChaosGems;
 
         // 9개의 젬을 찾아서 이미지 매칭
         for (let i = 0; i < 9; i++) {
@@ -213,7 +251,6 @@
             w: 1586 - 1176, // 410
             h: 391 - 331, // 60
           };
-          debugRectJS(rowRect);
 
           const willPowerRect = {
             x: rowRect.x + (1240 - 1176),
@@ -221,8 +258,6 @@
             w: 1264 - 1240,
             h: 30,
           };
-
-          debugRectJS(willPowerRect);
           const willPower = findBestMatch(frame, willPowerRect, matNumeric);
 
           const corePointRect = {
@@ -231,7 +266,6 @@
             w: willPowerRect.w,
             h: willPowerRect.h,
           };
-          debugRectJS(corePointRect);
           const corePoint = findBestMatch(frame, corePointRect, matNumeric);
 
           const optionARect = {
@@ -240,13 +274,22 @@
             w: 1447 - 1301,
             h: willPowerRect.h,
           };
-          debugRectJS(optionARect);
+          const optionAValueRect = {
+            x: optionARect.x + 40,
+            y: optionARect.y,
+            w: 1447 - 1301 - 40,
+            h: optionARect.h,
+          };
           const optionAType = findBestMatch(
             frame,
             optionARect,
             matOptionString
           );
-          const optionAValue = findBestMatch(frame, optionARect, matNumeric);
+          const optionAValue = findBestMatch(
+            frame,
+            optionAValueRect,
+            matOptionValue
+          );
 
           const optionBRect = {
             x: optionARect.x,
@@ -254,13 +297,22 @@
             w: optionARect.w,
             h: optionARect.h,
           };
-          debugRectJS(optionBRect);
+          const optionBValueRect = {
+            x: optionBRect.x + 40,
+            y: optionBRect.y,
+            w: 1447 - 1301 - 40,
+            h: optionBRect.h,
+          };
           const optionBType = findBestMatch(
             frame,
             optionBRect,
             matOptionString
           );
-          const optionBValue = findBestMatch(frame, optionBRect, matNumeric);
+          const optionBValue = findBestMatch(
+            frame,
+            optionBValueRect,
+            matOptionValue
+          );
 
           // 제대로 인식이 됐는지 확인
           if (
@@ -274,35 +326,36 @@
           ) {
             // malformed한 젬이 하나라도 있으면 현재 화면은 버림
             currentGems = [];
-            break;
+          } else {
+            currentGems.push({
+              gemAttr: gemAttr,
+              req: Number(willPower),
+              point: Number(corePoint),
+              option1: {
+                optionType: optionAType,
+                value: Number(optionAValue),
+              },
+              option2: {
+                optionType: optionBType,
+                value: Number(optionBValue),
+              },
+            });
           }
-
-          currentGems.push({
-            gemAttr: gemAttr,
-            req: willPower,
-            point: corePoint,
-            option1: {
-              optionType: optionAType,
-              value: optionAValue,
-            },
-            option2: {
-              optionType: optionBType,
-              value: optionBValue,
-            },
-          });
         }
 
         // 이제 currentGems는 현재 화면에 올바르게 인식된 젬들만 존재
 
         // 젬 추가
-        const SAME_COUNT_THRESHOLD = 3;
-        if (totalGems.length == 0) {
+        const SAME_COUNT_THRESHOLD = 4;
+        if (totalGems.length == 0 && currentGems.length > 0) {
           // 현재 젬이 없다면 화면에 있는 젬으로 갈아치움
           // 이땐 개수가 꼭 9개가 아니어도 됨 (애초에 젬을 적게 깎은 사람들)
-          totalGems = [...currentGems];
-          console.log('init!', totalGems);
+          for (const gem of currentGems) {
+            totalGems.push(gem);
+          }
+          console.log($state.snapshot(totalGems));
         } else {
-          if (currentGems.length == 9) {
+          if (currentGems.length == 9 && totalGems.length < 100) {
             // 정상적으로 9개의 젬이 모두 인식된 경우에만 진행
 
             // Q. 내 화면의 첫 젬이 전체 젬의 어디에 위치하는가?
@@ -375,7 +428,7 @@
                     totalGems.unshift(currentGems[i]);
                     console.log('추가:', currentGems[i]);
                   }
-                  console.log(totalGems);
+                  console.log($state.snapshot(totalGems));
                 }
               }
             }
@@ -405,6 +458,19 @@
   onDestroy(() => {
     if (rafId) cancelAnimationFrame(rafId);
   });
+
+  function applyGemList() {
+    // 현재 작업 중인 모든 젬을 현재 프로필의 젬에 반영함
+    currentCharacterProfile().orderGems.length = 0;
+    for (const gem of totalOrderGems) {
+      currentCharacterProfile().orderGems.push(gem);
+    }
+
+    currentCharacterProfile().chaosGems.length = 0;
+    for (const gem of totalChaosGems) {
+      currentCharacterProfile().chaosGems.push(gem);
+    }
+  }
 </script>
 
 <div class="panel">
@@ -418,6 +484,27 @@
     <canvas class="ov" bind:this={debugCanvas}></canvas>
     <video class="ov" bind:this={video} autoplay muted></video>
   </div>
+</div>
+<div class="panel">
+  <div>
+    {#if totalOrderGems.length > 0}
+      {#each totalOrderGems as gem}
+        <ArkGridGemDetail {gem} />
+      {/each}
+    {:else}
+      <span class="epmty-description">보유한 젬이 없습니다.</span>
+    {/if}
+  </div>
+  <div>
+    {#if totalChaosGems.length > 0}
+      {#each totalChaosGems as gem}
+        <ArkGridGemDetail {gem} />
+      {/each}
+    {:else}
+      <span class="epmty-description">보유한 젬이 없습니다.</span>
+    {/if}
+  </div>
+  <button onclick={applyGemList}>반영</button>
 </div>
 
 <style>

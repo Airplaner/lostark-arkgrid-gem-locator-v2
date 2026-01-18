@@ -214,6 +214,7 @@
     if (answer.gsp2 === null) {
       console.log('🚗 혼돈 배치 실패!');
     }
+    console.log(answer);
 
     function assignGem(
       gs: GemSet | null | undefined,
