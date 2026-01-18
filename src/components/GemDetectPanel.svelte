@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
 
   import { ArkGridAttrs } from '../lib/constants/enums';
   import {
@@ -10,20 +10,21 @@
   import { currentCharacterProfile } from '../lib/store';
   import ArkGridGemDetail from './ArkGridGemDetail.svelte';
 
-  /* ===============================
-        1️⃣ 라이브러리 경로
-    =============================== */
   const OPENCV_URL =
     'https://cdn.jsdelivr.net/npm/@techstark/opencv-js@4.12.0-release.1/dist/opencv.min.js';
 
   let cv: any;
   let debugCanvas: HTMLCanvasElement;
-  let debugCtx: CanvasRenderingContext2D | null;
+  let debugCtx: CanvasRenderingContext2D;
   let totalOrderGems = $state<ArkGridGem[]>([]);
   let totalChaosGems = $state<ArkGridGem[]>([]);
+  let isRecording = $state<boolean>(false);
+  let isDebugging = $state<boolean>(false);
 
-  $effect(() => {
-    debugCtx = debugCanvas.getContext('2d', { willReadFrequently: true });
+  onMount(() => {
+    const ctx = debugCanvas.getContext('2d');
+    if (!ctx) throw Error;
+    debugCtx = ctx;
   });
 
   interface Rect {
@@ -32,10 +33,6 @@
     w: number;
     h: number;
   }
-  /* ===============================
-        2️⃣ OpenCV 로드
-    =============================== */
-
   async function loadOpenCV() {
     if ((window as any).cv) {
       cv = (window as any).cv;
@@ -64,6 +61,7 @@
   }
 
   async function loadAsset(name: string) {
+    // 주어진 이름의 어셋을 읽고 grayscale로 변환한 뒤 cv.Mat으로 반환한다.
     const img = await createImageBitmap(
       await fetch(`src/assets/opencv/${name}.png`).then((r) => r.blob())
     );
@@ -87,9 +85,9 @@
     key: any = null,
     score: number | null = null
   ) {
+    // 디버깅용
     // Rect영역을 color로 표시하고,
     // 탐지된 key와 score를 표시합니다.
-    if (!debugCtx) return;
     debugCtx.strokeStyle = color;
     debugCtx.lineWidth = lineWidth;
     debugCtx.strokeRect(rect.x, rect.y, rect.w, rect.h);
@@ -103,6 +101,51 @@
       debugCtx.font = '12px 굴림'; // 폰트 설정
       debugCtx.fillText(score.toFixed(2), rect.x, rect.y + 14); // 조금 위로 올려 표시
     }
+  }
+  type CvMat = any;
+  type TemplateMap<T extends string> = Record<T, CvMat>;
+  function findBestMatch<T extends string>(
+    frame: CvMat,
+    rect: Rect,
+    templates: TemplateMap<T>,
+    threshold = 0.85
+  ): T | null {
+    // 주어진 templates map에서 가장 유사한 걸 찾아서 key를 반환합니다.
+    // threshold를 넘지 못했을 경우 null을 반환합니다.
+    if (
+      rect.x < 0 ||
+      rect.x + rect.w > frame.cols ||
+      rect.y < 0 ||
+      rect.y + rect.h > frame.rows
+    )
+      return null;
+    const roi = frame.roi(new cv.Rect(rect.x, rect.y, rect.w, rect.h));
+    let bestKey: T | null = null;
+    let bestScore = 0;
+
+    for (const [key, templateMat] of Object.entries(templates) as [
+      T,
+      CvMat,
+    ][]) {
+      const result = new cv.Mat();
+      cv.matchTemplate(roi, templateMat, result, cv.TM_CCOEFF_NORMED);
+      const { maxVal } = cv.minMaxLoc(result);
+      if (maxVal > bestScore) {
+        bestScore = maxVal;
+        bestKey = key;
+      }
+      result.delete();
+    }
+    roi.delete();
+
+    if (bestKey !== null && bestScore >= threshold) {
+      // TODO 1위가 2위와 비슷하다면 null 처리
+      if (isDebugging) debugRectJS(rect, 'green', 1, bestKey, bestScore);
+      return bestKey;
+    } else {
+      if (isDebugging) debugRectJS(rect, 'red', 1, bestKey, bestScore);
+    }
+    return null;
   }
   /* ===============================
         5️⃣ 화면 공유 시작
@@ -141,54 +184,6 @@
       [ArkGridAttrs.Chaos]: await loadAsset('혼돈'),
     };
 
-    type CvMat = any;
-    type TemplateMap<T extends string> = Record<T, CvMat>;
-    function findBestMatch<T extends string>(
-      frame: CvMat,
-      rect: Rect,
-      templates: TemplateMap<T>,
-      threshold = 0.85
-    ): T | null {
-      if (
-        rect.x < 0 ||
-        rect.x + rect.w > frame.cols ||
-        rect.y < 0 ||
-        rect.y + rect.h > frame.rows
-      )
-        return null;
-      const roi = frame.roi(new cv.Rect(rect.x, rect.y, rect.w, rect.h));
-
-      let bestKey: T | null = null;
-      let bestScore = 0;
-
-      for (const [key, templateMat] of Object.entries(templates) as [
-        T,
-        CvMat,
-      ][]) {
-        const result = new cv.Mat();
-
-        cv.matchTemplate(roi, templateMat, result, cv.TM_CCOEFF_NORMED);
-        const { maxVal } = cv.minMaxLoc(result);
-
-        if (maxVal > bestScore) {
-          bestScore = maxVal;
-          bestKey = key;
-        }
-
-        result.delete();
-      }
-
-      roi.delete();
-
-      if (bestKey !== null && bestScore >= threshold) {
-        debugRectJS(rect, 'green', 1, bestKey, bestScore);
-        return bestKey;
-      } else {
-        debugRectJS(rect, 'red', 1, bestKey, bestScore);
-      }
-      return null;
-    }
-
     let stream: MediaStream | null = null;
     try {
       stream = await navigator.mediaDevices.getDisplayMedia({
@@ -201,21 +196,22 @@
       return;
     }
 
+    // 분석용 canvas, DOM엔 연결하지 않음
     const canvas: HTMLCanvasElement = document.createElement('canvas');
     canvas.width = 0;
     canvas.height = 0;
-    const ctx = canvas.getContext('2d', {
-      willReadFrequently: true,
-    });
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
     // TrackProcessor 생성
     const track = stream.getVideoTracks()[0];
     const processor = new MediaStreamTrackProcessor({ track });
     const reader = processor.readable.getReader();
 
+    // 데이터 초기화
     totalOrderGems.length = 0;
     totalChaosGems.length = 0;
     let currentGems: ArkGridGem[] = [];
+    isRecording = true;
 
     /* ===============================
         6️⃣ 메인 루프
@@ -223,9 +219,9 @@
     async function loop() {
       while (true) {
         const { value: rawFrame, done } = await reader.read();
+        // TODO throttling
         if (done) {
-          debugCanvas.width = 0;
-          debugCanvas.height = 0;
+          // 종료
           break;
         }
         if (canvas.width === 0) {
@@ -234,11 +230,7 @@
           debugCanvas.width = canvas.width;
           debugCanvas.height = canvas.height;
         }
-        if (!ctx) {
-          break;
-        }
-        if (debugCtx !== null) {
-          debugCtx.clearRect(0, 0, debugCanvas.width, debugCanvas.height);
+        if (isDebugging) {
           debugCtx.drawImage(
             rawFrame,
             0,
@@ -247,7 +239,7 @@
             debugCanvas.height
           );
         }
-
+        if (!ctx) throw Error('canvas 준비 실패');
         ctx.drawImage(rawFrame, 0, 0, canvas.width, canvas.height);
         const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const frame = cv.matFromImageData(imgData);
@@ -266,10 +258,12 @@
           const anchorY = mm.maxLoc.y;
 
           // anchor 위치 표시
-          debugRectJS(
-            { x: anchorX, y: anchorY, w: matAnchor.cols, h: matAnchor.rows },
-            'white'
-          );
+          if (isDebugging) {
+            debugRectJS(
+              { x: anchorX, y: anchorY, w: matAnchor.cols, h: matAnchor.rows },
+              'white'
+            );
+          }
           // 질서 혹은 혼돈 판단
           const gemAttrRect = {
             x: anchorX,
@@ -278,6 +272,7 @@
             h: 233 - 210,
           };
           const gemAttr = findBestMatch(frame, gemAttrRect, matGemAttr);
+          if (gemAttr === null) continue;
           let totalGems =
             gemAttr == ArkGridAttrs.Order ? totalOrderGems : totalChaosGems;
 
@@ -363,7 +358,11 @@
               optionBValue === null
             ) {
               // malformed한 젬이 하나라도 있으면 현재 화면은 버림
-              currentGems = [];
+              if (!isDebugging) {
+                // debugging 중이 아니라면 남은 row를 볼 필요 없으니 break
+                // 맞다면 초록색 박스를 보여주기 위해 마저 수행
+                break;
+              }
             } else {
               currentGems.push({
                 gemAttr: gemAttr,
@@ -422,7 +421,7 @@
                 if (sameCount == 9) continue;
 
                 // 스크롤을 너무 빠르게 내린 경우를 제외하기 위해서
-                // 내 화면에 있는 젬 중 최소한 3개는 이미 알고 있는 경우에만 수행
+                // 내 화면에 있는 젬 중 최소한 4개는 이미 알고 있는 경우에만 수행
                 // 추가로 동일한 옵션의 젬을 오판정한 index인 경우 sameCount = 1이라서 걸러야 함
                 if (sameCount >= SAME_COUNT_THRESHOLD) {
                   // 내 화면의 sameCount부터 끝에 있는 젬들까지 추가 대상임
@@ -477,10 +476,17 @@
           // console.log(mm.maxVal);
         }
 
+        // 매 frame마다 메모리 정리
         frame.delete();
         result.delete();
         rawFrame.close();
       }
+      // loop 종료 후
+      debugCanvas.width = 300;
+      debugCanvas.height = 150;
+      canvas.width = 0;
+      canvas.height = 0;
+      isRecording = false;
     }
     loop();
   }
@@ -502,12 +508,27 @@
 <div class="panel">
   <div class="title">
     <span>젬 화면 인식</span>
+    <div
+      class="status-dot"
+      class:online={isRecording}
+      class:offline={!isRecording}
+    ></div>
   </div>
   <div>
     <button onclick={startCapture}>화면 공유 시작</button>
+    <button
+      class:active={isDebugging}
+      onclick={() => (isDebugging = !isDebugging)}
+    >
+      디버그 화면 {isDebugging ? 'ON' : 'OFF'}
+    </button>
   </div>
-  <div>
-    <canvas class="debugView" bind:this={debugCanvas}></canvas>
+  <div hidden={!isDebugging}>
+    <canvas
+      class="debugView"
+      bind:this={debugCanvas}
+      style="border: 1px black solid;"
+    ></canvas>
   </div>
   <div class="dual-panel">
     <div>
@@ -544,5 +565,20 @@
     display: grid;
     grid-template-columns: 1.1fr 1fr;
     align-items: start;
+  }
+  .status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  .status-dot.online {
+    background-color: #22c55e; /* 녹색 */
+  }
+
+  .status-dot.offline {
+    background-color: #9ca3af; /* 회색 */
   }
 </style>
