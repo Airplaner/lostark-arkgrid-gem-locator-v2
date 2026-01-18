@@ -56,7 +56,6 @@
     <AppConfiguration></AppConfiguration>
     <ProfileEdit></ProfileEdit>
     <GemDetectPanel></GemDetectPanel>
-    <ArkgridGemAddPanel />
     <div class="dual-panel">
       <div bind:this={originRef as HTMLDivElement}>
         <ArkGridCoreEditPanel />

@@ -66,16 +66,6 @@
 </script>
 
 <div class="panel">
-  <div class="buttons">
-    <button
-      onclick={() => {
-        appConfig.current.uiConfig.showCoreCoeff =
-          !appConfig.current.uiConfig.showCoreCoeff;
-      }}
-    >
-      전투력 계수 {appConfig.current.uiConfig.showCoreCoeff ? '숨김' : '수정'}
-    </button>
-  </div>
   {#each attrs as attr}
     {#each ctypes as ctype}
       <fieldset class="core-slot">
@@ -166,6 +156,16 @@
       </fieldset>
     {/each}
   {/each}
+  <div class="buttons">
+    <button
+      onclick={() => {
+        appConfig.current.uiConfig.showCoreCoeff =
+          !appConfig.current.uiConfig.showCoreCoeff;
+      }}
+    >
+      전투력 계수 {appConfig.current.uiConfig.showCoreCoeff ? '숨김' : '수정'}
+    </button>
+  </div>
 </div>
 
 <style>

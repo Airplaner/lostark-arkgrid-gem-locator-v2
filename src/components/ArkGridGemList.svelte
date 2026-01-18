@@ -31,7 +31,6 @@
 </script>
 
 <div class="panel">
-  <button onclick={() => deleteGems()}>젬 초기화</button>
   <div class="tab-container">
     {#each tabs as tab, i}
       <button
@@ -55,13 +54,10 @@
       <span class="epmty-description">보유한 젬이 없습니다.</span>
     {/if}
   </div>
+  <button onclick={() => deleteGems()}>젬 초기화</button>
 </div>
 
 <style>
-  .panel {
-    /* override gap and use margin*/
-    gap: 0px;
-  }
   .tab-container {
     display: flex;
     gap: 0.3em;
@@ -69,7 +65,6 @@
 
   .tab {
     border: 1px solid #ccc;
-    margin-bottom: 0.5rem;
 
     cursor: pointer;
   }
@@ -82,7 +77,7 @@
   .gems {
     /* 남은 공간을 최대한 차지 */
     flex: 1;
-    max-height: 40rem;
+    max-height: 60rem; /* 모바일 모드일때 너무 길어지는 걸 방지 */
 
     /* 테두리 */
     border-top: 1px solid var(--border);
