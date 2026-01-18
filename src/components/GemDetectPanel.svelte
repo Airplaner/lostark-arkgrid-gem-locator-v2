@@ -133,11 +133,11 @@
       [ArkGridGemOptionTypes.PARTY_DAMAGE]: await loadAsset('아군피해강화'),
     };
     const matOptionValue = {
-      1: await loadAsset('1'),
-      2: await loadAsset('2'),
-      3: await loadAsset('3'),
-      4: await loadAsset('4'),
-      5: await loadAsset('5'),
+      1: await loadAsset('lv1'),
+      2: await loadAsset('lv2'),
+      3: await loadAsset('lv3'),
+      4: await loadAsset('lv4'),
+      5: await loadAsset('lv5'),
     };
     const matGemAttr = {
       [ArkGridAttrs.Order]: await loadAsset('질서'),
