@@ -53,7 +53,10 @@
       script.onload = async () => {
         await (window as any).cv.ready;
         cv = (window as any).cv;
-        resolve();
+        cv.onRuntimeInitialized = () => {
+          // https://stackoverflow.com/questions/56671436/cv-mat-is-not-a-constructor-opencv
+          resolve();
+        };
       };
 
       script.onerror = reject;
