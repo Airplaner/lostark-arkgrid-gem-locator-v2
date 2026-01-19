@@ -1,7 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
-  import { type ArkGridAttr, ArkGridAttrs } from '../lib/constants/enums';
+  import {
+    type ArkGridAttr,
+    ArkGridAttrs,
+    type ScrollCommand,
+  } from '../lib/constants/enums';
   import {
     type ArkGridGem,
     ArkGridGemOptionTypes,
@@ -21,6 +25,8 @@
   let isRecording = $state<boolean>(false);
   let isDebugging = $state<boolean>(false);
   let isLoading = $state<boolean>(false);
+  let scrollOrderGems: ScrollCommand = $state(null);
+  let scrollChaosGems: ScrollCommand = $state(null);
 
   onMount(() => {
     const ctx = debugCanvas.getContext('2d');
@@ -393,6 +399,10 @@
             for (const gem of currentGems) {
               totalGems.push(gem);
             }
+            if (gemAttr == ArkGridAttrs.Order)
+              scrollOrderGems = { type: 'bottom', tick: Date.now() };
+            if (gemAttr == ArkGridAttrs.Chaos)
+              scrollChaosGems = { type: 'bottom', tick: Date.now() };
             // console.log($state.snapshot(totalGems));
           } else {
             if (currentGems.length == 9 && totalGems.length < 100) {
@@ -431,6 +441,10 @@
                   for (let i = sameCount; i < 9; i++) {
                     totalGems.push(currentGems[i]);
                     console.log('추가:', currentGems[i]);
+                    if (gemAttr == ArkGridAttrs.Order)
+                      scrollOrderGems = { type: 'bottom', tick: Date.now() };
+                    if (gemAttr == ArkGridAttrs.Chaos)
+                      scrollChaosGems = { type: 'bottom', tick: Date.now() };
                   }
                   // console.log($state.snapshot(totalGems));
                 }
@@ -466,7 +480,11 @@
                     // 내 화면의 0부터 9-sameCount-1에 있는 젬들까지 추가 대상임
                     for (let i = 9 - sameCount - 1; i >= 0; i--) {
                       totalGems.unshift(currentGems[i]);
-                      // console.log('추가:', currentGems[i]);
+                      if (gemAttr == ArkGridAttrs.Order)
+                        scrollOrderGems = { type: 'top', tick: Date.now() };
+                      if (gemAttr == ArkGridAttrs.Chaos)
+                        scrollChaosGems = { type: 'top', tick: Date.now() };
+                      console.log('추가:', currentGems[i]);
                     }
                     // console.log($state.snapshot(totalGems));
                   }
@@ -501,18 +519,20 @@
       addGem(gem);
     }
   }
-  const gemPanels = [
+  const gemPanels = $derived([
     {
       title: '질서',
       attr: ArkGridAttrs.Order,
       gems: totalOrderGems,
+      scrollCommand: scrollOrderGems,
     },
     {
       title: '혼돈',
       attr: ArkGridAttrs.Chaos,
       gems: totalChaosGems,
+      scrollCommand: scrollChaosGems,
     },
-  ];
+  ]);
 </script>
 
 <div class="panel">
@@ -554,6 +574,7 @@
             gems={panel.gems}
             showDeleteButton={false}
             emptyDescription=""
+            scrollCommand={panel.scrollCommand}
           />
         </div>
         <button onclick={() => applyGemList(panel.attr, panel.gems)}>

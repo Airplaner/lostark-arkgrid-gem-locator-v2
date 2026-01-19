@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { ScrollCommand } from '../lib/constants/enums';
   import type { ArkGridGem } from '../lib/models/arkGridGems';
   import ArkGridGemDetail from './ArkGridGemDetail.svelte';
 
@@ -6,15 +7,40 @@
     gems: ArkGridGem[];
     showDeleteButton?: boolean;
     emptyDescription?: string;
+    scrollCommand: ScrollCommand;
   }
   let {
     gems,
     showDeleteButton = true,
     emptyDescription = '보유한 젬이 없습니다.',
+    scrollCommand = null,
   }: Props = $props();
+
+  let container: HTMLDivElement;
+
+  $effect(() => {
+    if (scrollCommand === null) return;
+    switch (scrollCommand.type) {
+      case 'top':
+        container.scrollTo({
+          top: 0,
+          behavior: 'smooth',
+        });
+        break;
+      case 'bottom':
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: 'smooth',
+        });
+        break;
+
+      default:
+        break;
+    }
+  });
 </script>
 
-<div class="gems">
+<div class="gems" bind:this={container}>
   {#if gems.length > 0}
     {#each gems as gem}
       <ArkGridGemDetail {gem} {showDeleteButton} />

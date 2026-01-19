@@ -20,3 +20,9 @@ export function reverseLookup<const T extends Record<string, string>>(
 }
 
 export const DEFAULT_PROFILE_NAME = '기본';
+
+export type ScrollCommand =
+  | { type: 'top'; tick: number }
+  | { type: 'bottom'; tick: number }
+  | null;
+
