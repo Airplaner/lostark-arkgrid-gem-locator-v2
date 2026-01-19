@@ -3,8 +3,10 @@
   import {
     addNewProfile,
     appConfig,
+    getProfile,
   } from '../../lib/state/appConfig.state.svelte';
   import {
+    type CharacterProfile,
     currentProfileName,
     deleteProfile,
     initNewProfile,
@@ -25,15 +27,17 @@
       </button>
     {/each}
     <button
+      title="새 프로필"
       onclick={() => {
         const profileName = window.prompt(
           '새 프로필에 사용할 캐릭터명을 입력해주세요.'
         );
         if (profileName === null || profileName.length == 0) return;
         addNewProfile(initNewProfile(profileName));
-      }}>📁</button
+      }}>📄</button
     >
     <button
+      title="현재 프로필 삭제"
       onclick={() => {
         if (
           window.confirm(
@@ -45,6 +49,70 @@
       }}
       disabled={currentProfileName.current === DEFAULT_PROFILE_NAME}>🗑️</button
     >
+    <button
+      title="현재 프로필 내보내기"
+      onclick={() => {
+        const jsonStr = JSON.stringify(
+          getProfile(currentProfileName.current),
+          null,
+          2
+        ); // null,2는 보기 좋게 들여쓰기
+
+        // 2. Blob 생성
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+
+        // 3. 다운로드 링크 생성
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${currentProfileName.current}.json`;
+        document.body.appendChild(a);
+        a.click();
+
+        // 4. 정리
+        a.remove();
+        URL.revokeObjectURL(url);
+      }}>💾</button
+    >
+    <button
+      title="프로필 불러오기"
+      onclick={() => {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = '.json'; // JSON만 선택 가능
+
+        // 2. 파일 선택 후 처리
+        fileInput.addEventListener('change', (event) => {
+          const target = event.target as HTMLInputElement; // 여기서 단언
+          const file = target.files?.[0]; // optional chaining 안전하게
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            try {
+              const data: CharacterProfile = JSON.parse(
+                e.target?.result as string
+              );
+              if (addNewProfile(data)) {
+                alert('✅ 프로필 추가 성공!');
+                currentProfileName.current = data.characterName;
+              } else {
+                alert('❌ 프로필 추가 실패');
+              }
+            } catch (err) {
+              alert('❌ JSON 형식 오류');
+            }
+          };
+          reader.readAsText(file);
+          // 3. input 제거
+          fileInput.remove();
+        });
+        // 4. 클릭해서 파일 선택 창 열기
+        fileInput.click();
+      }}
+    >
+      📂
+    </button>
   </div>
 </div>
 
