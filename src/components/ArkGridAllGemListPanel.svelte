@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { AllGems } from '../lib/store';
-  import ArkGridGemDetail from './ArkGridGemDetail.svelte';
+  import { ArkGridAttrs } from '../lib/constants/enums';
+  import { type AllGems, addGem } from '../lib/state/profile.state.svelte';
   import ArkGridGemList from './ArkGridGemList.svelte';
 
   interface Props {
@@ -46,6 +46,17 @@
     {/each}
   </div>
   <ArkGridGemList gems={currentGems}></ArkGridGemList>
+  <button
+    onclick={() => {
+      addGem({
+        gemAttr: ArkGridAttrs.Order,
+        req: 3,
+        point: 5,
+        option1: { optionType: '공격력', value: 1 },
+        option2: { optionType: '추가 피해', value: 1 },
+      });
+    }}>샘플 추가</button
+  >
 </div>
 
 <style>

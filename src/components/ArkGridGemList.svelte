@@ -1,5 +1,7 @@
 <script lang="ts">
+  import { ArkGridAttrs } from '../lib/constants/enums';
   import type { ArkGridGem } from '../lib/models/arkGridGems';
+  import { addGem } from '../lib/state/profile.state.svelte';
   import ArkGridGemDetail from './ArkGridGemDetail.svelte';
 
   interface Props {
@@ -11,7 +13,7 @@
 <div class="gems">
   {#if gems.length > 0}
     {#each gems as gem}
-      <ArkGridGemDetail {gem} />
+      <ArkGridGemDetail {gem} showDeleteButton={true} />
     {/each}
   {:else}
     <span class="epmty-description">보유한 젬이 없습니다.</span>

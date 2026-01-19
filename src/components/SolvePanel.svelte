@@ -17,19 +17,30 @@
     buildScoreMap,
   } from '../lib/solver/models';
   import { getBestGemSetPacks, getPossibleGemSets } from '../lib/solver/solver';
-  import { currentCharacterProfile } from '../lib/state/profile.state.svelte';
+  import {
+    type CharacterProfile,
+    getCurrentProfile,
+    unassignGems,
+  } from '../lib/state/profile.state.svelte';
   import SolveCoreEdit from './SolveCoreEdit.svelte';
+
+  interface Props {
+    profile: CharacterProfile;
+  }
+  let { profile }: Props = $props();
 
   const coreComponents: Record<
     ArkGridAttr,
     Record<ArkGridCoreType, SolveCoreEdit | null>
-  > = Object.fromEntries(
-    Object.values(ArkGridAttrs).map((attr) => [
-      attr,
-      Object.fromEntries(
-        Object.values(ArkGridCoreTypes).map((type) => [type, null])
-      ),
-    ])
+  > = $state(
+    Object.fromEntries(
+      Object.values(ArkGridAttrs).map((attr) => [
+        attr,
+        Object.fromEntries(
+          Object.values(ArkGridCoreTypes).map((type) => [type, null])
+        ),
+      ])
+    )
   ) as Record<ArkGridAttr, Record<ArkGridCoreType, SolveCoreEdit | null>>;
 
   function convertToSolverGems(gem: ArkGridGem[]): {
@@ -111,9 +122,9 @@
 
     /* sovler.Gem으로 변경 */
     const { gems: orderGems, reverseMap: orderGemReverseMap } =
-      convertToSolverGems(currentCharacterProfile().gems.orderGems);
+      convertToSolverGems(getCurrentProfile().gems.orderGems);
     const { gems: chaosGems, reverseMap: chaosGemReverseMap } =
-      convertToSolverGems(currentCharacterProfile().gems.chaosGems);
+      convertToSolverGems(getCurrentProfile().gems.chaosGems);
     console.log(`질서 젬 ${orderGems.length}개, 혼돈 젬 ${chaosGems.length}개`);
 
     /* 각 코어별 장착 가능한 조합 (GemSet) 수집 */
@@ -237,12 +248,7 @@
       return result;
     }
 
-    currentCharacterProfile().gems.orderGems.forEach((g) => {
-      delete g.assign;
-    });
-    currentCharacterProfile().gems.chaosGems.forEach((g) => {
-      delete g.assign;
-    });
+    unassignGems();
     assignGem(answer.gsp1?.gs1, orderGemReverseMap, 0);
     assignGem(answer.gsp1?.gs2, orderGemReverseMap, 1);
     assignGem(answer.gsp1?.gs3, orderGemReverseMap, 2);
@@ -259,7 +265,7 @@
     {#each Object.values(ArkGridAttrs) as attr}
       {#each Object.values(ArkGridCoreTypes) as ctype}
         <SolveCoreEdit
-          core={currentCharacterProfile().cores[attr][ctype]}
+          core={profile.cores[attr][ctype]}
           bind:this={coreComponents[attr][ctype]}
         ></SolveCoreEdit>
       {/each}

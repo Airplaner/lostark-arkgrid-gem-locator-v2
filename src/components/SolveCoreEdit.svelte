@@ -9,7 +9,7 @@
   import { Core } from '../lib/solver/models';
 
   interface Props {
-    core: ArkGridCore;
+    core: ArkGridCore | null;
   }
   let { core }: Props = $props();
 

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { ArkGridAttrs } from '../lib/constants/enums';
   import type { ArkGridGem } from '../lib/models/arkGridGems';
+  import { deleteGem } from '../lib/state/profile.state.svelte';
 
   const MapGemNameImage: Record<string, string> = {
     '질서의 젬 : 안정': 'order_0',
@@ -21,9 +22,10 @@
 
   interface Props {
     gem: ArkGridGem;
+    showDeleteButton?: boolean;
   }
 
-  let { gem }: Props = $props();
+  let { gem, showDeleteButton = true }: Props = $props();
 </script>
 
 <div class={`gem-box assign-${gem.assign}`}>
@@ -49,15 +51,25 @@
       </div>
     </div>
   </div>
+  {#if showDeleteButton}
+    <div class="edit-button">
+      <button onclick={() => deleteGem(gem)}>🗑️</button>
+    </div>
+  {/if}
 </div>
 
 <style>
   .gem-box {
     border: 1px solid var(--border);
     border-radius: 0.4rem;
-    display: flex;
+    display: inline-flex;
     height: 3rem;
     padding: 0.4rem;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .gem-box .edit-button {
+    flex: 0 0 auto;
   }
   /* 임시 */
   .assign-0 {
@@ -81,7 +93,6 @@
   .gem {
     /* min-width: 12rem; */
     max-width: 30rem;
-    width: 100%;
     height: 100%;
 
     /* 디버깅 */
@@ -131,7 +142,7 @@
 
   .gem > .col.sub-options {
     flex: 4;
-    min-width: 4rem;
+    min-width: 2rem;
   }
   .gem > .col.sub-options > .sub-option {
     /* 아군 공격 강화 Lv.3  이런 문구는 반드시 한 줄 */

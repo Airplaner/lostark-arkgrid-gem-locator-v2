@@ -54,7 +54,10 @@ export function determineGemGrade(
       : LostArkGrades.ANCIENT;
 }
 
-export function isSameArkGridGem(a: ArkGridGem | undefined, b: ArkGridGem | undefined): boolean {
+export function isSameArkGridGem(
+  a: ArkGridGem | undefined,
+  b: ArkGridGem | undefined
+): boolean {
   if (a === undefined || b === undefined) return false;
   return (
     a.gemAttr === b.gemAttr &&

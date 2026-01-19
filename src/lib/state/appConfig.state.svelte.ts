@@ -1,12 +1,16 @@
 import { persistedState } from 'svelte-persisted-state';
 
-import { type ArkGridAttr, ArkGridAttrs } from '../constants/enums';
+import {
+  type ArkGridAttr,
+  ArkGridAttrs,
+  DEFAULT_PROFILE_NAME,
+} from '../constants/enums';
 import {
   type ArkGridCore,
   type ArkGridCoreType,
   ArkGridCoreTypes,
 } from '../models/arkGridCores';
-import { type ArkGridGem, determineGemGrade } from '../models/arkGridGems';
+import { type CharacterProfile, initNewProfile } from './profile.state.svelte';
 
 export interface OpenApiConfig {
   jwt?: string;
@@ -15,17 +19,8 @@ interface UIConfig {
   showGemAddPanel: boolean;
   showCoreCoeff: boolean;
 }
-export interface AllGems {
-  orderGems: ArkGridGem[];
-  chaosGems: ArkGridGem[];
-}
-interface CharacterInformation {
-  characterName: string;
-  gems: AllGems;
-  cores: Record<ArkGridAttr, Record<ArkGridCoreType, ArkGridCore | null>>;
-}
 interface AppConfig {
-  characterProfiles: CharacterInformation[];
+  characterProfiles: CharacterProfile[];
   openApiConfig: OpenApiConfig;
   uiConfig: UIConfig;
 }
@@ -53,16 +48,7 @@ const bigIntSerializer = {
 export const appConfig = persistedState<AppConfig>(
   'appConfig',
   {
-    characterProfiles: [
-      {
-        characterName: '기본',
-        gems: {
-          orderGems: [],
-          chaosGems: [],
-        },
-        cores: initArkGridCores(),
-      },
-    ],
+    characterProfiles: [initNewProfile(DEFAULT_PROFILE_NAME)],
     openApiConfig: {},
     uiConfig: {
       showGemAddPanel: false,
@@ -91,4 +77,26 @@ export function initArkGridCores(): Record<
   }
 
   return cores;
+}
+export function getProfile(name: string) {
+  // 현재 appConfig에서 주어진 이름의 프로필을 조회합니다.
+  return appConfig.current.characterProfiles.find(
+    (p) => p.characterName === name
+  );
+}
+export function addNewProfile(profile: CharacterProfile) {
+  // 새 CharacterProfile을 appConfig에 등록합니다.
+  // 등록에 성공했으면 true, 실패했으면 false를 반환합니다.
+  const name = profile.characterName;
+  if (name.length == 0 || name.length > 12) return;
+  const existProfile = appConfig.current.characterProfiles.findIndex(
+    (p) => p.characterName === name
+  );
+  if (existProfile != -1) return false;
+  appConfig.current.characterProfiles.push(profile);
+  return true;
+}
+export function toggleUI(optionName: keyof UIConfig) {
+  appConfig.current.uiConfig[optionName] =
+    !appConfig.current.uiConfig[optionName];
 }

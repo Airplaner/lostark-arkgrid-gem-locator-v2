@@ -18,3 +18,5 @@ export function reverseLookup<const T extends Record<string, string>>(
 ): T[keyof T] | undefined {
   return Object.values(obj).find((v) => v === input) as T[keyof T] | undefined;
 }
+
+export const DEFAULT_PROFILE_NAME = '기본';

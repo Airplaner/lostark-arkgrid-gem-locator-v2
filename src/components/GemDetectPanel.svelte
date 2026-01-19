@@ -7,7 +7,7 @@
     ArkGridGemOptionTypes,
     isSameArkGridGem,
   } from '../lib/models/arkGridGems';
-  import { currentCharacterProfile } from '../lib/state/profile.state.svelte';
+  import { addGem, clearGems } from '../lib/state/profile.state.svelte';
   import ArkGridGemList from './ArkGridGemList.svelte';
 
   const OPENCV_URL =
@@ -492,15 +492,13 @@
   }
 
   function applyGemList() {
-    // 현재 작업 중인 모든 젬을 현재 프로필의 젬에 반영함
-    currentCharacterProfile().gems.orderGems.length = 0;
+    // 현재 작업 중인 모든 젬을 현재 프로필의 젬에 반영
+    clearGems();
     for (const gem of totalOrderGems) {
-      currentCharacterProfile().gems.orderGems.push(gem);
+      addGem(gem);
     }
-
-    currentCharacterProfile().gems.chaosGems.length = 0;
     for (const gem of totalChaosGems) {
-      currentCharacterProfile().gems.chaosGems.push(gem);
+      addGem(gem);
     }
   }
 </script>

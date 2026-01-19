@@ -1,46 +1,62 @@
 import { persistedState } from 'svelte-persisted-state';
 
-import { appConfig, initArkGridCores } from './appConfig.state.svelte';
-
-export const DEFAULT_PROFILE_NAME = '기본';
+import {
+  type ArkGridAttr,
+  ArkGridAttrs,
+  DEFAULT_PROFILE_NAME,
+  LostArkGrades,
+} from '../constants/enums';
+import {
+  type ArkGridCore,
+  type ArkGridCoreType,
+  createCore,
+} from '../models/arkGridCores';
+import { type ArkGridGem, determineGemGrade } from '../models/arkGridGems';
+import {
+  addNewProfile,
+  appConfig,
+  getProfile,
+  initArkGridCores,
+} from './appConfig.state.svelte';
 
 export let currentProfileName = persistedState<string>(
   'currentProfileName',
   DEFAULT_PROFILE_NAME
 );
-
-export function currentCharacterProfile() {
-  for (const profile of appConfig.current.characterProfiles) {
-    if (profile.characterName == currentProfileName.current) {
-      return profile;
-    }
-  }
-  if (appConfig.current.characterProfiles.length == 0) {
-    throw Error;
-  }
-  return appConfig.current.characterProfiles[0];
+export interface AllGems {
+  orderGems: ArkGridGem[];
+  chaosGems: ArkGridGem[];
+}
+export interface CharacterProfile {
+  characterName: string;
+  gems: AllGems;
+  cores: Record<ArkGridAttr, Record<ArkGridCoreType, ArkGridCore | null>>;
 }
 
-export function setCurrentProfileName(name: string) {
-  currentProfileName.current = name;
-}
-
-export function addNewProfile(name: string) {
-  if (name.length == 0 || name.length > 12) return;
-
-  const existProfile = appConfig.current.characterProfiles.findIndex(
-    (p) => p.characterName === name
-  );
-  if (existProfile != -1) return;
-  appConfig.current.characterProfiles.push({
+export function initNewProfile(name: string): CharacterProfile {
+  return {
     characterName: name,
     gems: {
       orderGems: [],
       chaosGems: [],
     },
     cores: initArkGridCores(),
-  });
-  setCurrentProfileName(name);
+  };
+}
+
+export function getCurrentProfile() {
+  // 현재 프로필을 반드시 반환합니다.
+  const profile = getProfile(currentProfileName.current);
+  if (profile) return profile;
+  else {
+    const defaultProfile = initNewProfile(DEFAULT_PROFILE_NAME);
+    if (!addNewProfile(defaultProfile)) throw Error;
+    return defaultProfile;
+  }
+}
+
+export function setCurrentProfileName(name: string) {
+  currentProfileName.current = name;
 }
 
 export function deleteProfile(name: string) {
@@ -54,4 +70,53 @@ export function deleteProfile(name: string) {
   }
   profiles.splice(index, 1);
   // 삭제한 프로필이 현재 선택된 프로필이면 초기화
+}
+
+export function addGem(gem: ArkGridGem) {
+  const gems = getCurrentProfile().gems;
+  const targetGems =
+    gem.gemAttr == ArkGridAttrs.Order ? gems.orderGems : gems.chaosGems;
+  gem.grade = determineGemGrade(gem.req, gem.point, gem.option1, gem.option2);
+  // validate gem (안정인데 옵션 등)
+  targetGems.push(gem);
+}
+
+export function clearGems() {
+  const gems = getCurrentProfile().gems;
+  gems.orderGems.length = 0;
+  gems.chaosGems.length = 0;
+}
+
+export function deleteGem(gem: ArkGridGem) {
+  const gems = getCurrentProfile().gems;
+  const targetGems =
+    gem.gemAttr === ArkGridAttrs.Order ? gems.orderGems : gems.chaosGems;
+
+  // 배열에서 gem 제거
+  const index = targetGems.indexOf(gem);
+  if (index !== -1) {
+    targetGems.splice(index, 1);
+  }
+}
+export function unassignGems() {
+  const gems = getCurrentProfile().gems;
+  gems.orderGems.forEach((g) => {
+    delete g.assign;
+  });
+  gems.chaosGems.forEach((g) => {
+    delete g.assign;
+  });
+}
+
+export function getCore(attr: ArkGridAttr, ctype: ArkGridCoreType) {
+  const cores = getCurrentProfile().cores;
+  return cores[attr][ctype];
+}
+export function addCore(attr: ArkGridAttr, ctype: ArkGridCoreType) {
+  const cores = getCurrentProfile().cores;
+  cores[attr][ctype] = createCore(attr, ctype, LostArkGrades.EPIC);
+}
+export function resetCore(attr: ArkGridAttr, ctype: ArkGridCoreType) {
+  const cores = getCurrentProfile().cores;
+  cores[attr][ctype] = null;
 }

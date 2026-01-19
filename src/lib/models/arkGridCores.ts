@@ -157,7 +157,9 @@ export function getDefaultCoreCoeff(core: ArkGridCore): ArkGridCoreCoeffs {
   };
 }
 
-export function getDefaultCoreEnergy(core: ArkGridCore | undefined): number {
+export function getDefaultCoreEnergy(
+  core: ArkGridCore | undefined | null
+): number {
   if (!core) return 0;
   switch (core.grade) {
     case LostArkGrades.EPIC:
@@ -172,7 +174,9 @@ export function getDefaultCoreEnergy(core: ArkGridCore | undefined): number {
       return 0;
   }
 }
-export function getDefaultCoreGoalPoint(core: ArkGridCore | undefined): number {
+export function getDefaultCoreGoalPoint(
+  core: ArkGridCore | undefined | null
+): number {
   if (!core) return 0;
   switch (core.grade) {
     case LostArkGrades.EPIC:

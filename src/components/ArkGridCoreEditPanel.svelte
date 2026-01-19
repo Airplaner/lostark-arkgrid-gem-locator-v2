@@ -5,13 +5,18 @@
     LostArkGrades,
   } from '../lib/constants/enums';
   import {
+    type ArkGridCore,
     type ArkGridCoreType,
     ArkGridCoreTypes,
-    createCore,
     resetCoreCoeff,
   } from '../lib/models/arkGridCores';
-  import { appConfig } from '../lib/state/appConfig.state.svelte';
-  import { currentCharacterProfile } from '../lib/state/profile.state.svelte';
+  import { appConfig, toggleUI } from '../lib/state/appConfig.state.svelte';
+  import { addCore, resetCore } from '../lib/state/profile.state.svelte';
+
+  interface Props {
+    cores: Record<ArkGridAttr, Record<ArkGridCoreType, ArkGridCore | null>>;
+  }
+  let { cores = $bindable() }: Props = $props();
 
   const arkGridCoreTierName: Record<ArkGridCoreType, Array<string>> = {
     [ArkGridCoreTypes.SUN]: ['현란한 공격', '안정적인/재빠른 공격', '그 외'],
@@ -42,27 +47,14 @@
     return coreImages[key];
   };
 
-  let arkGridCores = $derived(currentCharacterProfile().cores);
-  function createNewCore(attr: ArkGridAttr, ctype: ArkGridCoreType) {
-    // 코어가 없을 때 새로운 코어 추가
-    // 기본 영웅 등급
-    currentCharacterProfile().cores[attr][ctype] = createCore(
-      attr,
-      ctype,
-      LostArkGrades.EPIC
-    );
-  }
   function resetCoeffWhenCoreChanges(
     attr: ArkGridAttr,
     ctype: ArkGridCoreType
   ) {
-    const core = currentCharacterProfile().cores[attr][ctype];
+    const core = cores[attr][ctype];
     if (core) {
       resetCoreCoeff(core);
     }
-  }
-  function resetCore(attr: ArkGridAttr, ctype: ArkGridCoreType) {
-    currentCharacterProfile().cores[attr][ctype] = null;
   }
 </script>
 
@@ -76,11 +68,11 @@
             <img
               src={getCoreImage(attr, ctype)}
               alt="{attr} {ctype}"
-              data-grade={arkGridCores[attr][ctype]?.grade}
+              data-grade={cores[attr][ctype]?.grade}
             />
             {attr}의 {ctype}
           </div>
-          {#if currentCharacterProfile().cores[attr][ctype]}
+          {#if cores[attr][ctype]}
             <button
               class="close"
               aria-label="닫기"
@@ -88,7 +80,7 @@
             >
           {/if}
         </legend>
-        {#if arkGridCores[attr][ctype]}
+        {#if cores[attr][ctype]}
           <div class="row core-grade">
             <span class="title">등급</span>
             <div class="input-title-tuples">
@@ -97,7 +89,7 @@
                   <input
                     type="radio"
                     name="{attr} {ctype} grade"
-                    bind:group={arkGridCores[attr][ctype].grade}
+                    bind:group={cores[attr][ctype].grade}
                     onchange={() => resetCoeffWhenCoreChanges(attr, ctype)}
                     value={grade}
                   />
@@ -116,7 +108,7 @@
                     <input
                       type="radio"
                       name="{attr} {ctype} tier"
-                      bind:group={arkGridCores[attr][ctype].tier}
+                      bind:group={cores[attr][ctype].tier}
                       onchange={() => resetCoeffWhenCoreChanges(attr, ctype)}
                       value={tier}
                     />
@@ -138,7 +130,7 @@
                     <input
                       type="number"
                       name="{attr} {ctype} {coeffKey}"
-                      bind:value={arkGridCores[attr][ctype].coeffs[coeffKey]}
+                      bind:value={cores[attr][ctype].coeffs[coeffKey]}
                     />
                   </label>
                 {/each}
@@ -147,10 +139,7 @@
           {/if}
         {:else}
           <div class="row">
-            <button
-              class="add-button"
-              onclick={() => createNewCore(attr, ctype)}
-            >
+            <button class="add-button" onclick={() => addCore(attr, ctype)}>
               +
             </button>
           </div>
@@ -161,8 +150,7 @@
   <div class="buttons">
     <button
       onclick={() => {
-        appConfig.current.uiConfig.showCoreCoeff =
-          !appConfig.current.uiConfig.showCoreCoeff;
+        toggleUI('showCoreCoeff');
       }}
     >
       전투력 계수 {appConfig.current.uiConfig.showCoreCoeff ? '숨김' : '수정'}

@@ -20,10 +20,7 @@
     appConfig,
     initArkGridCores,
   } from '../../lib/state/appConfig.state.svelte';
-  import {
-    currentCharacterProfile,
-    currentProfileName,
-  } from '../../lib/state/profile.state.svelte';
+  import { currentProfileName } from '../../lib/state/profile.state.svelte';
   import Modal from '../Modal.svelte';
 
   let importing: boolean = $state(false);

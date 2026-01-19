@@ -1,10 +1,13 @@
 <script lang="ts">
-  import { appConfig } from '../../lib/state/appConfig.state.svelte';
+  import { DEFAULT_PROFILE_NAME } from '../../lib/constants/enums';
   import {
-    DEFAULT_PROFILE_NAME,
     addNewProfile,
+    appConfig,
+  } from '../../lib/state/appConfig.state.svelte';
+  import {
     currentProfileName,
     deleteProfile,
+    initNewProfile,
     setCurrentProfileName,
   } from '../../lib/state/profile.state.svelte';
 </script>
@@ -27,7 +30,7 @@
           '새 프로필에 사용할 캐릭터명을 입력해주세요.'
         );
         if (profileName === null || profileName.length == 0) return;
-        addNewProfile(profileName);
+        addNewProfile(initNewProfile(profileName));
       }}>📁</button
     >
     <button
