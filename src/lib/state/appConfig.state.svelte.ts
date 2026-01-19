@@ -19,6 +19,10 @@ interface UIConfig {
   showGemAddPanel: boolean;
   showCoreCoeff: boolean;
 }
+const defaultUIConfig: UIConfig = {
+  showGemAddPanel: true,
+  showCoreCoeff: false,
+};
 interface AppConfig {
   characterProfiles: CharacterProfile[];
   openApiConfig: OpenApiConfig;
@@ -50,10 +54,7 @@ export const appConfig = persistedState<AppConfig>(
   {
     characterProfiles: [initNewProfile(DEFAULT_PROFILE_NAME)],
     openApiConfig: {},
-    uiConfig: {
-      showGemAddPanel: false,
-      showCoreCoeff: false,
-    },
+    uiConfig: defaultUIConfig,
   },
   {
     serializer: bigIntSerializer,

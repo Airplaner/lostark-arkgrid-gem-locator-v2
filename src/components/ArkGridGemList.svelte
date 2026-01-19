@@ -5,8 +5,13 @@
   interface Props {
     gems: ArkGridGem[];
     showDeleteButton?: boolean;
+    emptyDescription?: string;
   }
-  let { gems, showDeleteButton = true }: Props = $props();
+  let {
+    gems,
+    showDeleteButton = true,
+    emptyDescription = '보유한 젬이 없습니다.',
+  }: Props = $props();
 </script>
 
 <div class="gems">
@@ -15,7 +20,7 @@
       <ArkGridGemDetail {gem} {showDeleteButton} />
     {/each}
   {:else}
-    <span class="epmty-description">보유한 젬이 없습니다.</span>
+    <span class="epmty-description">{emptyDescription} </span>
   {/if}
 </div>
 

@@ -81,10 +81,19 @@ export function addGem(gem: ArkGridGem) {
   targetGems.push(gem);
 }
 
-export function clearGems() {
+export function clearGems(gemAttr?: ArkGridAttr) {
   const gems = getCurrentProfile().gems;
-  gems.orderGems.length = 0;
-  gems.chaosGems.length = 0;
+  switch (gemAttr) {
+    case ArkGridAttrs.Order:
+      gems.orderGems.length = 0;
+      break;
+    case ArkGridAttrs.Chaos:
+      gems.chaosGems.length = 0;
+      break;
+    default:
+      gems.orderGems.length = 0;
+      gems.chaosGems.length = 0;
+  }
 }
 
 export function deleteGem(gem: ArkGridGem) {

@@ -54,6 +54,7 @@
     flex-direction: row;
     gap: 10px;
     align-items: center;
+    user-select: none;
   }
   .title {
     font-weight: 700;

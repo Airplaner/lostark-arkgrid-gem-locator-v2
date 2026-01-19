@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
-  import { ArkGridAttrs } from '../lib/constants/enums';
+  import { type ArkGridAttr, ArkGridAttrs } from '../lib/constants/enums';
   import {
     type ArkGridGem,
     ArkGridGemOptionTypes,
@@ -20,6 +20,7 @@
   let totalChaosGems = $state<ArkGridGem[]>([]);
   let isRecording = $state<boolean>(false);
   let isDebugging = $state<boolean>(false);
+  let isLoading = $state<boolean>(false);
 
   onMount(() => {
     const ctx = debugCanvas.getContext('2d');
@@ -151,6 +152,7 @@
         5️⃣ 화면 공유 시작
     =============================== */
   async function startCapture() {
+    isLoading = true;
     await loadOpenCV();
     const matAnchor = await loadAsset('anchor');
     const matNumeric = {
@@ -183,6 +185,7 @@
       [ArkGridAttrs.Order]: await loadAsset('질서'),
       [ArkGridAttrs.Chaos]: await loadAsset('혼돈'),
     };
+    isLoading = false;
 
     let stream: MediaStream | null = null;
     try {
@@ -491,19 +494,33 @@
     loop();
   }
 
-  function applyGemList() {
-    // 현재 작업 중인 모든 젬을 현재 프로필의 젬에 반영
-    clearGems();
-    for (const gem of totalOrderGems) {
-      addGem(gem);
-    }
-    for (const gem of totalChaosGems) {
+  function applyGemList(gemAttr: ArkGridAttr, gems: ArkGridGem[]) {
+    // 현재 수집한 젬을 현재 프로필에 덮어 씌우기
+    clearGems(gemAttr);
+    for (const gem of gems) {
       addGem(gem);
     }
   }
+  const gemPanels = [
+    {
+      title: '질서',
+      attr: ArkGridAttrs.Order,
+      gems: totalOrderGems,
+    },
+    {
+      title: '혼돈',
+      attr: ArkGridAttrs.Chaos,
+      gems: totalChaosGems,
+    },
+  ];
 </script>
 
 <div class="panel">
+  {#if isLoading}
+    <div class="overlay">
+      <div class="spinner"></div>
+    </div>
+  {/if}
   <div class="title">
     <span>🖥️ 젬 화면 인식</span>
     <div
@@ -513,12 +530,12 @@
     ></div>
   </div>
   <div>
-    <button onclick={startCapture}>화면 공유 시작</button>
+    <button onclick={startCapture} disabled={isLoading}>화면 공유 시작</button>
     <button
       class:active={isDebugging}
       onclick={() => (isDebugging = !isDebugging)}
     >
-      디버그 화면 {isDebugging ? 'ON' : 'OFF'}
+      화면 {isDebugging ? '끄기' : '보기'}
     </button>
   </div>
   <div hidden={!isDebugging}>
@@ -529,13 +546,32 @@
     ></canvas>
   </div>
   <div class="dual-panel">
-    <ArkGridGemList gems={totalOrderGems}></ArkGridGemList>
-    <ArkGridGemList gems={totalChaosGems}></ArkGridGemList>
+    {#each gemPanels as panel}
+      <div class="detected-gems">
+        <div class="title">{panel.title}</div>
+        <div class="gem-list">
+          <ArkGridGemList
+            gems={panel.gems}
+            showDeleteButton={false}
+            emptyDescription=""
+          />
+        </div>
+        <button onclick={() => applyGemList(panel.attr, panel.gems)}>
+          반영
+        </button>
+      </div>
+    {/each}
   </div>
-  <button onclick={applyGemList}>반영</button>
 </div>
 
 <style>
+  /* 오버레이 + 중앙 정렬 */
+  .panel {
+    position: relative;
+  }
+  .overlay {
+    backdrop-filter: blur(1px);
+  }
   .debugView {
     width: 100%;
     height: auto;
@@ -560,5 +596,28 @@
 
   .status-dot.offline {
     background-color: #9ca3af; /* 회색 */
+  }
+
+  .detected-gems > .title {
+    font-weight: 500;
+    font-size: 1.2rem;
+    align-self: center;
+  }
+  .detected-gems {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .detected-gems > .gem-list {
+    display: flex;
+    height: 20rem;
+  }
+  button {
+    /* 너비는 자동이지만 최소 5em */
+    width: auto;
+    min-width: 5em;
+
+    /* panel 내부에서 우측 정렬 */
+    align-self: center;
   }
 </style>
