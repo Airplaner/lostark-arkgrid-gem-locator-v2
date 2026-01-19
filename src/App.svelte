@@ -16,10 +16,10 @@
 
 <main>
   <div class="contents">
-    <!-- <h3>아크그리드 젬 배치기</h3> -->
+    <div class="title">아크 그리드 최적화</div>
     <AppConfiguration></AppConfiguration>
-    <ProfileEdit></ProfileEdit>
     <GemDetectPanel></GemDetectPanel>
+    <ProfileEdit></ProfileEdit>
     <CharacterProfileEditor bind:profile={currentProfile}
     ></CharacterProfileEditor>
   </div>
@@ -32,5 +32,10 @@
     gap: var(--global-gap);
     /* 넓을 땐 20px 패딩, 960px 이후 (세로 레아이웃) 점점 좁아짐 */
     padding: clamp(8px, 2.083vw, 20px);
+  }
+  .contents .title {
+    font-weight: 700;
+    font-size: 3rem;
+    text-align: center;
   }
 </style>
