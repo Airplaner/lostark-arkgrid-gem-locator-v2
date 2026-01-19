@@ -1,79 +1,24 @@
 <script lang="ts">
-  import { currentCharacterProfile } from '../lib/store';
+  import type { ArkGridGem } from '../lib/models/arkGridGems';
   import ArkGridGemDetail from './ArkGridGemDetail.svelte';
 
-  // 탭 상태
-  const orderGems = $derived(currentCharacterProfile().orderGems);
-  const chaosGems = $derived(currentCharacterProfile().chaosGems);
-  let activeTab = $state(0);
-  const tabs = ['전체', '질서', '혼돈'];
-
-  function selectTab(index: number) {
-    activeTab = index;
+  interface Props {
+    gems: ArkGridGem[];
   }
-
-  function deleteGems() {
-    if (window.confirm('모든 젬을 삭제하겠습니까?')) {
-      orderGems.splice(0, orderGems.length);
-      chaosGems.splice(0, chaosGems.length);
-    }
-    return;
-  }
-
-  // reactive variable
-  let currentGems = $derived(
-    activeTab === 0
-      ? [...orderGems, ...chaosGems]
-      : activeTab == 1
-        ? orderGems
-        : chaosGems
-  );
+  let { gems }: Props = $props();
 </script>
 
-<div class="panel">
-  <div class="tab-container">
-    {#each tabs as tab, i}
-      <button
-        class="tab {activeTab === i ? 'active' : ''}"
-        onclick={() => selectTab(i)}
-      >
-        {#if activeTab === i}
-          &gt
-        {/if}
-        {tab}
-      </button>
+<div class="gems">
+  {#if gems.length > 0}
+    {#each gems as gem}
+      <ArkGridGemDetail {gem} />
     {/each}
-  </div>
-
-  <div class="gems">
-    {#if currentGems.length > 0}
-      {#each currentGems as gem}
-        <ArkGridGemDetail {gem} />
-      {/each}
-    {:else}
-      <span class="epmty-description">보유한 젬이 없습니다.</span>
-    {/if}
-  </div>
-  <button onclick={() => deleteGems()}>젬 초기화</button>
+  {:else}
+    <span class="epmty-description">보유한 젬이 없습니다.</span>
+  {/if}
 </div>
 
 <style>
-  .tab-container {
-    display: flex;
-    gap: 0.3em;
-  }
-
-  .tab {
-    border: 1px solid #ccc;
-
-    cursor: pointer;
-  }
-
-  .tab.active {
-    background: #fff;
-    font-weight: bold;
-  }
-
   .gems {
     /* 남은 공간을 최대한 차지 */
     flex: 1;
@@ -90,17 +35,7 @@
     overflow-y: auto;
     gap: 0.5rem;
   }
-
   .gems > .epmty-description {
     align-self: center;
-  }
-
-  button {
-    /* 너비는 자동이지만 최소 5em */
-    width: auto;
-    min-width: 5em;
-
-    /* panel 내부에서 우측 정렬 */
-    align-self: flex-end;
   }
 </style>

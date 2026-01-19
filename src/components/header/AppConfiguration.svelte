@@ -1,29 +1,30 @@
 <script lang="ts">
-  import { ArkGridAttrs, LostArkGrades } from '../lib/constants/enums';
-  import { reverseLookup } from '../lib/constants/enums';
+  import { ArkGridAttrs, LostArkGrades } from '../../lib/constants/enums';
+  import { reverseLookup } from '../../lib/constants/enums';
   import {
     ArkGridCoreNameTierMap,
     ArkGridCoreTypes,
     createCore,
-  } from '../lib/models/arkGridCores';
+  } from '../../lib/models/arkGridCores';
   import {
     ArkGridGemNames,
     type ArkGridGemOption,
     ArkGridGemOptionTypes,
     determineGemGrade,
-  } from '../lib/models/arkGridGems';
-  import { type ArkGridGem } from '../lib/models/arkGridGems';
-  import { LostArkOpenAPI } from '../lib/openapi/Api';
-  import { apiClient } from '../lib/openapi/openapi';
+  } from '../../lib/models/arkGridGems';
+  import { type ArkGridGem } from '../../lib/models/arkGridGems';
+  import { LostArkOpenAPI } from '../../lib/openapi/Api';
+  import { apiClient } from '../../lib/openapi/openapi';
   import {
     type OpenApiConfig,
-    addGem,
     appConfig,
+    initArkGridCores,
+  } from '../../lib/state/appConfig.state.svelte';
+  import {
     currentCharacterProfile,
     currentProfileName,
-    initArkGridCores,
-  } from '../lib/store';
-  import Modal from './Modal.svelte';
+  } from '../../lib/state/profile.state.svelte';
+  import Modal from '../Modal.svelte';
 
   let importing: boolean = $state(false);
   let templateOpenApiConfig = $state<OpenApiConfig>({});
@@ -174,14 +175,6 @@
             grade,
             attr == ArkGridAttrs.Chaos ? tier : 0 // 혼돈만 tier 사용
           );
-
-          // 장착 중인 젬들만 우선 추가
-          // TODO 젬 목록 API
-          if (coreSlot.Gems) {
-            for (let gem of coreSlot.Gems) {
-              addGem(parseOpenApiGem(gem));
-            }
-          }
         }
       }
     } catch (e) {

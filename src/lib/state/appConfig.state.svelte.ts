@@ -1,12 +1,12 @@
 import { persistedState } from 'svelte-persisted-state';
 
-import { type ArkGridAttr, ArkGridAttrs } from './constants/enums';
+import { type ArkGridAttr, ArkGridAttrs } from '../constants/enums';
 import {
   type ArkGridCore,
   type ArkGridCoreType,
   ArkGridCoreTypes,
-} from './models/arkGridCores';
-import { type ArkGridGem, determineGemGrade } from './models/arkGridGems';
+} from '../models/arkGridCores';
+import { type ArkGridGem, determineGemGrade } from '../models/arkGridGems';
 
 export interface OpenApiConfig {
   jwt?: string;
@@ -15,10 +15,13 @@ interface UIConfig {
   showGemAddPanel: boolean;
   showCoreCoeff: boolean;
 }
-interface CharacterInformation {
-  characterName: string;
+export interface AllGems {
   orderGems: ArkGridGem[];
   chaosGems: ArkGridGem[];
+}
+interface CharacterInformation {
+  characterName: string;
+  gems: AllGems;
   cores: Record<ArkGridAttr, Record<ArkGridCoreType, ArkGridCore | null>>;
 }
 interface AppConfig {
@@ -47,18 +50,16 @@ const bigIntSerializer = {
   },
 };
 
-export let currentProfileName = persistedState<string>(
-  'currentProfileName',
-  '기본'
-);
 export const appConfig = persistedState<AppConfig>(
   'appConfig',
   {
     characterProfiles: [
       {
         characterName: '기본',
-        orderGems: [],
-        chaosGems: [],
+        gems: {
+          orderGems: [],
+          chaosGems: [],
+        },
         cores: initArkGridCores(),
       },
     ],
@@ -72,17 +73,6 @@ export const appConfig = persistedState<AppConfig>(
     serializer: bigIntSerializer,
   }
 );
-export function currentCharacterProfile() {
-  for (const profile of appConfig.current.characterProfiles) {
-    if (profile.characterName == currentProfileName.current) {
-      return profile;
-    }
-  }
-  if (appConfig.current.characterProfiles.length == 0) {
-    throw Error;
-  }
-  return appConfig.current.characterProfiles[0];
-}
 
 export function initArkGridCores(): Record<
   ArkGridAttr,
@@ -101,18 +91,4 @@ export function initArkGridCores(): Record<
   }
 
   return cores;
-}
-// gem 추가 함수
-export function addGem(gem: ArkGridGem) {
-  if (!gem.grade) {
-    determineGemGrade(gem.req, gem.point, gem.option1, gem.option2);
-  }
-  const targetGems =
-    gem.gemAttr == ArkGridAttrs.Order
-      ? currentCharacterProfile().orderGems
-      : currentCharacterProfile().chaosGems;
-  targetGems.push(gem);
-  // 의지력 오름차순, 포인트 내림차순 정렬 및 모든 assign 제거
-  targetGems.sort((a, b) => a.req - b.req || b.point - a.point);
-  targetGems.forEach((g) => delete g.assign);
 }

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy, onMount } from 'svelte';
+  import { onMount } from 'svelte';
 
   import { ArkGridAttrs } from '../lib/constants/enums';
   import {
@@ -7,8 +7,8 @@
     ArkGridGemOptionTypes,
     isSameArkGridGem,
   } from '../lib/models/arkGridGems';
-  import { currentCharacterProfile } from '../lib/store';
-  import ArkGridGemDetail from './ArkGridGemDetail.svelte';
+  import { currentCharacterProfile } from '../lib/state/profile.state.svelte';
+  import ArkGridGemList from './ArkGridGemList.svelte';
 
   const OPENCV_URL =
     'https://cdn.jsdelivr.net/npm/@techstark/opencv-js@4.12.0-release.1/dist/opencv.min.js';
@@ -493,21 +493,21 @@
 
   function applyGemList() {
     // 현재 작업 중인 모든 젬을 현재 프로필의 젬에 반영함
-    currentCharacterProfile().orderGems.length = 0;
+    currentCharacterProfile().gems.orderGems.length = 0;
     for (const gem of totalOrderGems) {
-      currentCharacterProfile().orderGems.push(gem);
+      currentCharacterProfile().gems.orderGems.push(gem);
     }
 
-    currentCharacterProfile().chaosGems.length = 0;
+    currentCharacterProfile().gems.chaosGems.length = 0;
     for (const gem of totalChaosGems) {
-      currentCharacterProfile().chaosGems.push(gem);
+      currentCharacterProfile().gems.chaosGems.push(gem);
     }
   }
 </script>
 
 <div class="panel">
   <div class="title">
-    <span>젬 화면 인식</span>
+    <span>🖥️ 젬 화면 인식</span>
     <div
       class="status-dot"
       class:online={isRecording}
@@ -531,26 +531,8 @@
     ></canvas>
   </div>
   <div class="dual-panel">
-    <div>
-      <p>질서: {totalOrderGems.length}개</p>
-      {#if totalOrderGems.length > 0}
-        {#each totalOrderGems as gem}
-          <ArkGridGemDetail {gem} />
-        {/each}
-      {:else}
-        <span class="epmty-description">보유한 젬이 없습니다.</span>
-      {/if}
-    </div>
-    <div>
-      <p>혼돈: {totalChaosGems.length}개</p>
-      {#if totalChaosGems.length > 0}
-        {#each totalChaosGems as gem}
-          <ArkGridGemDetail {gem} />
-        {/each}
-      {:else}
-        <span class="epmty-description">보유한 젬이 없습니다.</span>
-      {/if}
-    </div>
+    <ArkGridGemList gems={totalOrderGems}></ArkGridGemList>
+    <ArkGridGemList gems={totalChaosGems}></ArkGridGemList>
   </div>
   <button onclick={applyGemList}>반영</button>
 </div>

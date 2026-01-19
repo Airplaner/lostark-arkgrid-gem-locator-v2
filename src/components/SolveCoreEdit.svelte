@@ -11,7 +11,7 @@
   interface Props {
     core: ArkGridCore;
   }
-  let { core } = $props();
+  let { core }: Props = $props();
 
   let energy = $state(0);
   let point = $state(0);

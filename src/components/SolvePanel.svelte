@@ -17,7 +17,7 @@
     buildScoreMap,
   } from '../lib/solver/models';
   import { getBestGemSetPacks, getPossibleGemSets } from '../lib/solver/solver';
-  import { appConfig, currentCharacterProfile } from '../lib/store';
+  import { currentCharacterProfile } from '../lib/state/profile.state.svelte';
   import SolveCoreEdit from './SolveCoreEdit.svelte';
 
   const coreComponents: Record<
@@ -111,9 +111,9 @@
 
     /* sovler.Gem으로 변경 */
     const { gems: orderGems, reverseMap: orderGemReverseMap } =
-      convertToSolverGems(currentCharacterProfile().orderGems);
+      convertToSolverGems(currentCharacterProfile().gems.orderGems);
     const { gems: chaosGems, reverseMap: chaosGemReverseMap } =
-      convertToSolverGems(currentCharacterProfile().chaosGems);
+      convertToSolverGems(currentCharacterProfile().gems.chaosGems);
     console.log(`질서 젬 ${orderGems.length}개, 혼돈 젬 ${chaosGems.length}개`);
 
     /* 각 코어별 장착 가능한 조합 (GemSet) 수집 */
@@ -237,10 +237,10 @@
       return result;
     }
 
-    currentCharacterProfile().orderGems.forEach((g) => {
+    currentCharacterProfile().gems.orderGems.forEach((g) => {
       delete g.assign;
     });
-    currentCharacterProfile().chaosGems.forEach((g) => {
+    currentCharacterProfile().gems.chaosGems.forEach((g) => {
       delete g.assign;
     });
     assignGem(answer.gsp1?.gs1, orderGemReverseMap, 0);

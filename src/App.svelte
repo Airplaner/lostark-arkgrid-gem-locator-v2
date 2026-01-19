@@ -1,13 +1,13 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
-  import AppConfiguration from './components/AppConfiguration.svelte';
+  import ArkGridAllGemListPanel from './components/ArkGridAllGemListPanel.svelte';
   import ArkGridCoreEditPanel from './components/ArkGridCoreEditPanel.svelte';
-  import ArkgridGemAddPanel from './components/ArkGridGemAddPanel.svelte';
-  import ArkGridGemList from './components/ArkGridGemList.svelte';
   import GemDetectPanel from './components/GemDetectPanel.svelte';
-  import ProfileEdit from './components/ProfileEdit.svelte';
   import SolvePanel from './components/SolvePanel.svelte';
+  import AppConfiguration from './components/header/AppConfiguration.svelte';
+  import ProfileEdit from './components/header/ProfileEditor.svelte';
+  import { currentCharacterProfile } from './lib/state/profile.state.svelte';
 
   /* origin (왼쪽 코어) 패널의 높이에 맞춰서 other (오른쪽 젬) 패널의 높이 조절*/
   let originRef = $state<HTMLDivElement | undefined>();
@@ -61,7 +61,7 @@
         <ArkGridCoreEditPanel />
       </div>
       <div bind:this={otherRef as HTMLDivElement}>
-        <ArkGridGemList />
+        <ArkGridAllGemListPanel gems={currentCharacterProfile().gems} />
       </div>
     </div>
     <SolvePanel></SolvePanel>

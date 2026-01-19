@@ -10,7 +10,8 @@
     createCore,
     resetCoreCoeff,
   } from '../lib/models/arkGridCores';
-  import { appConfig, currentCharacterProfile } from '../lib/store';
+  import { appConfig } from '../lib/state/appConfig.state.svelte';
+  import { currentCharacterProfile } from '../lib/state/profile.state.svelte';
 
   const arkGridCoreTierName: Record<ArkGridCoreType, Array<string>> = {
     [ArkGridCoreTypes.SUN]: ['현란한 공격', '안정적인/재빠른 공격', '그 외'],
@@ -66,6 +67,7 @@
 </script>
 
 <div class="panel">
+  <div class="title">코어 설정</div>
   {#each attrs as attr}
     {#each ctypes as ctype}
       <fieldset class="core-slot">
