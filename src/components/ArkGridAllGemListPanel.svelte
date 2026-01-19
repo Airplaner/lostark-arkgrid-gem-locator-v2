@@ -49,7 +49,7 @@
   <button
     onclick={() => {
       addGem({
-        gemAttr: ArkGridAttrs.Order,
+        gemAttr: activeTab == 0 ? ArkGridAttrs.Order : ArkGridAttrs.Chaos,
         req: 3,
         point: 5,
         option1: { optionType: '공격력', value: 1 },
