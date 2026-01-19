@@ -52,17 +52,17 @@
   });
 </script>
 
-<div class="dual-panel">
-  {#if profile}
+{#if profile}
+  <div class="dual-panel">
     <div bind:this={originRef as HTMLDivElement}>
       <ArkGridCoreEditPanel bind:cores={profile.cores} />
     </div>
     <div bind:this={otherRef as HTMLDivElement}>
       <ArkGridAllGemListPanel gems={profile.gems} />
     </div>
-  {/if}
-</div>
-<SolvePanel {profile}></SolvePanel>
+  </div>
+  <SolvePanel {profile}></SolvePanel>
+{/if}
 
 <style>
   .dual-panel {

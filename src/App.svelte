@@ -18,8 +18,8 @@
   <div class="contents">
     <div class="title">아크 그리드 최적화</div>
     <AppConfiguration></AppConfiguration>
-    <GemDetectPanel></GemDetectPanel>
     <ProfileEdit></ProfileEdit>
+    <GemDetectPanel></GemDetectPanel>
     <CharacterProfileEditor bind:profile={currentProfile}
     ></CharacterProfileEditor>
   </div>

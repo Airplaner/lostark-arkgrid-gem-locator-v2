@@ -22,6 +22,7 @@
     getCurrentProfile,
     unassignGems,
   } from '../lib/state/profile.state.svelte';
+  import CoreGemEquipped from './CoreGemEquipped.svelte';
   import SolveCoreEdit from './SolveCoreEdit.svelte';
 
   interface Props {
@@ -257,6 +258,15 @@
     assignGem(answer.gsp2?.gs3, chaosGemReverseMap, 5);
     return;
   }
+  let coreGemSets: ArkGridGem[][] = $state([[], [], [], [], [], []]);
+  $effect(() => {
+    for (const i of [0, 1, 2]) {
+      coreGemSets[i] = profile.gems.orderGems.filter((g) => g.assign == i);
+    }
+    for (const i of [3, 4, 5]) {
+      coreGemSets[i] = profile.gems.chaosGems.filter((g) => g.assign == i);
+    }
+  });
 </script>
 
 <div class="panel">
@@ -272,4 +282,39 @@
     {/each}
   </div>
   <button onclick={solve}> Solve!</button>
+  <div class="title">배치 결과</div>
+  <div class="solved-cores-tuples">
+    {#each Object.values(ArkGridAttrs) as attr, i}
+      <div class="solved-cores">
+        {#each Object.values(ArkGridCoreTypes) as ctype, j}
+          <CoreGemEquipped
+            core={profile.cores[attr][ctype]}
+            gems={coreGemSets[i * 3 + j]}
+          ></CoreGemEquipped>
+        {/each}
+      </div>
+    {/each}
+  </div>
 </div>
+
+<style>
+  button {
+    /* 너비는 자동이지만 최소 5em */
+    width: auto;
+    min-width: 5em;
+
+    /* panel 내부에서 우측 정렬 */
+    align-self: center;
+  }
+  .solved-cores-tuples {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .solved-cores {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+</style>

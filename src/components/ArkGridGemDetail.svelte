@@ -28,7 +28,7 @@
   let { gem, showDeleteButton = true }: Props = $props();
 </script>
 
-<div class={`gem-box assign-${gem.assign}`}>
+<div class="gem-box">
   <div class="gem">
     <div class="col image">
       <img src={getGemImage(gem)} alt={gem.name} />
@@ -70,25 +70,6 @@
   }
   .gem-box .edit-button {
     flex: 0 0 auto;
-  }
-  /* 임시 */
-  .assign-0 {
-    border: 2px solid red;
-  }
-  .assign-1 {
-    border: 2px solid blue;
-  }
-  .assign-2 {
-    border: 2px solid green;
-  }
-  .assign-3 {
-    border: 2px solid red;
-  }
-  .assign-4 {
-    border: 2px solid blue;
-  }
-  .assign-5 {
-    border: 2px solid green;
   }
   .gem {
     /* min-width: 12rem; */
