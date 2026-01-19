@@ -106,6 +106,7 @@
     overflow: hidden;
     overflow-y: hidden;
 
+    flex-grow: 1;
     flex-shrink: 0;
     /* 외관 */
   }
