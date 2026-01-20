@@ -22,6 +22,7 @@
   import {
     type OpenApiConfig,
     appConfig,
+    toggleUI,
   } from '../../lib/state/appConfig.state.svelte';
   import {
     addGem,
@@ -249,6 +250,11 @@
 <div class="buttons">
   <button onclick={() => (showModal = true)}>Open API 설정</button>
   <button onclick={importFromOpenAPI}>데이터 가져오기</button>
+  <button onclick={() => toggleUI('debugMode')}
+    >개발자 모드 {appConfig.current.uiConfig.debugMode
+      ? '끄기'
+      : '켜기'}</button
+  >
 </div>
 
 <style>

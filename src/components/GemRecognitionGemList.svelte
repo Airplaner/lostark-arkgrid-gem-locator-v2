@@ -1,9 +1,6 @@
 <script lang="ts">
   import { type ArkGridAttr, ArkGridAttrs } from '../lib/constants/enums';
-  import {
-    type ArkGridGem,
-    ArkGridGemOptionTypes,
-  } from '../lib/models/arkGridGems';
+  import { appConfig } from '../lib/state/appConfig.state.svelte';
   import {
     type AllGems,
     addGem,
@@ -23,6 +20,16 @@
   // 탭 상태
   let activeTab = $state(0);
   const tabs = ['질서', '혼돈'];
+  let currentGems = $derived.by(() => {
+    switch (activeTab) {
+      case 0:
+        return orderGems;
+      case 1:
+        return chaosGems;
+      default:
+        return [];
+    }
+  });
 
   export function selectTab(index: number) {
     activeTab = index;
@@ -46,20 +53,6 @@
     }
   }
 
-  // reactive variable
-  let currentGems = $derived.by(() => {
-    switch (activeTab) {
-      case 0:
-        return gems.orderGems;
-      case 1:
-        return gems.chaosGems;
-      default:
-        return [];
-    }
-  });
-  let currentAttr: ArkGridAttr = $derived(
-    activeTab == 0 ? ArkGridAttrs.Order : ArkGridAttrs.Chaos
-  );
   function applyGemList() {
     // 현재 수집한 젬을 현재 프로필에 덮어 씌우기
     if (orderGems.length > 0) {
@@ -99,21 +92,31 @@
     혼돈 {chaosGems.length}개 보유 중)
   </div>
   <div class="buttons">
-    <button
-      onclick={() => applyGemList()}
-      disabled={orderGems.length == 0 && chaosGems.length == 0}
-    >
-      ✅ 현재 프로필에 반영
-    </button>
-    <button
-      hidden
-      onclick={() => {
-        orderGems.length = 0;
-        chaosGems.length = 0;
-      }}>초기화</button
-    >
-    <button hidden onclick={() => scroll('top')}>▲</button>
-    <button hidden onclick={() => scroll('bottom')}>▼</button>
+    <div>
+      <button
+        onclick={() => applyGemList()}
+        disabled={orderGems.length == 0 && chaosGems.length == 0}
+      >
+        ✅ 현재 프로필에 반영
+      </button>
+    </div>
+    <div>
+      <button
+        hidden={!appConfig.current.uiConfig.debugMode}
+        onclick={() => scroll('top')}>▲</button
+      >
+      <button
+        hidden={!appConfig.current.uiConfig.debugMode}
+        onclick={() => scroll('bottom')}>▼</button
+      >
+      <button
+        disabled={orderGems.length == 0 && chaosGems.length == 0}
+        onclick={() => {
+          orderGems.length = 0;
+          chaosGems.length = 0;
+        }}>초기화</button
+      >
+    </div>
   </div>
 </div>
 
@@ -144,9 +147,9 @@
   .buttons {
     display: flex;
     gap: 0.4rem;
-    justify-content: right;
+    justify-content: space-between;
   }
-  .buttons > button {
+  .buttons button {
     /* 너비는 자동이지만 최소 5em */
     width: auto;
     min-width: 5em;

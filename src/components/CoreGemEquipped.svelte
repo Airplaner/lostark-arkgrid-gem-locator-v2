@@ -7,6 +7,7 @@
     type ArkGridGem,
     ArkGridGemOptionTypes,
   } from '../lib/models/arkGridGems';
+  import { appConfig } from '../lib/state/appConfig.state.svelte';
   import ArkGridGemDetail from './ArkGridGemDetail.svelte';
 
   let { core, gems }: { core: ArkGridCore | null; gems: ArkGridGem[] } =
@@ -72,7 +73,7 @@
   <div>
     <div>포인트: {corePoint}P</div>
     <div>의지력: {usedPower}/{getDefaultCoreEnergy(core)}</div>
-    <div hidden>
+    <div hidden={!appConfig.current.uiConfig.debugMode}>
       <p>공격력: {totalAtt}</p>
       <p>추가 피해: {totalSkill}</p>
       <p>보스 피해: {totalBoss}</p>

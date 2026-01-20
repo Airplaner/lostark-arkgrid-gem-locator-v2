@@ -19,11 +19,13 @@ interface UIConfig {
   showGemRecognitionPanel: boolean;
   showGemRecognitionGuide: boolean;
   showCoreCoeff: boolean;
+  debugMode: boolean;
 }
 const defaultUIConfig: UIConfig = {
   showGemRecognitionPanel: true,
   showGemRecognitionGuide: true,
   showCoreCoeff: false,
+  debugMode: false,
 };
 interface AppConfig {
   characterProfiles: CharacterProfile[];

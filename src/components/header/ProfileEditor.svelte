@@ -52,6 +52,7 @@
     >
     <button
       title="현재 프로필 내보내기"
+      hidden={!appConfig.current.uiConfig.debugMode}
       onclick={() => {
         const jsonStr = JSON.stringify(
           getProfile(currentProfileName.current),
@@ -77,6 +78,7 @@
     >
     <button
       title="프로필 불러오기"
+      hidden={!appConfig.current.uiConfig.debugMode}
       onclick={() => {
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
