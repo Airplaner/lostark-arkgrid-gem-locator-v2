@@ -91,6 +91,7 @@
   </div>
   <ArkGridGemList
     gems={currentGems}
+    showDeleteButton={false}
     emptyDescription="인식된 젬이 없습니다."
     bind:this={container}
   ></ArkGridGemList>
