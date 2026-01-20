@@ -466,10 +466,8 @@
               for (const gem of currentGems) {
                 totalGems.push(gem);
               }
-              if (gemAttr == ArkGridAttrs.Order)
-                scrollOrderGems = { type: 'bottom', tick: Date.now() };
-              if (gemAttr == ArkGridAttrs.Chaos)
-                scrollChaosGems = { type: 'bottom', tick: Date.now() };
+              gemListElem?.selectTab(gemAttr == ArkGridAttrs.Order ? 0 : 1);
+              gemListElem?.scroll('bottom');
               // console.log($state.snapshot(totalGems));
             } else {
               if (currentGems.length == 9 && totalGems.length < 100) {

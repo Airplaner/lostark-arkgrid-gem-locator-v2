@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { tick } from 'svelte';
+
   import { type ArkGridAttr, ArkGridAttrs } from '../lib/constants/enums';
   import { appConfig } from '../lib/state/appConfig.state.svelte';
   import {
@@ -17,9 +19,22 @@
   // 탭 상태
   let activeTab = $state(0);
   const tabs = ['질서', '혼돈'];
+  let container: ArkGridGemList;
+  let scrollPositions = $state<number[]>([0, 0]);
 
   function selectTab(index: number) {
+    scrollPositions[activeTab] = container?.getScrollTop?.() ?? 0;
     activeTab = index;
+    // 다음 tick 이후 복원
+    queueMicrotask(async () => {
+      await tick();
+      await new Promise(requestAnimationFrame);
+
+      const pos = scrollPositions[index];
+      if (pos != null) {
+        container.scrollToPosition(pos);
+      }
+    });
   }
 
   // reactive variable
@@ -53,7 +68,7 @@
       </button>
     {/each}
   </div>
-  <ArkGridGemList gems={currentGems}></ArkGridGemList>
+  <ArkGridGemList gems={currentGems} bind:this={container}></ArkGridGemList>
   <div class="buttons">
     <button
       hidden={!appConfig.current.uiConfig.debugMode}

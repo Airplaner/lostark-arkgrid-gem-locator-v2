@@ -1,5 +1,7 @@
 <script lang="ts">
-  import { type ArkGridAttr, ArkGridAttrs } from '../lib/constants/enums';
+  import { tick } from 'svelte';
+
+  import { ArkGridAttrs } from '../lib/constants/enums';
   import { appConfig } from '../lib/state/appConfig.state.svelte';
   import {
     type AllGems,
@@ -13,9 +15,10 @@
   }
 
   let { gems }: Props = $props();
-  let container: HTMLDivElement;
+  let container: ArkGridGemList;
   let orderGems = $derived(gems.orderGems);
-  let chaosGems = $derived(gems.orderGems);
+  let chaosGems = $derived(gems.chaosGems);
+  let scrollPositions = $state<number[]>([0, 0]);
 
   // 탭 상태
   let activeTab = $state(0);
@@ -23,34 +26,30 @@
   let currentGems = $derived.by(() => {
     switch (activeTab) {
       case 0:
-        return orderGems;
+        return gems.orderGems;
       case 1:
-        return chaosGems;
+        return gems.chaosGems;
       default:
         return [];
     }
   });
 
   export function selectTab(index: number) {
+    scrollPositions[activeTab] = container?.getScrollTop?.() ?? 0;
     activeTab = index;
+    // 다음 tick 이후 복원
+    queueMicrotask(async () => {
+      await tick();
+      await new Promise(requestAnimationFrame);
+
+      const pos = scrollPositions[index];
+      if (pos != null) {
+        container.scrollToPosition(pos);
+      }
+    });
   }
   export function scroll(command: 'top' | 'bottom') {
-    switch (command) {
-      case 'top':
-        container.scrollTo({
-          top: 0,
-          behavior: 'smooth',
-        });
-        break;
-      case 'bottom':
-        container.scrollTo({
-          top: container.scrollHeight,
-          behavior: 'smooth',
-        });
-        break;
-      default:
-        break;
-    }
+    container.scroll(command);
   }
 
   function applyGemList() {
@@ -72,7 +71,7 @@
 
 <div class="panel">
   <div class="title">인식된 젬 목록</div>
-  <div class="tab-container" bind:this={container}>
+  <div class="tab-container">
     {#each tabs as tab, i}
       <button
         class="tab {activeTab === i ? 'active' : ''}"
@@ -85,7 +84,10 @@
       </button>
     {/each}
   </div>
-  <ArkGridGemList gems={currentGems} emptyDescription="인식된 젬이 없습니다."
+  <ArkGridGemList
+    gems={currentGems}
+    emptyDescription="인식된 젬이 없습니다."
+    bind:this={container}
   ></ArkGridGemList>
   <div class="gem-count">
     젬 보유 수량 {orderGems.length + chaosGems.length} / 100<br />(질서 {orderGems.length}개,
@@ -123,6 +125,7 @@
 <style>
   .panel {
     min-height: 40rem;
+    max-height: 45rem;
   }
   .tab-container {
     display: flex;

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { tick } from 'svelte';
+
   import type { ScrollCommand } from '../lib/constants/enums';
   import type { ArkGridGem } from '../lib/models/arkGridGems';
   import ArkGridGemDetail from './ArkGridGemDetail.svelte';
@@ -7,37 +9,57 @@
     gems: ArkGridGem[];
     showDeleteButton?: boolean;
     emptyDescription?: string;
-    scrollCommand?: ScrollCommand;
   }
   let {
     gems,
     showDeleteButton = true,
     emptyDescription = '보유한 젬이 없습니다.',
-    scrollCommand = null,
   }: Props = $props();
 
   let container: HTMLDivElement;
+  let scheduled = false;
+  let lastCommand: ScrollCommand = null;
 
-  $effect(() => {
-    if (scrollCommand === null) return;
-    switch (scrollCommand.type) {
-      case 'top':
-        container.scrollTo({
-          top: 0,
-          behavior: 'smooth',
-        });
-        break;
-      case 'bottom':
+  export function scroll(command: 'top' | 'bottom') {
+    // DOM 갱신이 완료된 이후에 가장 위 혹은 아래로 scroll
+    lastCommand = command;
+
+    if (scheduled) return;
+
+    scheduled = true;
+
+    queueMicrotask(async () => {
+      await tick();
+      await new Promise(requestAnimationFrame);
+
+      scheduled = false;
+
+      if (!lastCommand) return;
+
+      if (lastCommand === 'top') {
+        container.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
         container.scrollTo({
           top: container.scrollHeight,
           behavior: 'smooth',
         });
-        break;
+      }
 
-      default:
-        break;
-    }
-  });
+      lastCommand = null;
+    });
+  }
+  export function getScrollTop() {
+    // 현재 내부 컨테이너의 scrollTop 반환
+    return container.scrollTop;
+  }
+
+  export function scrollToPosition(top: number) {
+    // 특정 위치로 즉시 scroll
+    container.scrollTo({
+      top,
+      behavior: 'auto',
+    });
+  }
 </script>
 
 <div class="gems" bind:this={container}>
