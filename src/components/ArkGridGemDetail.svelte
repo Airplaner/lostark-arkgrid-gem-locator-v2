@@ -1,4 +1,6 @@
 <script lang="ts">
+  import imgCorePoint from '../assets/corepoint.png';
+  import imgWillPower from '../assets/willpower.png';
   import { ArkGridAttrs } from '../lib/constants/enums';
   import type { ArkGridGem } from '../lib/models/arkGridGems';
   import { deleteGem } from '../lib/state/profile.state.svelte';
@@ -11,13 +13,19 @@
     '혼돈의 젬 : 왜곡': 'chaos_1',
     '혼돈의 젬 : 붕괴': 'chaos_2',
   };
+  const gemImages = import.meta.glob<string>('../assets/gems/*.png', {
+    eager: true,
+    import: 'default',
+  });
   function getGemImage(gem: ArkGridGem): string {
     if (!gem.name) {
       return gem.gemAttr == ArkGridAttrs.Order
-        ? '/src/assets/gems/order_0.png'
-        : '/src/assets/gems/chaos_0.png';
+        ? gemImages['../assets/gems/order_0.png']
+        : gemImages['../assets/gems/chaos_0.png'];
     }
-    return `/src/assets/gems/${MapGemNameImage[gem.name] ?? 'order_0'}.png`;
+    return gemImages[
+      `../assets/gems/${MapGemNameImage[gem.name] ?? 'order_0'}.png`
+    ];
   }
 
   interface Props {
@@ -35,10 +43,10 @@
     </div>
     <div class="col main-options">
       <div class="main-option">
-        {gem.req}<img src="/src/assets/willpower.png" alt="W" />
+        {gem.req}<img src={imgWillPower} alt="W" />
       </div>
       <div class="main-option">
-        {gem.point}<img src="/src/assets/corepoint.png" alt="P" />
+        {gem.point}<img src={imgCorePoint} alt="P" />
       </div>
     </div>
     <div class="vl"></div>

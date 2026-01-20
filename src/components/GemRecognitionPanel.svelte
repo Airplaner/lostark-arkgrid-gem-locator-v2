@@ -17,7 +17,10 @@
 
   const OPENCV_URL =
     'https://cdn.jsdelivr.net/npm/@techstark/opencv-js@4.12.0-release.1/dist/opencv.min.js';
-
+  const guideImages = import.meta.glob<string>('../assets/guide/*.png', {
+    eager: true,
+    import: 'default',
+  });
   let cv: any;
   let debugCanvas: HTMLCanvasElement;
   let debugCtx: CanvasRenderingContext2D;
@@ -701,7 +704,7 @@
         </div>
         {#if appConfig.current.uiConfig.showGemRecognitionGuide}
           <div class="content">
-            <img src="/src/assets/guide/1.png" alt="guide-img1" />
+            <img src={guideImages['../assets/guide/1.png']} alt="guide-img1" />
             <p>
               1. 로스트아크 설정에서 해상도가 1920x1080 (16:9)인지 확인해주세요.
             </p>
@@ -714,7 +717,7 @@
               3. 게임에서 젬 목록 화면을 연 뒤 모든 젬을 장착 해제하고, [🖥️ 화면
               공유 시작] 버튼을 통해 화면을 공유해주세요
             </p>
-            <img src="/src/assets/guide/2.png" alt="guide-img2" />
+            <img src={guideImages['../assets/guide/2.png']} alt="guide-img2" />
             <p>
               4. 마우스가 젬을 가리지 않도록 스크롤바 위에 위치시키는 것을
               추천드립니다. 스크롤을 천천히 내리면서 인식된 젬이 목록에 추가되는
