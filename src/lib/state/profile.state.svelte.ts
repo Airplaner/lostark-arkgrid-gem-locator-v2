@@ -9,6 +9,7 @@ import {
 import {
   type ArkGridCore,
   type ArkGridCoreType,
+  ArkGridCoreTypes,
   createCore,
 } from '../models/arkGridCores';
 import { type ArkGridGem, determineGemGrade } from '../models/arkGridGems';
@@ -128,4 +129,20 @@ export function addCore(attr: ArkGridAttr, ctype: ArkGridCoreType) {
 export function resetCore(attr: ArkGridAttr, ctype: ArkGridCoreType) {
   const cores = getCurrentProfile().cores;
   cores[attr][ctype] = null;
+}
+export function clearCores() {
+  const cores = getCurrentProfile().cores;
+  for (const attr of Object.values(ArkGridAttrs)) {
+    for (const ctype of Object.values(ArkGridCoreTypes)) {
+      cores[attr][ctype] = null;
+    }
+  }
+}
+export function updateCore(
+  attr: ArkGridAttr,
+  ctype: ArkGridCoreType,
+  core: ArkGridCore
+) {
+  const cores = getCurrentProfile().cores;
+  cores[attr][ctype] = core;
 }

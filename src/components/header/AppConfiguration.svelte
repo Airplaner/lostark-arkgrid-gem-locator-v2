@@ -1,5 +1,9 @@
 <script lang="ts">
-  import { ArkGridAttrs, LostArkGrades } from '../../lib/constants/enums';
+  import {
+    ArkGridAttrs,
+    DEFAULT_PROFILE_NAME,
+    LostArkGrades,
+  } from '../../lib/constants/enums';
   import { reverseLookup } from '../../lib/constants/enums';
   import {
     ArkGridCoreNameTierMap,
@@ -18,9 +22,13 @@
   import {
     type OpenApiConfig,
     appConfig,
-    initArkGridCores,
   } from '../../lib/state/appConfig.state.svelte';
-  import { currentProfileName } from '../../lib/state/profile.state.svelte';
+  import {
+    addGem,
+    clearCores,
+    currentProfileName,
+    updateCore,
+  } from '../../lib/state/profile.state.svelte';
   import Modal from '../Modal.svelte';
 
   let importing: boolean = $state(false);
@@ -117,20 +125,32 @@
   }
 
   async function importFromOpenAPI() {
-    if (currentProfileName.current == '기본') {
-      window.alert('기본 프로필에서는 가져올 수 없습니다!');
+    if (
+      !window.confirm(
+        `${currentProfileName.current == DEFAULT_PROFILE_NAME ? '' : currentProfileName.current + ' '}캐릭터의 정보를 가져와 현재 프로필의 코어와 젬에 추가합니다. 진행하시겠습니까?`
+      )
+    ) {
       return;
     }
     if (!appConfig.current.openApiConfig.jwt) {
-      window.alert('JWT 설정 필요!');
+      window.alert('OpenAPI JWT가 설정되어 있지 않습니다.');
       return;
     }
+    let characterName = null;
+    if (currentProfileName.current == DEFAULT_PROFILE_NAME) {
+      characterName = window.prompt(
+        '정보를 가져올 캐릭터 이름을 입력해주세요.'
+      );
+      if (characterName === null || characterName.length == 0) return;
+    } else {
+      characterName = currentProfileName.current;
+    }
+    if (characterName === null) return;
+    characterName = characterName.trim();
 
     try {
       // fetch
-      const res = await apiClient.armories.armoriesGetArkGrid(
-        currentProfileName.current
-      );
+      const res = await apiClient.armories.armoriesGetArkGrid(characterName);
       // apiClient가 ok가 아니라면 알아서 error로 던져줌
       // 하지만 데이터가 없는 경우 null로 오는 걸 캐치
       if (!res.data) {
@@ -142,8 +162,7 @@
 
       if (res.data.Slots) {
         // 코어 데이터가 존재하는 경우 갱신 시작
-        currentCharacterProfile().cores = initArkGridCores();
-
+        clearCores();
         // 모든 slot에 대해서
         for (let coreSlot of res.data.Slots) {
           if (!coreSlot.Name || !coreSlot.Grade) {
@@ -166,12 +185,24 @@
           }
 
           // 성공적으로 변환한 코어 저장
-          currentCharacterProfile().cores[attr][ctype] = createCore(
+          updateCore(
             attr,
             ctype,
-            grade,
-            attr == ArkGridAttrs.Chaos ? tier : 0 // 혼돈만 tier 사용
+            createCore(
+              attr,
+              ctype,
+              grade,
+              attr == ArkGridAttrs.Chaos ? tier : 0 // 혼돈만 tier 사용
+            )
           );
+
+          // 장착 중인 젬 추가
+          // TODO 젬 목록 API
+          if (coreSlot.Gems) {
+            for (let gem of coreSlot.Gems) {
+              addGem(parseOpenApiGem(gem));
+            }
+          }
         }
       }
     } catch (e) {
