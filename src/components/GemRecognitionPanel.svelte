@@ -72,9 +72,8 @@
 
   async function loadAsset(name: string) {
     // 주어진 이름의 어셋을 읽고 grayscale로 변환한 뒤 cv.Mat으로 반환한다.
-    const img = await createImageBitmap(
-      await fetch(`src/assets/opencv/${name}.png`).then((r) => r.blob())
-    );
+    const url = `${import.meta.env.BASE_URL}/opencv/${name}.png`;
+    const img = await createImageBitmap(await fetch(url).then((r) => r.blob()));
     const off = document.createElement('canvas');
     off.width = img.width;
     off.height = img.height;
