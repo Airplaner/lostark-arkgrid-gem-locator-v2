@@ -1,17 +1,28 @@
 <script lang="ts">
+  import type { ArkGridAttr } from '../../lib/constants/enums';
   import {
     type ArkGridCore,
+    type ArkGridCoreType,
     getDefaultCoreEnergy,
-  } from '../lib/models/arkGridCores';
+  } from '../../lib/models/arkGridCores';
   import {
     type ArkGridGem,
     ArkGridGemOptionTypes,
-  } from '../lib/models/arkGridGems';
-  import { appConfig } from '../lib/state/appConfig.state.svelte';
-  import ArkGridGemDetail from './ArkGridGemDetail.svelte';
+  } from '../../lib/models/arkGridGems';
+  import { appConfig } from '../../lib/state/appConfig.state.svelte';
+  import ArkGridGemDetail from '../ArkGridGemDetail.svelte';
 
-  let { core, gems }: { core: ArkGridCore | null; gems: ArkGridGem[] } =
-    $props();
+  let {
+    attr,
+    ctype,
+    core,
+    gems,
+  }: {
+    attr: ArkGridAttr;
+    ctype: ArkGridCoreType;
+    core: ArkGridCore | null;
+    gems: ArkGridGem[];
+  } = $props();
 
   let corePoint = $derived.by(() => {
     return gems.reduce((sum, gem) => {
@@ -67,19 +78,15 @@
 <div class="root">
   <div class="title">
     <div class="name">
-      {core?.attr}의 {core?.type}
+      {attr}의 {ctype}
     </div>
   </div>
-  <div>
-    <div>포인트: {corePoint}P</div>
-    <div>의지력: {usedPower}/{getDefaultCoreEnergy(core)}</div>
-    <div hidden={!appConfig.current.uiConfig.debugMode}>
-      <p>공격력: {totalAtt}</p>
-      <p>추가 피해: {totalSkill}</p>
-      <p>보스 피해: {totalBoss}</p>
+  <div class="core-point-and-power">
+    <div class="item" hidden={!core}>포인트 {corePoint}</div>
+    <div class="item" hidden={!core}>
+      의지력 {usedPower}/{getDefaultCoreEnergy(core)}
     </div>
   </div>
-
   <div class="gems">
     {#each gems as gem}
       <ArkGridGemDetail {gem} showDeleteButton={false}></ArkGridGemDetail>
@@ -89,9 +96,15 @@
 
 <style>
   .root {
-    width: 20rem;
+    width: 18rem;
     display: flex;
     flex-direction: column;
+    padding: 0.5rem;
+    height: 22rem;
+
+    border: 1px solid var(--border);
+    border-radius: 0.4rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   }
   .title {
     font-weight: 500;
@@ -102,5 +115,15 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+  }
+  .core-point-and-power {
+    font-size: 0.9rem;
+    align-self: center;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+  }
+  .core-point-and-power > .item {
+    padding: 0.5rem;
   }
 </style>

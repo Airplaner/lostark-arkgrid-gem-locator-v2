@@ -67,6 +67,7 @@
     padding: 0.4rem;
     justify-content: space-between;
     align-items: center;
+    background-color: white;
   }
   .gem-box .edit-button {
     flex: 0 0 auto;

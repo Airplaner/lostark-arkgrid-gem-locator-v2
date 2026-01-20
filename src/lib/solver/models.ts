@@ -3,7 +3,7 @@ export class Core {
     public energy: number,
     public point: number,
     public coeff: number[]
-  ) {}
+  ) { }
 }
 
 export class Gem {
@@ -14,7 +14,7 @@ export class Gem {
     public att: number,
     public skill: number,
     public boss: number
-  ) {}
+  ) { }
 }
 
 export function buildScoreMap(coeff: number, maxLevel: number) {
@@ -170,3 +170,4 @@ export class GemSetPackTuple {
       10000;
   }
 }
+
