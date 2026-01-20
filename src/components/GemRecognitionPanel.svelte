@@ -12,8 +12,10 @@
     ArkGridGemOptionTypes,
     isSameArkGridGem,
   } from '../lib/models/arkGridGems';
+  import { appConfig, toggleUI } from '../lib/state/appConfig.state.svelte';
   import { addGem, clearGems } from '../lib/state/profile.state.svelte';
-  import ArkGridGemList from './ArkGridGemList.svelte';
+  import ArkGridAllGemListPanel from './ArkGridAllGemListPanel.svelte';
+  import GemRecognitionGemList from './GemRecognitionGemList.svelte';
 
   const OPENCV_URL =
     'https://cdn.jsdelivr.net/npm/@techstark/opencv-js@4.12.0-release.1/dist/opencv.min.js';
@@ -28,6 +30,7 @@
   let isLoading = $state<boolean>(false);
   let scrollOrderGems: ScrollCommand = $state(null);
   let scrollChaosGems: ScrollCommand = $state(null);
+  let gemListElem: GemRecognitionGemList | null = null;
 
   onMount(() => {
     const ctx = debugCanvas.getContext('2d');
@@ -507,11 +510,11 @@
                     // 내 화면의 sameCount부터 끝에 있는 젬들까지 추가 대상임
                     for (let i = sameCount; i < 9; i++) {
                       totalGems.push(currentGems[i]);
+                      gemListElem?.selectTab(
+                        gemAttr == ArkGridAttrs.Order ? 0 : 1
+                      );
+                      gemListElem?.scroll('bottom');
                       console.log('추가:', currentGems[i]);
-                      if (gemAttr == ArkGridAttrs.Order)
-                        scrollOrderGems = { type: 'bottom', tick: Date.now() };
-                      if (gemAttr == ArkGridAttrs.Chaos)
-                        scrollChaosGems = { type: 'bottom', tick: Date.now() };
                     }
                     // console.log($state.snapshot(totalGems));
                   }
@@ -547,10 +550,10 @@
                       // 내 화면의 0부터 9-sameCount-1에 있는 젬들까지 추가 대상임
                       for (let i = 9 - sameCount - 1; i >= 0; i--) {
                         totalGems.unshift(currentGems[i]);
-                        if (gemAttr == ArkGridAttrs.Order)
-                          scrollOrderGems = { type: 'top', tick: Date.now() };
-                        if (gemAttr == ArkGridAttrs.Chaos)
-                          scrollChaosGems = { type: 'top', tick: Date.now() };
+                        gemListElem?.selectTab(
+                          gemAttr == ArkGridAttrs.Order ? 0 : 1
+                        );
+                        gemListElem?.scroll('top');
                         console.log('추가:', currentGems[i]);
                       }
                       // console.log($state.snapshot(totalGems));
@@ -628,29 +631,6 @@
       captureController.dispose?.();
     });
   }
-  function applyGemList(gemAttr: ArkGridAttr, gems: ArkGridGem[]) {
-    // 현재 수집한 젬을 현재 프로필에 덮어 씌우기
-    if (gems.length > 0) {
-      clearGems(gemAttr);
-      for (const gem of gems) {
-        addGem(gem);
-      }
-    }
-  }
-  const gemPanels = $derived([
-    {
-      title: '질서',
-      attr: ArkGridAttrs.Order,
-      gems: totalOrderGems,
-      scrollCommand: scrollOrderGems,
-    },
-    {
-      title: '혼돈',
-      attr: ArkGridAttrs.Chaos,
-      gems: totalChaosGems,
-      scrollCommand: scrollChaosGems,
-    },
-  ]);
 
   onDestroy(async () => {
     await captureController.dispose();
@@ -664,89 +644,99 @@
     </div>
   {/if}
   <div class="title">
-    <span>젬 화면 인식</span>
-    <div
-      class="status-dot"
-      class:online={isRecording}
-      class:offline={!isRecording}
-    ></div>
-  </div>
-  <div>
-    {#if !isRecording}
-      <button onclick={captureController.startCapture}>🖥️ 화면 공유 시작</button
-      >
-    {:else}
-      <button onclick={captureController.stopCapture}>🖥️ 화면 공유 종료</button>
-    {/if}
-    <button hidden onclick={captureController.dispose}>자원 정리</button>
+    <div class="title-with-dot">
+      <span>젬 화면 인식</span>
+      <div
+        class="status-dot"
+        class:online={isRecording}
+        class:offline={!isRecording}
+      ></div>
+    </div>
     <button
-      class:active={isDebugging}
-      onclick={() => (isDebugging = !isDebugging)}
-      disabled={!isRecording}
+      class="fold-button"
+      onclick={() => toggleUI('showGemRecognitionPanel')}
+      disabled={isRecording}
+      >{appConfig.current.uiConfig.showGemRecognitionPanel ? '▼' : '▲'}</button
     >
-      공유 중인 화면 {isDebugging ? '끄기' : '보기'}
-    </button>
   </div>
-  <div hidden={!isDebugging}>
-    <canvas
-      class="debugView"
-      bind:this={debugCanvas}
-      style="border: 1px black solid;"
-    ></canvas>
-  </div>
-  <div class="guide">
-    <p class="title">🎓️ 가이드</p>
-    <img src="/src/assets/guide/1.png" alt="guide-img1" />
-    <p>1. 로스트아크 해상도가 1920x1080 (16:9)인지 확인해주세요.</p>
-    <p>
-      2. 모니터의 해상도가 1920x1080인 경우에는 화면을 "전체 화면" 혹은 "전체 창
-      모드"로 설정해주세요.<br />더 높은 해상도의 모니터인 경우 화면을 "창
-      모드"로 설정해주세요.
-    </p>
-    <img src="/src/assets/guide/2.png" alt="guide-img2" />
-    <p>
-      3. 모든 젬을 장착 해제하고, [🖥️ 화면 공유 시작] 버튼을 통해 로스트아크
-      화면을 공유해주세요
-    </p>
-    <p>
-      4. 게임에서 젬 목록 화면을 연 뒤, 마우스가 젬을 가리지 않도록 스크롤바
-      위에 위치시키세요.<br />스크롤을 천천히 내리면서 젬이 아래에 추가되는지
-      확인해주세요.
-    </p>
-    <p>
-      5. 수집된 젬의 개수를 확인하고, 모든 젬이 수집되었으면 [✅ 반영] 버튼을
-      눌러 현재 프로필에 반영해주세요.
-    </p>
-  </div>
-  <div class="dual-panel">
-    {#each gemPanels as panel}
-      <div class="detected-gems">
-        <div class="title">{panel.title}의 젬</div>
-        <div class="gem-list">
-          <ArkGridGemList
-            gems={panel.gems}
-            showDeleteButton={false}
-            emptyDescription=""
-            scrollCommand={panel.scrollCommand}
-          />
-        </div>
-        <div class="buttons">
-          <div>{panel.gems.length > 0 ? `${panel.gems.length}개` : ''}</div>
+  <div
+    class="content"
+    style:display={appConfig.current.uiConfig.showGemRecognitionPanel
+      ? 'none'
+      : 'flex'}
+  >
+    <div>
+      {#if !isRecording}
+        <button onclick={captureController.startCapture}
+          >🖥️ 화면 공유 시작</button
+        >
+      {:else}
+        <button onclick={captureController.stopCapture}
+          >🖥️ 화면 공유 종료</button
+        >
+      {/if}
+      <button hidden onclick={captureController.dispose}>자원 정리</button>
+      <button
+        class:active={isDebugging}
+        onclick={() => (isDebugging = !isDebugging)}
+        disabled={!isRecording}
+      >
+        공유 중인 화면 {isDebugging ? '끄기' : '보기'}
+      </button>
+    </div>
+    <div hidden={!isDebugging}>
+      <canvas
+        class="debugView"
+        bind:this={debugCanvas}
+        style="border: 1px black solid;"
+      ></canvas>
+    </div>
+    <div class="dual-panel">
+      <div class="guide">
+        <div class="title">
+          <span>🎓️ 가이드</span>
           <button
-            onclick={() => applyGemList(panel.attr, panel.gems)}
-            disabled={panel.gems.length == 0}
-          >
-            반영
-          </button>
-          <button
-            hidden
-            onclick={() => {
-              panel.gems.length = 0;
-            }}>초기화</button
+            class="fold-button"
+            onclick={() => toggleUI('showGemRecognitionGuide')}
+            >{appConfig.current.uiConfig.showGemRecognitionGuide
+              ? '▲'
+              : '▼'}</button
           >
         </div>
+        {#if appConfig.current.uiConfig.showGemRecognitionGuide}
+          <div class="content">
+            <img src="/src/assets/guide/1.png" alt="guide-img1" />
+            <p>1. 로스트아크 해상도가 1920x1080 (16:9)인지 확인해주세요.</p>
+            <p>
+              2. 모니터의 해상도가 1920x1080인 경우에는 화면을 "전체 화면" 혹은
+              "전체 창 모드"로 설정해주세요.<br />더 높은 해상도의 모니터인 경우
+              화면을 "창 모드"로 설정해주세요.
+            </p>
+            <p>
+              3. 모든 젬을 장착 해제하고, [🖥️ 화면 공유 시작] 버튼을 통해
+              로스트아크 화면을 공유해주세요
+            </p>
+            <img src="/src/assets/guide/2.png" alt="guide-img2" />
+            <p>
+              4. 게임에서 젬 목록 화면을 연 뒤, 마우스가 젬을 가리지 않도록
+              스크롤바 위에 위치시킨 뒤,<br />스크롤을 천천히 내리면서 젬이
+              아래에 추가되는지 확인해주세요.
+            </p>
+            <p>
+              5. 수집된 젬의 개수를 확인하고, 모든 젬이 수집되었으면 [✅ 현재
+              프로필에 반영] 버튼을 눌러 저장해주세요.
+            </p>
+          </div>
+        {/if}
       </div>
-    {/each}
+      <GemRecognitionGemList
+        gems={{
+          orderGems: totalOrderGems,
+          chaosGems: totalChaosGems,
+        }}
+        bind:this={gemListElem}
+      />
+    </div>
   </div>
 </div>
 
@@ -755,18 +745,9 @@
   .panel {
     position: relative;
   }
-  .overlay {
-    /* backdrop-filter: blur(1px); */
-  }
   .debugView {
     width: 100%;
     height: auto;
-  }
-  .dual-panel {
-    gap: var(--global-gap);
-    display: grid;
-    grid-template-columns: 1.1fr 1fr;
-    align-items: start;
   }
   .status-dot {
     width: 12px;
@@ -782,53 +763,50 @@
     background-color: #9ca3af; /* 회색 */
   }
 
-  .panel > .guide {
+  .fold-button {
+    flex: 1;
+    text-align: right;
+    border: none;
+    background: none;
+  }
+
+  .panel > .title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .panel > .title > .title-with-dot {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .panel > .content {
+    /* 내부 요소들은 상하 정렬 */
+    display: flex;
+    flex-direction: column;
+
+    /* panel 내부 요소들 사이의 상하 간격 */
+    gap: 0.7rem;
+    overflow-y: hidden;
+  }
+  .guide {
     border: 1px solid var(--border);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     border-radius: 0.4rem;
     background-color: #fafafa;
     padding: 1rem;
     width: 100%;
-    align-self: center;
     box-sizing: border-box;
-  }
-  .panel > .guide > .title {
-    font-weight: 700;
-    font-size: 1.4rem;
-  }
-
-  .detected-gems {
-    border: 1px solid var(--border);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    border-radius: 0.4rem;
-    margin-top: 1rem; /* 위에랑 조금 띄우기 */
-
+    gap: 10px;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    padding: 1rem;
   }
-  .detected-gems > .title {
-    font-weight: 500;
-    font-size: 1.2rem;
-    align-self: center;
-  }
-  .detected-gems > .gem-list {
+  .guide > .title {
+    font-weight: 700;
+    font-size: 1.4rem;
     display: flex;
-    height: 27rem;
-  }
-  .detected-gems > .buttons {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: right;
+    justify-content: space-between;
     align-items: center;
-  }
-  .detected-gems > .buttons button {
-    /* 너비는 자동이지만 최소 5em */
-    width: auto;
-    min-width: 5em;
-
-    /* panel 내부에서 우측 정렬 */
-    align-self: center;
+    gap: 0.4rem;
   }
 </style>

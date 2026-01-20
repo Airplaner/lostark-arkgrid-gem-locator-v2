@@ -16,11 +16,13 @@ export interface OpenApiConfig {
   jwt?: string;
 }
 interface UIConfig {
-  showGemAddPanel: boolean;
+  showGemRecognitionPanel: boolean;
+  showGemRecognitionGuide: boolean;
   showCoreCoeff: boolean;
 }
 const defaultUIConfig: UIConfig = {
-  showGemAddPanel: true,
+  showGemRecognitionPanel: true,
+  showGemRecognitionGuide: true,
   showCoreCoeff: false,
 };
 interface AppConfig {

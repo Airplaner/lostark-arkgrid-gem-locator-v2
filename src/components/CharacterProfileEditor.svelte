@@ -63,18 +63,3 @@
   </div>
   <SolvePanel {profile}></SolvePanel>
 {/if}
-
-<style>
-  .dual-panel {
-    gap: var(--global-gap);
-    display: grid;
-    grid-template-columns: 1.1fr 1fr;
-    align-items: start;
-  }
-  /* 화면이 960px 이하로 좁아지면 세로 배치 */
-  @media (max-width: 960px) {
-    .dual-panel {
-      grid-template-columns: 1fr; /* 한 줄에 1개 */
-    }
-  }
-</style>

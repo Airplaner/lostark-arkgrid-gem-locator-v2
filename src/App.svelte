@@ -1,6 +1,6 @@
 <script lang="ts">
   import CharacterProfileEditor from './components/CharacterProfileEditor.svelte';
-  import GemDetectPanel from './components/GemDetectPanel.svelte';
+  import GemRecognitionPanel from './components/GemRecognitionPanel.svelte';
   import AppConfiguration from './components/header/AppConfiguration.svelte';
   import ProfileEdit from './components/header/ProfileEditor.svelte';
   import {
@@ -19,7 +19,7 @@
     <div class="title">아크 그리드 최적화</div>
     <AppConfiguration></AppConfiguration>
     <ProfileEdit></ProfileEdit>
-    <GemDetectPanel></GemDetectPanel>
+    <GemRecognitionPanel></GemRecognitionPanel>
     <CharacterProfileEditor bind:profile={currentProfile}
     ></CharacterProfileEditor>
   </div>
