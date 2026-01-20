@@ -55,7 +55,8 @@ export function getPossibleGemSets(core: Core, gems: Gem[]): GemSet[] {
 
 export function getBestGemSetPacks(
   gssList: GemSet[][],
-  scoreMaps: [number, number][][]
+  scoreMaps: [number, number][][],
+  ignoreDuplication = false
 ): GemSetPack[] {
   if (gssList.length > 3)
     throw Error('length of gsss should be one of 1, 2, 3');
@@ -92,7 +93,7 @@ export function getBestGemSetPacks(
     const threshold = targetMinScore / currentMaxScore;
     for (const gs of gssList[gemSetIndex]) {
       if (gs.maxScore < threshold) break;
-      if ((gs.bitmask & currentBitmask) === 0n) {
+      if (ignoreDuplication || (gs.bitmask & currentBitmask) === 0n) {
         res.push(gs);
       }
     }
