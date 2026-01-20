@@ -30,6 +30,11 @@
   }
   let { profile }: Props = $props();
 
+  let solveAnswer = $state<{
+    assignedGems: ArkGridGem[][];
+    gemSetPackTuple: GemSetPackTuple;
+  } | null>(null);
+
   const coreComponents: Record<
     ArkGridAttr,
     Record<ArkGridCoreType, SolveCoreEdit | null>
@@ -241,7 +246,9 @@
 
       while (b > 0n) {
         if ((b & 1n) == 1n) {
-          reverseMap[pos].assign = coreIndex;
+          const gem = reverseMap[pos];
+          result.push(gem);
+          gem.assign = coreIndex;
         }
         pos += 1;
         b >>= 1n;
@@ -250,23 +257,21 @@
     }
 
     unassignGems();
-    assignGem(answer.gsp1?.gs1, orderGemReverseMap, 0);
-    assignGem(answer.gsp1?.gs2, orderGemReverseMap, 1);
-    assignGem(answer.gsp1?.gs3, orderGemReverseMap, 2);
-    assignGem(answer.gsp2?.gs1, chaosGemReverseMap, 3);
-    assignGem(answer.gsp2?.gs2, chaosGemReverseMap, 4);
-    assignGem(answer.gsp2?.gs3, chaosGemReverseMap, 5);
+    solveAnswer = {
+      assignedGems: JSON.parse(
+        JSON.stringify([
+          assignGem(answer.gsp1?.gs1, orderGemReverseMap, 0),
+          assignGem(answer.gsp1?.gs2, orderGemReverseMap, 1),
+          assignGem(answer.gsp1?.gs3, orderGemReverseMap, 2),
+          assignGem(answer.gsp2?.gs1, chaosGemReverseMap, 3),
+          assignGem(answer.gsp2?.gs2, chaosGemReverseMap, 4),
+          assignGem(answer.gsp2?.gs3, chaosGemReverseMap, 5),
+        ])
+      ), // deep copy gems
+      gemSetPackTuple: answer,
+    };
     return;
   }
-  let coreGemSets: ArkGridGem[][] = $state([[], [], [], [], [], []]);
-  $effect(() => {
-    for (const i of [0, 1, 2]) {
-      coreGemSets[i] = profile.gems.orderGems.filter((g) => g.assign == i);
-    }
-    for (const i of [3, 4, 5]) {
-      coreGemSets[i] = profile.gems.chaosGems.filter((g) => g.assign == i);
-    }
-  });
 </script>
 
 <div class="panel">
@@ -283,18 +288,28 @@
   </div>
   <button onclick={solve}> Solve!</button>
   <div class="title">배치 결과</div>
-  <div class="solved-cores-tuples">
-    {#each Object.values(ArkGridAttrs) as attr, i}
-      <div class="solved-cores">
-        {#each Object.values(ArkGridCoreTypes) as ctype, j}
-          <CoreGemEquipped
-            core={profile.cores[attr][ctype]}
-            gems={coreGemSets[i * 3 + j]}
-          ></CoreGemEquipped>
-        {/each}
+  {#if solveAnswer !== null}
+    <div class="solved-cores-tuples">
+      <div>
+        <p>
+          전투력: {((solveAnswer.gemSetPackTuple.score - 1) * 100).toFixed(2)}%
+        </p>
+        <p>공격력: {solveAnswer.gemSetPackTuple.att}</p>
+        <p>추가 피해: {solveAnswer.gemSetPackTuple.skill}</p>
+        <p>보스 피해: {solveAnswer.gemSetPackTuple.boss}</p>
       </div>
-    {/each}
-  </div>
+      {#each Object.values(ArkGridAttrs) as attr, i}
+        <div class="solved-cores">
+          {#each Object.values(ArkGridCoreTypes) as ctype, j}
+            <CoreGemEquipped
+              core={profile.cores[attr][ctype]}
+              gems={solveAnswer.assignedGems[i * 3 + j]}
+            ></CoreGemEquipped>
+          {/each}
+        </div>
+      {/each}
+    </div>
+  {/if}
 </div>
 
 <style>

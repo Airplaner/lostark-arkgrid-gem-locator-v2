@@ -26,6 +26,8 @@
     <div class="name">
       {core?.attr}의 {core?.type}
     </div>
+  </div>
+  <div>
     <div>포인트: {corePoint}P</div>
     <div>의지력: {usedPower}/{getDefaultCoreEnergy(core)}</div>
   </div>

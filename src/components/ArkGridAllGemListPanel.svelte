@@ -1,6 +1,11 @@
 <script lang="ts">
-  import { ArkGridAttrs } from '../lib/constants/enums';
-  import { type AllGems, addGem } from '../lib/state/profile.state.svelte';
+  import { type ArkGridAttr, ArkGridAttrs } from '../lib/constants/enums';
+  import { ArkGridGemOptionTypes } from '../lib/models/arkGridGems';
+  import {
+    type AllGems,
+    addGem,
+    clearGems,
+  } from '../lib/state/profile.state.svelte';
   import ArkGridGemList from './ArkGridGemList.svelte';
 
   interface Props {
@@ -28,6 +33,9 @@
         return [];
     }
   });
+  let currentAttr: ArkGridAttr = $derived(
+    activeTab == 0 ? ArkGridAttrs.Order : ArkGridAttrs.Chaos
+  );
 </script>
 
 <div class="panel">
@@ -46,17 +54,65 @@
     {/each}
   </div>
   <ArkGridGemList gems={currentGems}></ArkGridGemList>
-  <button
-    onclick={() => {
-      addGem({
-        gemAttr: activeTab == 0 ? ArkGridAttrs.Order : ArkGridAttrs.Chaos,
-        req: 3,
-        point: 5,
-        option1: { optionType: '공격력', value: 1 },
-        option2: { optionType: '추가 피해', value: 1 },
-      });
-    }}>샘플 추가</button
-  >
+  <div class="buttons">
+    <button
+      onclick={() => {
+        addGem({
+          gemAttr: activeTab == 0 ? ArkGridAttrs.Order : ArkGridAttrs.Chaos,
+          req: 3,
+          point: 5,
+          option1: { optionType: '공격력', value: 1 },
+          option2: { optionType: '추가 피해', value: 1 },
+        });
+      }}>샘플 추가</button
+    >
+    <button
+      hidden
+      onclick={() => {
+        const gemSamples = [
+          {
+            req: 3,
+            point: 5,
+            option1: { optionType: ArkGridGemOptionTypes.ATTACK, value: 5 },
+            option2: {
+              optionType: ArkGridGemOptionTypes.SKILL_DAMAGE,
+              value: 5,
+            },
+          },
+          {
+            req: 4,
+            point: 5,
+            option1: { optionType: ArkGridGemOptionTypes.ATTACK, value: 5 },
+            option2: {
+              optionType: ArkGridGemOptionTypes.BOSS_DAMAGE,
+              value: 5,
+            },
+          },
+          {
+            req: 5,
+            point: 5,
+            option1: {
+              optionType: ArkGridGemOptionTypes.SKILL_DAMAGE,
+              value: 5,
+            },
+            option2: {
+              optionType: ArkGridGemOptionTypes.BOSS_DAMAGE,
+              value: 5,
+            },
+          },
+        ];
+        for (const gem of gemSamples) {
+          for (let i = 0; i < 12; i++) {
+            addGem({
+              gemAttr: currentAttr,
+              ...gem,
+            });
+          }
+        }
+      }}>샘플 추가</button
+    >
+    <button onclick={() => clearGems(currentAttr)}>초기화</button>
+  </div>
 </div>
 
 <style>
@@ -74,12 +130,16 @@
     background: #fff;
     font-weight: bold;
   }
-  button {
+
+  /* 버튼 모음 */
+  .buttons {
+    display: flex;
+    gap: 0.4rem;
+    justify-content: right;
+  }
+  .buttons > button {
     /* 너비는 자동이지만 최소 5em */
     width: auto;
     min-width: 5em;
-
-    /* panel 내부에서 우측 정렬 */
-    align-self: flex-end;
   }
 </style>

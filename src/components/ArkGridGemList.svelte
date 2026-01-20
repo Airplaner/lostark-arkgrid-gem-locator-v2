@@ -7,7 +7,7 @@
     gems: ArkGridGem[];
     showDeleteButton?: boolean;
     emptyDescription?: string;
-    scrollCommand: ScrollCommand;
+    scrollCommand?: ScrollCommand;
   }
   let {
     gems,
