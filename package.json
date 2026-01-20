@@ -23,6 +23,7 @@
     "vite": "^7.1.12"
   },
   "dependencies": {
+    "@zerodevx/svelte-toast": "^0.9.6",
     "svelte-persisted-state": "^1.2.0"
   }
 }

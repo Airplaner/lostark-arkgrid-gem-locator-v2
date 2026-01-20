@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { toast } from '@zerodevx/svelte-toast';
   import { tick } from 'svelte';
 
   import { ArkGridAttrs } from '../lib/constants/enums';
@@ -54,18 +55,22 @@
 
   function applyGemList() {
     // 현재 수집한 젬을 현재 프로필에 덮어 씌우기
+    let done = false;
     if (orderGems.length > 0) {
       clearGems(ArkGridAttrs.Order);
       for (const gem of orderGems) {
         addGem(gem);
       }
+      done = true;
     }
     if (chaosGems.length > 0) {
       clearGems(ArkGridAttrs.Chaos);
       for (const gem of chaosGems) {
         addGem(gem);
       }
+      done = true;
     }
+    return done;
   }
 </script>
 
@@ -96,7 +101,9 @@
   <div class="buttons">
     <div>
       <button
-        onclick={() => applyGemList()}
+        onclick={() => {
+          if (applyGemList()) toast.push('반영 완료!');
+        }}
         disabled={orderGems.length == 0 && chaosGems.length == 0}
       >
         ✅ 현재 프로필에 반영

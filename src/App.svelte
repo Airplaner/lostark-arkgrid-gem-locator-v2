@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { SvelteToast } from '@zerodevx/svelte-toast';
+
   import CharacterProfileEditor from './components/CharacterProfileEditor.svelte';
   import GemRecognitionPanel from './components/GemRecognitionPanel.svelte';
   import AppConfiguration from './components/header/AppConfiguration.svelte';
@@ -15,6 +17,7 @@
 </script>
 
 <main>
+  <SvelteToast options={{ reversed: true, intro: { y: 192 } }} />
   <div class="contents">
     <div class="title">아크 그리드 최적화</div>
     <AppConfiguration></AppConfiguration>
@@ -37,5 +40,11 @@
     font-weight: 700;
     font-size: 3rem;
     text-align: center;
+  }
+  :root {
+    --toastContainerTop: auto;
+    --toastContainerRight: auto;
+    --toastContainerBottom: 8rem;
+    --toastContainerLeft: calc(50vw - 8rem);
   }
 </style>
