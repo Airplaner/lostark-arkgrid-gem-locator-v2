@@ -34,6 +34,7 @@
         );
         if (profileName === null || profileName.length == 0) return;
         addNewProfile(initNewProfile(profileName));
+        setCurrentProfileName(profileName);
       }}>📄</button
     >
     <button
