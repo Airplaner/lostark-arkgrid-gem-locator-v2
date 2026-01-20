@@ -13,8 +13,6 @@
     isSameArkGridGem,
   } from '../lib/models/arkGridGems';
   import { appConfig, toggleUI } from '../lib/state/appConfig.state.svelte';
-  import { addGem, clearGems } from '../lib/state/profile.state.svelte';
-  import ArkGridAllGemListPanel from './ArkGridAllGemListPanel.svelte';
   import GemRecognitionGemList from './GemRecognitionGemList.svelte';
 
   const OPENCV_URL =
@@ -508,12 +506,12 @@
                     // 내 화면의 sameCount부터 끝에 있는 젬들까지 추가 대상임
                     for (let i = sameCount; i < 9; i++) {
                       totalGems.push(currentGems[i]);
-                      gemListElem?.selectTab(
-                        gemAttr == ArkGridAttrs.Order ? 0 : 1
-                      );
-                      gemListElem?.scroll('bottom');
                       console.log('추가:', currentGems[i]);
                     }
+                    gemListElem?.selectTab(
+                      gemAttr == ArkGridAttrs.Order ? 0 : 1
+                    );
+                    gemListElem?.scroll('bottom');
                     // console.log($state.snapshot(totalGems));
                   }
                 }
@@ -548,12 +546,12 @@
                       // 내 화면의 0부터 9-sameCount-1에 있는 젬들까지 추가 대상임
                       for (let i = 9 - sameCount - 1; i >= 0; i--) {
                         totalGems.unshift(currentGems[i]);
-                        gemListElem?.selectTab(
-                          gemAttr == ArkGridAttrs.Order ? 0 : 1
-                        );
-                        gemListElem?.scroll('top');
                         console.log('추가:', currentGems[i]);
                       }
+                      gemListElem?.selectTab(
+                        gemAttr == ArkGridAttrs.Order ? 0 : 1
+                      );
+                      gemListElem?.scroll('top');
                       // console.log($state.snapshot(totalGems));
                     }
                   }
