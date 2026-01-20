@@ -512,8 +512,10 @@
       {/each}
     {/each}
   </div>
-  <button onclick={solve}>최적화 실행</button>
-  <button onclick={bestSolve}>무한 젬모드 실행</button>
+  <div class="buttons">
+    <button onclick={solve}>최적화 실행</button>
+    <button onclick={bestSolve}>무한 젬모드 실행</button>
+  </div>
   <div class="title">배치 결과</div>
   {#if solveAnswer !== null}
     <div class="solved-cores-tuples">
