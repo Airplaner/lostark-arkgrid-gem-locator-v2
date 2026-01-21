@@ -126,6 +126,7 @@
     gap: 10px;
     align-items: center;
     user-select: none;
+    flex-wrap: wrap;
   }
   .title {
     font-weight: 700;
@@ -139,6 +140,7 @@
     display: flex;
     align-items: flex-end;
     gap: 0.5rem;
+    flex-wrap: wrap;
   }
   button.active {
     background: #fff;
