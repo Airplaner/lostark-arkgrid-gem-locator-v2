@@ -8,6 +8,7 @@
     addGem,
     clearGems,
   } from '../lib/state/profile.state.svelte';
+  import ArkGridGemAddPanel from './ArkGridGemAddPanel.svelte';
   import ArkGridGemList from './ArkGridGemList.svelte';
 
   interface Props {
@@ -82,6 +83,7 @@
         });
       }}>샘플 추가</button
     >
+    <ArkGridGemAddPanel gemAttr={currentAttr}></ArkGridGemAddPanel>
     <button onclick={() => clearGems(currentAttr)}>초기화</button>
   </div>
 </div>
