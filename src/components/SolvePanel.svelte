@@ -72,9 +72,6 @@
       !answerCores ||
       Object.values(answerCores[ArkGridAttrs.Chaos]).every((v) => v == null);
 
-    console.log(allOrderCoresNull, allChaosCoresNull, '질서와 혼돈 각각');
-
-    // return { order: true, chaos: true };
     return {
       order: solveAnswer?.gemSetPackTuple.gsp1 === null && !allOrderCoresNull,
       chaos: solveAnswer?.gemSetPackTuple.gsp2 === null && !allChaosCoresNull,

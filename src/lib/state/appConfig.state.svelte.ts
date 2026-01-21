@@ -105,3 +105,5 @@ export function toggleUI(optionName: keyof UIConfig) {
   appConfig.current.uiConfig[optionName] =
     !appConfig.current.uiConfig[optionName];
 }
+
+(window as any).debug = (() => { toggleUI('debugMode'); });

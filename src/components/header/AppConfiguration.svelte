@@ -250,7 +250,9 @@
 <div class="buttons">
   <button onclick={() => (showModal = true)}>Open API 설정</button>
   <button onclick={importFromOpenAPI}>데이터 가져오기</button>
-  <button onclick={() => toggleUI('debugMode')}
+  <button
+    hidden={!appConfig.current.uiConfig.debugMode}
+    onclick={() => toggleUI('debugMode')}
     >개발자 모드 {appConfig.current.uiConfig.debugMode
       ? '끄기'
       : '켜기'}</button
