@@ -1,5 +1,6 @@
 <script lang="ts">
   import { toast } from '@zerodevx/svelte-toast';
+  import { onMount } from 'svelte';
 
   import {
     ArkGridAttrs,
@@ -222,6 +223,12 @@
     updateOpenApiJWT(jwtInput);
     toast.push('OpenAPI JWT 갱신 완료');
   }
+  onMount(() => {
+    const jwt = appConfig.current.openApiConfig.jwt;
+    if (jwt) {
+      apiClient.setSecurityData({ jwt });
+    }
+  });
 </script>
 
 <div class="buttons">
