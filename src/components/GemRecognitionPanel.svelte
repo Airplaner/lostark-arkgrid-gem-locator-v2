@@ -197,44 +197,94 @@
 
     async function preloadAsset() {
       if (loadedAsset !== null) {
-        // console.log('어셋이 이미 로드되어 있어 생략합니다.');
         return loadedAsset;
       }
 
-      // console.log('어셋 로드 시작');
       isLoading = true;
       await loadOpenCV();
-      const matAnchor = await loadAsset('anchor');
-      const matNumeric: MatNumeric = {
-        '1': await loadAsset('1'),
-        '2': await loadAsset('2'),
-        '3': await loadAsset('3'),
-        '4': await loadAsset('4'),
-        '5': await loadAsset('5'),
-        '6': await loadAsset('6'),
-        '7': await loadAsset('7'),
-        '8': await loadAsset('8'),
-        '9': await loadAsset('9'),
-      };
-      const matOptionString: MatOptionString = {
-        [ArkGridGemOptionTypes.ATTACK]: await loadAsset('공격력'),
-        [ArkGridGemOptionTypes.SKILL_DAMAGE]: await loadAsset('추가피해'),
-        [ArkGridGemOptionTypes.BOSS_DAMAGE]: await loadAsset('보스피해'),
-        [ArkGridGemOptionTypes.STIGMA]: await loadAsset('낙인력'),
-        [ArkGridGemOptionTypes.PARTY_ATTACK]: await loadAsset('아군공격강화'),
-        [ArkGridGemOptionTypes.PARTY_DAMAGE]: await loadAsset('아군피해강화'),
-      };
-      const matOptionValue: MatOptionValue = {
-        '1': await loadAsset('lv1'),
-        '2': await loadAsset('lv2'),
-        '3': await loadAsset('lv3'),
-        '4': await loadAsset('lv4'),
-        '5': await loadAsset('lv5'),
-      };
-      const matGemAttr: MatGemAttr = {
-        [ArkGridAttrs.Order]: await loadAsset('질서'),
-        [ArkGridAttrs.Chaos]: await loadAsset('혼돈'),
-      };
+
+      // 1. Anchor
+      const matAnchorPromise = loadAsset('anchor');
+
+      // 2. 숫자 어셋
+      const numericKeys = [
+        '1',
+        '2',
+        '3',
+        '4',
+        '5',
+        '6',
+        '7',
+        '8',
+        '9',
+      ] as const;
+      const matNumericPromises = numericKeys.map((key) => loadAsset(key));
+
+      // 3. 옵션 문자열
+      const optionKeys = [
+        ArkGridGemOptionTypes.ATTACK,
+        ArkGridGemOptionTypes.SKILL_DAMAGE,
+        ArkGridGemOptionTypes.BOSS_DAMAGE,
+        ArkGridGemOptionTypes.STIGMA,
+        ArkGridGemOptionTypes.PARTY_ATTACK,
+        ArkGridGemOptionTypes.PARTY_DAMAGE,
+      ] as const;
+      const optionNames = [
+        '공격력',
+        '추가피해',
+        '보스피해',
+        '낙인력',
+        '아군공격강화',
+        '아군피해강화',
+      ];
+      const matOptionStringPromises = optionNames.map((name) =>
+        loadAsset(name)
+      );
+
+      // 4. 옵션 값
+      const optionValueKeys = ['1', '2', '3', '4', '5'] as const;
+      const optionValueNames = ['lv1', 'lv2', 'lv3', 'lv4', 'lv5'];
+      const matOptionValuePromises = optionValueNames.map((name) =>
+        loadAsset(name)
+      );
+
+      // 5. 젬 속성
+      const gemAttrKeys = [ArkGridAttrs.Order, ArkGridAttrs.Chaos] as const;
+      const gemAttrNames = ['질서', '혼돈'];
+      const matGemAttrPromises = gemAttrNames.map((name) => loadAsset(name));
+
+      // 모든 Promise를 병렬로 실행
+      const [
+        matAnchor,
+        matNumericResults,
+        matOptionStringResults,
+        matOptionValueResults,
+        matGemAttrResults,
+      ] = await Promise.all([
+        matAnchorPromise,
+        Promise.all(matNumericPromises),
+        Promise.all(matOptionStringPromises),
+        Promise.all(matOptionValuePromises),
+        Promise.all(matGemAttrPromises),
+      ]);
+
+      // 결과를 객체로 재조립
+      const matNumeric: MatNumeric = Object.fromEntries(
+        numericKeys.map((key, i) => [key, matNumericResults[i]])
+      );
+
+      const matOptionString: MatOptionString = Object.fromEntries(
+        optionKeys.map((key, i) => [key, matOptionStringResults[i]])
+      );
+
+      const matOptionValue: MatOptionValue = Object.fromEntries(
+        optionValueKeys.map((key, i) => [key, matOptionValueResults[i]])
+      );
+
+      const matGemAttr: MatGemAttr = Object.fromEntries(
+        gemAttrKeys.map((key, i) => [key, matGemAttrResults[i]])
+      );
+
       isLoading = false;
       loadedAsset = {
         matAnchor,
@@ -244,7 +294,6 @@
         matGemAttr,
       };
 
-      // console.log('어셋 로드 완료');
       return loadedAsset;
     }
     async function startCapture() {
