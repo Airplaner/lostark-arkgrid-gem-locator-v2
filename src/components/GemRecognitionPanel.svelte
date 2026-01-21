@@ -708,7 +708,7 @@
   </div>
   <div
     class="content"
-    style:display={appConfig.current.uiConfig.showGemRecognitionPanel
+    style:display={!appConfig.current.uiConfig.showGemRecognitionPanel
       ? 'none'
       : 'flex'}
   >
