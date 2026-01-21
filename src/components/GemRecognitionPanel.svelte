@@ -858,4 +858,9 @@
     align-items: center;
     gap: 0.4rem;
   }
+  .guide img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
 </style>
