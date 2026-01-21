@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { toast } from '@zerodevx/svelte-toast';
+
   import {
     ArkGridAttrs,
     DEFAULT_PROFILE_NAME,
@@ -20,30 +22,19 @@
   import { LostArkOpenAPI } from '../../lib/openapi/Api';
   import { apiClient } from '../../lib/openapi/openapi';
   import {
-    type OpenApiConfig,
     appConfig,
     toggleUI,
+    updateOpenApiJWT,
   } from '../../lib/state/appConfig.state.svelte';
   import {
     addGem,
     clearCores,
+    clearGems,
     currentProfileName,
     updateCore,
   } from '../../lib/state/profile.state.svelte';
-  import Modal from '../Modal.svelte';
 
   let importing: boolean = $state(false);
-  let templateOpenApiConfig = $state<OpenApiConfig>({});
-
-  $effect(() => {
-    if (appConfig.current.openApiConfig.jwt !== undefined) {
-      const trimedJwt = appConfig.current.openApiConfig.jwt.trim();
-      appConfig.current.openApiConfig.jwt = trimedJwt;
-      apiClient.setSecurityData({
-        jwt: trimedJwt,
-      });
-    }
-  });
 
   function parseOpenApiGem(gem: LostArkOpenAPI.ArkGridGem): ArkGridGem {
     // OpenAPI Gem의 tooltip 파싱
@@ -128,7 +119,7 @@
   async function importFromOpenAPI() {
     if (
       !window.confirm(
-        `${currentProfileName.current == DEFAULT_PROFILE_NAME ? '' : currentProfileName.current + ' '}캐릭터의 정보를 가져와 현재 프로필의 코어와 젬에 추가합니다. 진행하시겠습니까?`
+        `⚠️ 현재 프로필을 초기화합니다. ⚠️\n${currentProfileName.current == DEFAULT_PROFILE_NAME ? '입력할' : currentProfileName.current} 캐릭터의 장착된 아크 그리드 정보를 가져와 현재 프로필에 덮어 씌웁니다. 진행하시겠습니까?`
       )
     ) {
       return;
@@ -164,6 +155,8 @@
       if (res.data.Slots) {
         // 코어 데이터가 존재하는 경우 갱신 시작
         clearCores();
+        clearGems();
+
         // 모든 slot에 대해서
         for (let coreSlot of res.data.Slots) {
           if (!coreSlot.Name || !coreSlot.Grade) {
@@ -206,49 +199,33 @@
           }
         }
       }
+      toast.push(`데이터 가져오기 완료.`);
     } catch (e) {
-      window.alert('Open API 요청 실패!');
+      window.alert(`Open API 요청 실패!\n${e.error.Message}`);
       console.error(e);
       return;
     } finally {
       importing = false;
     }
   }
-  let showModal = $state(false);
 
   function updateOpenApiConfig() {
     // 값 반영하기
-    appConfig.current.openApiConfig = { ...templateOpenApiConfig };
+    let jwtInput = window.prompt(
+      '로스트아크 OpenAPI JWT를 입력해주세요',
+      appConfig.current.openApiConfig.jwt
+    );
+    if (!jwtInput) {
+      return;
+    }
+    if (jwtInput == appConfig.current.openApiConfig.jwt) return;
+    updateOpenApiJWT(jwtInput);
+    toast.push('OpenAPI JWT 갱신 완료');
   }
-
-  $effect(() => {
-    // 처음 열 때 가져오기
-    templateOpenApiConfig = { ...appConfig.current.openApiConfig };
-  });
 </script>
 
-<Modal bind:showModal onConfirm={updateOpenApiConfig}>
-  {#snippet header()}
-    <h2>OpenAPI 설정</h2>
-  {/snippet}
-  {#snippet children()}
-    <div class="body">
-      <div class="row">
-        <label>
-          <span class="title">JWT: </span>
-          <input bind:value={templateOpenApiConfig.jwt} />
-        </label>
-      </div>
-      <div class="row">
-        <a href="https://developer-lostark.game.onstove.com/" target="_blank"
-          >토큰 발급 경로</a
-        >
-      </div>
-    </div>
-  {/snippet}
-</Modal>
 <div class="buttons">
-  <button onclick={() => (showModal = true)}>Open API 설정</button>
+  <button onclick={updateOpenApiConfig}>Open API 설정</button>
   <button onclick={importFromOpenAPI}>데이터 가져오기</button>
   <button
     hidden={!appConfig.current.uiConfig.debugMode}
@@ -265,21 +242,5 @@
     flex-direction: row;
     gap: 10px;
     justify-content: right;
-  }
-  .body {
-    display: flex;
-    flex-direction: column;
-  }
-  .row {
-    display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
-  }
-  .row > label > .title {
-    display: inline-block;
-    min-width: 5em;
-  }
-  .row > label > input {
-    width: 200px;
   }
 </style>

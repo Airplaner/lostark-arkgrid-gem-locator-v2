@@ -11,6 +11,7 @@ import {
   ArkGridCoreTypes,
 } from '../models/arkGridCores';
 import { type CharacterProfile, initNewProfile } from './profile.state.svelte';
+import { apiClient } from '../openapi/openapi';
 
 export interface OpenApiConfig {
   jwt?: string;
@@ -107,3 +108,13 @@ export function toggleUI(optionName: keyof UIConfig) {
 }
 
 (window as any).debug = (() => { toggleUI('debugMode'); });
+
+export function updateOpenApiJWT(jwtInput: string) {
+  if (jwtInput.length > 0) {
+    const jwtTrimed = jwtInput.trim();
+    appConfig.current.openApiConfig.jwt = jwtTrimed;
+    apiClient.setSecurityData({
+      jwt: jwtTrimed
+    });
+  }
+}
