@@ -6,11 +6,11 @@ import {
 
 export const ArkGridGemOptionTypes = {
   ATTACK: '공격력',
-  SKILL_DAMAGE: '추가 피해',
   BOSS_DAMAGE: '보스 피해',
-  PARTY_DAMAGE: '아군 피해 강화',
+  SKILL_DAMAGE: '추가 피해',
   STIGMA: '낙인력',
   PARTY_ATTACK: '아군 공격 강화',
+  PARTY_DAMAGE: '아군 피해 강화',
 } as const;
 export type ArkGridGemOptionType =
   (typeof ArkGridGemOptionTypes)[keyof typeof ArkGridGemOptionTypes];
