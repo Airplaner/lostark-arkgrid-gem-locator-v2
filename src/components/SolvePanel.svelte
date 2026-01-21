@@ -61,6 +61,26 @@
     Record<ArkGridCoreType, ArkGridCore | null>
   > | null>(null);
 
+  let failedSign = $derived.by(() => {
+    // 배치 실패 여부 반환
+
+    // 코어가 애초에 없으면 실패를 안 함
+    const allOrderCoresNull =
+      !answerCores ||
+      Object.values(answerCores[ArkGridAttrs.Order]).every((v) => v == null);
+    const allChaosCoresNull =
+      !answerCores ||
+      Object.values(answerCores[ArkGridAttrs.Chaos]).every((v) => v == null);
+
+    console.log(allOrderCoresNull, allChaosCoresNull, '질서와 혼돈 각각');
+
+    // return { order: true, chaos: true };
+    return {
+      order: solveAnswer?.gemSetPackTuple.gsp1 === null && !allOrderCoresNull,
+      chaos: solveAnswer?.gemSetPackTuple.gsp2 === null && !allChaosCoresNull,
+    };
+  });
+
   function convertToSolverGems(gem: ArkGridGem[]): {
     gems: Gem[];
     reverseMap: ArkGridGem[];
@@ -451,32 +471,93 @@
 </script>
 
 <div class="panel">
-  <div class="core-goal-panel">
-    <h2>목표 포인트 설정</h2>
-    {#each Object.values(ArkGridAttrs) as attr}
-      {#each Object.values(ArkGridCoreTypes) as ctype}
-        <SolveCoreEdit
-          core={profile.cores[attr][ctype]}
-          bind:this={coreComponents[attr][ctype]}
-        ></SolveCoreEdit>
-      {/each}
-    {/each}
+  <div class="title">최적화 설정</div>
+  <div class="container">
+    <div class="core-solve-goal-edit">
+      <div class="title">코어 목표 포인트 설정</div>
+      <div class="container">
+        {#each Object.values(ArkGridAttrs) as attr}
+          {#each Object.values(ArkGridCoreTypes) as ctype}
+            <SolveCoreEdit
+              {attr}
+              {ctype}
+              core={profile.cores[attr][ctype]}
+              bind:this={coreComponents[attr][ctype]}
+            ></SolveCoreEdit>
+          {/each}
+        {/each}
+      </div>
+    </div>
+    {#if failedSign.order || failedSign.chaos}
+      <div class="failed-sign">
+        {#if failedSign.order}
+          <div class="big">⚠️ 질서 배치 실패 ⚠️</div>
+        {/if}
+        {#if failedSign.chaos}
+          <div class="big">⚠️ 혼돈 배치 실패 ⚠️</div>
+        {/if}
+        <div class="small">목표 포인트를 조절해보세요.</div>
+      </div>
+    {/if}
+    <button class="solve-button" onclick={runSolve}>실행</button>
+
+    {#if solveAnswer && scoreSet && answerCores}
+      <SolveResult {answerCores} {scoreSet} {solveAnswer}></SolveResult>
+    {/if}
   </div>
-  <div class="buttons">
-    <button onclick={runSolve}>분석</button>
-  </div>
-  {#if solveAnswer && scoreSet && answerCores}
-    <SolveResult {answerCores} {scoreSet} {solveAnswer}></SolveResult>
-  {/if}
 </div>
 
 <style>
-  button {
-    /* 너비는 자동이지만 최소 5em */
-    width: auto;
-    min-width: 5em;
-
-    /* panel 내부에서 우측 정렬 */
+  .panel {
+    min-height: 60rem;
+  }
+  .solve-button {
+    font-size: 1.5rem;
+    width: 10rem;
+    height: 4rem;
     align-self: center;
+  }
+
+  .panel > .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .core-solve-goal-edit {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 1rem;
+  }
+  .core-solve-goal-edit > .title {
+    font-size: 1.4rem;
+    font-weight: 500;
+    /* text-align: center; */
+  }
+  .core-solve-goal-edit > .container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .failed-sign {
+    background: var(--card);
+    border-radius: 0.4rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .failed-sign > .big {
+    font-weight: 500;
+    font-size: 1.2rem;
+  }
+  .failed-sign > .small {
+    font-size: 1rem;
   }
 </style>

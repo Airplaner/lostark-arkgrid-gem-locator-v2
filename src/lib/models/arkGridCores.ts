@@ -191,7 +191,7 @@ export function getDefaultCoreGoalPoint(
       return 0;
   }
 }
-export function getMaxCorePoint(core: ArkGridCore | undefined): number {
+export function getMaxCorePoint(core: ArkGridCore | undefined | null): number {
   if (!core) return 0;
   switch (core.grade) {
     case LostArkGrades.EPIC:

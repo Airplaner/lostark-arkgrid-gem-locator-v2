@@ -21,22 +21,36 @@
   <div class="title">코어력</div>
   <div class="score-wrapper">
     <div class="score-bar">
-      <div class="indicator dot" style="left:{scoreRatio * 100}%"></div>
-      <div class="indicator bar" style="left:{bestRatio * 100}%"></div>
-      <div class="label top" style="left:{scoreRatio * 100}%">
+      <div
+        class="indicator dot moving"
+        style="--target-left:{scoreRatio * 100}%"
+      ></div>
+      <div
+        class="indicator bar moving"
+        style="--target-left:{bestRatio * 100}%"
+      ></div>
+      <div class="label top moving" style="--target-left:{scoreRatio * 100}%">
         {scoreSet.score.toFixed(2)}%
       </div>
-      <div class="label bottom" style="left:{bestRatio * 100}%">
+      <div class="label bottom moving" style="--target-left:{bestRatio * 100}%">
         {scoreSet.bestScore.toFixed(2)}%
       </div>
     </div>
   </div>
-  <div>
-    <div class="dot" style="display: inline-block;"></div>
-    현재 전투력 %
-    <br />
-    <div class="bar" style="display: inline-block;"></div>
-    현재 코어의 한계 전투력 %
+  <div class="legend">
+    <div class="row">
+      <div class="icon">
+        <div class="dot"></div>
+      </div>
+      <div>현재 전투력 증가%</div>
+    </div>
+
+    <div class="row">
+      <div class="icon">
+        <div class="bar"></div>
+      </div>
+      <div>현재 코어의 전투력 증가% 한계</div>
+    </div>
   </div>
 </div>
 
@@ -48,7 +62,7 @@
   }
   .root .title {
     font-weight: 500;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
   }
 
   .score-wrapper {
@@ -94,5 +108,35 @@
     width: 3px;
     height: 1.3rem;
     background: black;
+  }
+
+  .score-bar > .moving {
+    animation: move-left 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  @keyframes move-left {
+    from {
+      left: 0%;
+    }
+    to {
+      left: var(--target-left);
+    }
+  }
+
+  .legend {
+    padding-left: 0.2rem;
+  }
+  .legend > .row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .legend > .row > .icon {
+    width: 1rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
   }
 </style>

@@ -40,6 +40,8 @@
     font-weight: 700;
     font-size: 3rem;
     text-align: center;
+    word-break: keep-all;
+    overflow-wrap: break-word;
   }
   :root {
     --toastContainerTop: auto;

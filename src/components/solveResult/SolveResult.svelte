@@ -21,7 +21,7 @@
 </script>
 
 <div class="root">
-  <div class="title">결과</div>
+  <div class="title"></div>
   <div class="container">
     <div class="left">
       <ScoreIndicator {scoreSet}></ScoreIndicator>

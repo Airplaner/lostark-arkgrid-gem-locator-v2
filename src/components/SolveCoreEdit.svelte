@@ -1,7 +1,9 @@
 <script lang="ts">
+  import type { ArkGridAttr } from '../lib/constants/enums';
   import {
     type ArkGridCore,
     type ArkGridCoreCoeffs,
+    type ArkGridCoreType,
     getDefaultCoreEnergy,
     getDefaultCoreGoalPoint,
     getMaxCorePoint,
@@ -9,9 +11,11 @@
   import { Core } from '../lib/solver/models';
 
   interface Props {
+    attr: ArkGridAttr;
+    ctype: ArkGridCoreType;
     core: ArkGridCore | null;
   }
-  let { core }: Props = $props();
+  let { attr, ctype, core }: Props = $props();
 
   let energy = $state(0);
   let point = $state(0);
@@ -20,6 +24,8 @@
     energy = getDefaultCoreEnergy(core);
     point = getDefaultCoreGoalPoint(core);
   });
+
+  let maxCorePoint = $derived(getMaxCorePoint(core));
 
   function buildCoreArray(coeffs: ArkGridCoreCoeffs): number[] {
     const arr = new Array(21).fill(0);
@@ -37,43 +43,46 @@
   }
 </script>
 
-<div class="core-goal">
-  {#if !core}
-    <span> - </span>
-  {:else}
-    <div>
-      <span>
-        {core.attr}의 {core.type} ({core.grade})
-      </span>
-    </div>
-    <div>
-      <!-- <label>
-        의지력
-        <input type="number" bind:value={energy} />
-      </label> -->
-      <label>
-        {#each [0, 10, 14, 17, 18, 19, 20] as targetPoint}
-          <label class="input-title-tuple">
-            <input
-              type="radio"
-              bind:group={point}
-              value={targetPoint}
-              disabled={targetPoint > getMaxCorePoint(core)}
-            />
-            {targetPoint}P
-            {#if targetPoint != 20}
-              -
-            {/if}
-          </label>
+<div class="root">
+  <div class="title">{attr}의 {ctype}</div>
+  <div>
+    {#if core}
+      <select bind:value={point}>
+        {#each [20, 19, 18, 17, 14, 10, 0] as targetPoint}
+          {#if targetPoint <= maxCorePoint}
+            <option value={targetPoint}>{targetPoint}</option>
+          {/if}
         {/each}
-      </label>
-    </div>
-  {/if}
+      </select>
+    {:else}
+      <div>-</div>
+    {/if}
+  </div>
 </div>
 
 <style>
-  .core-goal {
+  .root {
+    background-color: lightblue;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+    align-items: center;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 0.4rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    padding: 1rem;
+  }
+  .root > .title {
+    font-weight: 500;
+    font-size: 1.1rem;
+  }
+
+  select {
+    /* 테두리까지 포함해서 크기 계산 */
+    box-sizing: border-box;
+    font-size: 0.9rem;
+    width: 3rem;
+    text-align: center;
+    border: none;
   }
 </style>
