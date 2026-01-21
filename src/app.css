@@ -74,6 +74,8 @@ button {
   border: 1px solid var(--border);
   background: #f8fafc;
   font-weight: 500;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 button:hover {
