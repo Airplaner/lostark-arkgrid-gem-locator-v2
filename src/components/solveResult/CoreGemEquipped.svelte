@@ -126,4 +126,10 @@
   .core-point-and-power > .item {
     padding: 0.5rem;
   }
+  @media (max-width: 960px) {
+    .root {
+      /* 모바일일 땐 굳이 높이 지킬 필요 없음 */
+      height: 0%;
+    }
+  }
 </style>
