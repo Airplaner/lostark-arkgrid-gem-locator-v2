@@ -352,6 +352,7 @@ export namespace LostArkOpenAPI {
   }
 
   export interface ArkPassive {
+    Title: string;
     IsArkPassive?: boolean;
     Points?: ArkPassivePoint[];
     Effects?: ArkPassiveEffectSkill[];

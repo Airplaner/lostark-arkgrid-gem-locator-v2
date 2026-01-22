@@ -32,6 +32,7 @@ export interface CharacterProfile {
   characterName: string;
   gems: AllGems;
   cores: Record<ArkGridAttr, Record<ArkGridCoreType, ArkGridCore | null>>;
+  isSupporter: boolean;
 }
 
 export function initNewProfile(name: string): CharacterProfile {
@@ -42,6 +43,7 @@ export function initNewProfile(name: string): CharacterProfile {
       chaosGems: [],
     },
     cores: initArkGridCores(),
+    isSupporter: false,
   };
 }
 
@@ -145,4 +147,9 @@ export function updateCore(
 ) {
   const cores = getCurrentProfile().cores;
   cores[attr][ctype] = core;
+}
+
+export function updateIsSupporter(v: boolean) {
+  const profile = getCurrentProfile();
+  profile.isSupporter = v;
 }

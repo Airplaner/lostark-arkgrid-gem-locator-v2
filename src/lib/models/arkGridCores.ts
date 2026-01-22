@@ -21,7 +21,13 @@ export const ArkGridCoreNameTierMap: Record<string, number> = {
   '흡수의 일격': 1,
   '부수는 일격': 1,
   공격: 0,
-  무기: 1,
+  무기: 1, // 폿은 0
+  '신념의 강화': 0,
+  '흐르는 마나': 1,
+  '불굴의 강화': 1,
+  '낙인의 흔적': 0,
+  '강철의 흔적': 1,
+  '치명적인 흔적': 1,
 };
 
 export type ArkGridCoreCoeffs = {
@@ -38,7 +44,18 @@ export interface ArkGridCore {
   type: ArkGridCoreType;
   grade: LostArkGrade;
   coeffs: ArkGridCoreCoeffs;
-  tier: number; // 0: 현란, 불타, 1: 안정,재빠,흡수,부수, 2: 그 외
+  tier: number;
+  /*
+  딜러
+  0: 현란, 불타
+  1: 안정,재빠,흡수,부수
+  2: 그 외
+
+  서폿
+  0: 신념, 낙인, 무기
+  1: 흐마, 불굴, 강흔, 치흔
+  2: 그 외
+  */
 }
 
 export function resetCoreCoeff(core: ArkGridCore) {

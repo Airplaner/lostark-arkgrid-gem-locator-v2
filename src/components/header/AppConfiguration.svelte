@@ -33,6 +33,7 @@
     clearGems,
     currentProfileName,
     updateCore,
+    updateIsSupporter,
   } from '../../lib/state/profile.state.svelte';
 
   let importing: boolean = $state(false);
@@ -143,7 +144,10 @@
 
     try {
       // fetch
-      const res = await apiClient.armories.armoriesGetArkGrid(characterName);
+      const res = await apiClient.armories.armoriesGetProfileAll(
+        characterName,
+        { filters: 'arkpassive+arkgrid' }
+      );
       // apiClient가 ok가 아니라면 알아서 error로 던져줌
       // 하지만 데이터가 없는 경우 null로 오는 걸 캐치
       if (!res.data) {
@@ -152,14 +156,28 @@
         );
         return;
       }
-
-      if (res.data.Slots) {
+      const arkpassive: LostArkOpenAPI.ArkPassive | undefined =
+        res.data.ArkPassive;
+      const arkgrid: LostArkOpenAPI.ArkGrid | undefined = res.data.ArkGrid;
+      let isSupporter = false;
+      if (arkpassive) {
+        const title = arkpassive.Title;
+        if (
+          title == '만개' ||
+          title == '절실한 구원' ||
+          title == '축복의 오라 ' ||
+          title == '해방자'
+        ) {
+          isSupporter = true;
+        }
+      }
+      if (arkgrid?.Slots) {
         // 코어 데이터가 존재하는 경우 갱신 시작
         clearCores();
         clearGems();
 
         // 모든 slot에 대해서
-        for (let coreSlot of res.data.Slots) {
+        for (const coreSlot of arkgrid.Slots) {
           if (!coreSlot.Name || !coreSlot.Grade) {
             window.alert(
               `Open API 응답이 이상합니다. 콘솔 로그를 확인해주세요.`
@@ -172,23 +190,29 @@
           const attr = reverseLookup(ArkGridAttrs, coreSlot.Name.slice(0, 2));
           const ctype = reverseLookup(ArkGridCoreTypes, coreSlot.Name[4]);
           const grade = reverseLookup(LostArkGrades, coreSlot.Grade);
-          const tier = ArkGridCoreNameTierMap[coreSlot.Name.slice(11)] ?? 2;
 
           if (!attr || !ctype || !grade) {
             window.alert(`${coreSlot.Grade} ${coreSlot.Name} 파싱 실패`);
             continue;
+          }
+          // 내부적으로 구분하는 tier
+          // 알 수 없으면 2 (그 외)
+          let tier = ArkGridCoreNameTierMap[coreSlot.Name.slice(11)] ?? 2;
+
+          // 특별 처리: 무기 코어 딜러는 1, 서폿은 0
+          if (isSupporter && coreSlot.Name.slice(11) == '무기') {
+            tier = 0;
+          }
+          // 질서는 tier 없음
+          if (attr == ArkGridAttrs.Order) {
+            tier = 0;
           }
 
           // 성공적으로 변환한 코어 저장
           updateCore(
             attr,
             ctype,
-            createCore(
-              attr,
-              ctype,
-              grade,
-              attr == ArkGridAttrs.Chaos ? tier : 0 // 혼돈만 tier 사용
-            )
+            createCore(attr, ctype, grade, isSupporter, tier)
           );
 
           // 장착 중인 젬 추가
@@ -200,6 +224,7 @@
           }
         }
       }
+      updateIsSupporter(isSupporter);
       toast.push(`데이터 가져오기 완료.`);
     } catch (e) {
       window.alert(`Open API 요청 실패!\n${e.error.Message}`);
