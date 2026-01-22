@@ -1,47 +1,76 @@
-# Svelte + TS + Vite
+# 아크 그리드 최적화
+## 개요
 
-This template should help get you started developing with Svelte and TypeScript in Vite.
+이 프로젝트는 로스트아크 아크 그리드 시스템에서 사용자가 가진 젬을 코어에 장착했을 때 전투력을 최대화하는 최적의 조합을 탐색하는 계산 사이트입니다.
 
-## Recommended IDE Setup
+## 사용자에게 제공하는 가치
+- 수십 개의 젬 조합을 직접 비교할 필요 없이 최적의 아크 그리드 배치를 자동으로 계산
+- 화면 인식을 통한 젬 자동 입력으로 반복 작업 최소화
+- 여러 캐릭터를 프로필로 관리 가능
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+## 최적화 알고리즘
+각 젬과 코어의 제약(공급 의지력, 활성화 포인트)을 고려하여 가능한 모든 조합을 생성하고,
+전투력 증가량의 최소 및 최대 범위를 이용한 가지치기(pruning)로 탐색 공간을 효율적으로 줄여 계산 속도를 높혔습니다.
 
-## Need an official Svelte framework?
+### 전투력 공식
+- 코어는 종류 및 활성화 포인트에 따라 비선형적인 전투력 배율을 가집니다.
+- 모든 젬의 공격력 옵션의 레벨의 합이 n일 때, 공격력으로 인해 증가하는 전투력 배율은 `(floor(n * 400 / 120) + 10000)/10000`입니다.
+- 추가 피해와 보스 피해의 경우 위 공식에서 각각 400의 계수 대신 700, 1000을 가집니다.
+- 위 배율들을 모두 곱한 값이 아크 그리드 시스템으로 얻은 최종 전투력입니다.
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+이러한 특성 때문에 일반적인 선형 최적화로는 정확한 해답을 구할 수 없습니다. 또한 DP의 경우 상태가 너무 많아서 불가능하였습니다.
 
-## Technical considerations
+### 한계
+일반적인 젬의 개수인 40-50개와 고대 코어가 적은 환경에서는 수 초내로 완료되나, 공급 의지력이 높은 고대 코어가 많거나 젬의 개수가 더 많아지게 되면 매우 오랜 시간이 걸리는 한계가 있습니다.
 
-**Why use this over SvelteKit?**
+### 알고리즘에 사용된 주요 개념
+#### 코어(Core)
+- 공급 의지력, 4개의 젬 슬롯, 활성화 포인트 별 전투력 계수를 가집니다.
 
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
+#### 젬(Gem)
+- 요구 의지력, 활성화 포인트, 공격력 / 추가 피해 / 보스 피해 옵션 등 전투력에 관여하는 젬 옵션을 가집니다.
 
-This template contains as little as possible to get started with Vite + TypeScript + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
+#### GemSet
+- 하나의 코어에 장착 가능한 젬들의 조합
+- 해당 조합으로 얻을 수 있는 전투력 증가 범위(min / max)를 계산합니다.
+- 젬 옵션은 모두 합해진 뒤에 전투력에 반영되기 때문에 같은 수치의 젬 옵션이더라도 전체 젬 옵션 레벨의 합에 따라서 전투력 증가 범위가 달라집니다.
 
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
+#### GemSetPack
+- 중복된 젬을 사용하지 않는 3개의 GemSet끼리 모인 단위입니다.
 
-**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
+#### GemSetPackTuple
+- 질서와 혼돈 각각 2개의 GemSetPack을 모두 고려한 최종 결과로, 실제 전투력을 산출할 수 있습니다.
 
-Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash references keeps the default TypeScript setting of accepting type information from the entire workspace, while also adding `svelte` and `vite/client` type information.
+### 알고리즘 로직
 
-**Why include `.vscode/extensions.json`?**
+1. 각 코어별로 가능한 모든 GemSet을 생성
+2. 전투력 증가 범위(min/max) 사전 계산
+3. 조합 탐색 중, 현재 가능한 최대 전투력 < 이미 찾은 최적 최소 전투력 인 경우 즉시 가지치기
+4. 중복 젬 사용을 비트마스크(bigint)로 빠르게 검증
+5. GemSetPack끼리 비교할 때는 더 이상 젬 중복을 검사할 필요 없기 때문에 최종 옵션만을 가지고 중복을 줄인 뒤 계산 수를 줄임
 
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
+### 프로필 기능
+사용자의 모든 정보는 브라우저의 로컬 스토리지에 자동 저장 및 불러오기 되며, 여러 캐릭터를 한 번에 관리할 수 있도록 프로필 기능을 제공합니다.
 
-**Why enable `allowJs` in the TS template?**
+## 기술 스택
+### Svelte 5
+Svelte 5의 Rune API를 중심으로 반응성 패턴을 활용하여 사용자의 입력에 따라 변화하는 UI를 구현하였고,
+젬 목록과 같이 반복적으로 사용되는 구조를 컴포넌트로 분리하여 재사용성을 높였습니다.
+또한 Props와 전역 상태를 통해 각 컴포넌트 간 상태 흐름을 유기적으로 설계하였습니다. 
+번들링 및 개발 서버는 Vite를 사용했습니다.
 
-While `allowJs: false` would indeed prevent the use of `.js` files in the project, it does not prevent the use of JavaScript syntax in `.svelte` files. In addition, it would force `checkJs: false`, bringing the worst of both worlds: not being able to guarantee the entire codebase is TypeScript, and also having worse typechecking for the existing JavaScript. In addition, there are valid use cases in which a mixed codebase may be relevant.
+또한 다양한 해상도에서 사용할 수 있도록 반응형 CSS를 일부 사용하였습니다.
 
-**Why is HMR not preserving my local component state?**
+### OpenCV
+젬 옵션을 화면 인식을 통해 자동으로 입력하기 위해 OpenCV를 사용했습니다.
+OCR은 처리 속도와 인식 정확도 측면에서 요구 사항에 맞지 않다고 판단하여,
+OpenCV의 template matching 기법을 선택했습니다.
 
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/rixo/svelte-hmr#svelte-hmr).
+로스트아크 젬 목록 UI의 고정된 레이아웃과 특징적인 형태를 기준으로
+템플릿 매칭을 통해 UI의 중심 좌표를 먼저 검출하고,
+해당 위치로부터 상대적으로 고정된 거리에 배치된 각 젬 row 영역에 대해
+추가적인 템플릿 매칭을 수행하여 젬 옵션을 인식하도록 구현했습니다.
 
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
-
-```ts
-// store.ts
-// An extremely simple external store
-import { writable } from 'svelte/store';
-export default writable(0);
-```
+## TODO
+- 웹 워커로 solve 로직 분리
+- UI 개선
