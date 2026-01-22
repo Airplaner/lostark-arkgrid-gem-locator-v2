@@ -66,12 +66,12 @@ export function resetCoreCoeff(
   weapon: WeaponInfo | undefined
 ) {
   core.coeffs = getDefaultCoreCoeff(core, isSupporter, weapon);
-  if (!weapon) adjustCoeff(core, isSupporter);
+  cutoffCoeff(core);
+  adjustCoeff(core, isSupporter);
   // 무기 정보가 주어졌다면 유물 - 고대 추가 계수 부여하지 않음
 }
-
-function adjustCoeff(core: ArkGridCore, isSupporter: boolean) {
-  // 코어 등급에 따라 계수 조정
+function cutoffCoeff(core: ArkGridCore) {
+  // 코어 영웅, 전설 등급이면 계수 조정
   if (core.grade === LostArkGrades.EPIC) {
     // 영웅 등급: 10P 옵션까지만 존재
     core.coeffs.p14 = core.coeffs.p10;
@@ -85,7 +85,29 @@ function adjustCoeff(core: ArkGridCore, isSupporter: boolean) {
     core.coeffs.p18 = core.coeffs.p14;
     core.coeffs.p19 = core.coeffs.p14;
     core.coeffs.p20 = core.coeffs.p14;
-  } else if (core.grade === LostArkGrades.ANCIENT && core.coeffs.p17) {
+  }
+}
+function adjustCoeff(core: ArkGridCore, isSupporter: boolean) {
+  // 고대 코어 추가 계수 부여
+
+  // getDefaultCoreCoeff에서 이미 처리를 하는 경우 생략
+  if (!isSupporter
+    && core.grade == LostArkGrades.ANCIENT
+    && core.attr == ArkGridAttrs.Chaos
+    && core.type == ArkGridCoreTypes.STAR
+    && core.tier == 1)
+    // 딜러 - 고대 혼돈의 별 무기의 경우 고대 적용x
+    return;
+
+  if (isSupporter
+    && core.grade == LostArkGrades.ANCIENT
+    && core.attr == ArkGridAttrs.Order
+    && core.type == ArkGridCoreTypes.STAR
+    && core.tier == 0)
+    // 서폿 - 고대 혼돈의 별 무기의 경우 고대 적용x
+    return;
+
+  if (core.grade === LostArkGrades.ANCIENT && core.coeffs.p17) {
     /*
       고대 등급 17-20P 옵션 추가 계수
       딜러:  +100
