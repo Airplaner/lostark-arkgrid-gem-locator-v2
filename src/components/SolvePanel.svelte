@@ -450,7 +450,7 @@
   <div class="title">최적화 설정</div>
   <div class="container">
     <div class="core-solve-goal-edit">
-      <div class="title">코어 목표 포인트 설정</div>
+      <div class="title">코어별 최소 포인트 설정</div>
       <div class="container">
         {#each Object.values(ArkGridAttrs) as attr}
           {#each Object.values(ArkGridCoreTypes) as ctype}

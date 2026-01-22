@@ -35,7 +35,7 @@
 </script>
 
 <div class="panel">
-  <div class="title">코어 설정 - {isSupporter ? '서포터' : '딜러'}</div>
+  <div class="title">코어 설정 - {isSupporter ? '서포터 (베타)' : '딜러'}</div>
   {#each attrs as attr}
     {#each ctypes as ctype}
       <ArkGridCoreEditElement {attr} {ctype} {isSupporter}

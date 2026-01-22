@@ -84,5 +84,6 @@
     width: 3rem;
     text-align: center;
     border: none;
+    background: none;
   }
 </style>
