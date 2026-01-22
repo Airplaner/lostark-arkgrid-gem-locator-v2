@@ -4,6 +4,7 @@ import {
   type LostArkGrade,
   LostArkGrades,
 } from '../constants/enums';
+import type { WeaponInfo } from '../state/profile.state.svelte';
 
 export const ArkGridCoreTypes = {
   SUN: '해',
@@ -59,9 +60,14 @@ export interface ArkGridCore {
   */
 }
 
-export function resetCoreCoeff(core: ArkGridCore, isSupporter: boolean) {
-  core.coeffs = getDefaultCoreCoeff(core, isSupporter);
-  adjustCoeff(core, isSupporter);
+export function resetCoreCoeff(
+  core: ArkGridCore,
+  isSupporter: boolean,
+  weapon: WeaponInfo | undefined
+) {
+  core.coeffs = getDefaultCoreCoeff(core, isSupporter, weapon);
+  if (weapon) adjustCoeff(core, isSupporter);
+  // 무기 정보가 주어졌다면 유물 - 고대 추가 계수 부여하지 않음
 }
 
 function adjustCoeff(core: ArkGridCore, isSupporter: boolean) {
@@ -127,10 +133,23 @@ function adjustCoeff(core: ArkGridCore, isSupporter: boolean) {
   }
 }
 
+function getWeaponCoeff(base: WeaponInfo, income: WeaponInfo) {
+  // 현재 무공과 추가 무공 정보가 주어졌을 때, 전투력 계수
+  const v1 = base.fixed * ((base.percent + 100) / 100);
+  const v2 =
+    (base.fixed + income.fixed) * ((base.percent + income.percent + 100) / 100);
+  const diff = Math.sqrt(v2 / v1);
+  return Math.floor((diff - 1) * 10000);
+}
+
 export function getDefaultCoreCoeff(
   core: ArkGridCore,
-  isSupporter = false
+  isSupporter = false,
+  weapon: WeaponInfo | undefined
 ): ArkGridCoreCoeffs {
+  // 무기가 주어지지 않는다면 세르카 25강, 깨달음 30레벨, 귀걸이 상 2개 기준으로 수행
+  if (!weapon) weapon = { fixed: 241367, percent: 9 };
+
   const attr = core.attr,
     type = core.type,
     tier = core.tier;
@@ -199,12 +218,26 @@ export function getDefaultCoreCoeff(
         if (tier == 1) {
           // 무기
           return {
-            p10: 35,
-            p14: 70,
-            p17: 220,
-            p18: 230,
-            p19: 241,
-            p20: 253,
+            p10: getWeaponCoeff(weapon, { fixed: 1300, percent: 0 }), // 무공 +1300
+            p14: getWeaponCoeff(weapon, { fixed: 1300, percent: 0.75 }), // 무공 +0.75%
+            p17: getWeaponCoeff(weapon, {
+              fixed: core.grade == LostArkGrades.ANCIENT ? 5200 : 3900,
+              percent: core.grade == LostArkGrades.ANCIENT ? 3 : 2.25,
+            }), // 무공 +1.5/2.25%, 무공+2600/3900
+            p18: getWeaponCoeff(weapon, {
+              fixed: core.grade == LostArkGrades.ANCIENT ? 5200 : 3900,
+              percent: (core.grade == LostArkGrades.ANCIENT ? 3 : 2.25) + 0.23,
+            }), // 무공 +0.23%
+            p19: getWeaponCoeff(weapon, {
+              fixed: core.grade == LostArkGrades.ANCIENT ? 5200 : 3900,
+              percent:
+                (core.grade == LostArkGrades.ANCIENT ? 3 : 2.25) + 0.23 * 2,
+            }), // 무공 +0.23%
+            p20: getWeaponCoeff(weapon, {
+              fixed: core.grade == LostArkGrades.ANCIENT ? 5200 : 3900,
+              percent:
+                (core.grade == LostArkGrades.ANCIENT ? 3 : 2.25) + 0.23 * 3,
+            }), // 무공 +0.23%
           };
         }
       }
@@ -276,12 +309,26 @@ export function getDefaultCoreCoeff(
         if (tier == 0) {
           // 무기 TODO 무공
           return {
-            p10: 35,
-            p14: 70,
-            p17: 220,
-            p18: 230,
-            p19: 241,
-            p20: 253,
+            p10: getWeaponCoeff(weapon, { fixed: 1300, percent: 0 }), // 무공 +1300
+            p14: getWeaponCoeff(weapon, { fixed: 1300, percent: 0.75 }), // 무공 +0.75%
+            p17: getWeaponCoeff(weapon, {
+              fixed: core.grade == LostArkGrades.ANCIENT ? 5200 : 3900,
+              percent: core.grade == LostArkGrades.ANCIENT ? 3 : 2.25,
+            }), // 무공 +1.5/2.25%, 무공+2600/3900
+            p18: getWeaponCoeff(weapon, {
+              fixed: core.grade == LostArkGrades.ANCIENT ? 5200 : 3900,
+              percent: (core.grade == LostArkGrades.ANCIENT ? 3 : 2.25) + 0.23,
+            }), // 무공 +0.23%
+            p19: getWeaponCoeff(weapon, {
+              fixed: core.grade == LostArkGrades.ANCIENT ? 5200 : 3900,
+              percent:
+                (core.grade == LostArkGrades.ANCIENT ? 3 : 2.25) + 0.23 * 2,
+            }), // 무공 +0.23%
+            p20: getWeaponCoeff(weapon, {
+              fixed: core.grade == LostArkGrades.ANCIENT ? 5200 : 3900,
+              percent:
+                (core.grade == LostArkGrades.ANCIENT ? 3 : 2.25) + 0.23 * 3,
+            }), // 무공 +0.23%
           };
         } // TODO 생명
       }
@@ -352,6 +399,7 @@ export function createCore(
   type: ArkGridCoreType,
   grade: LostArkGrade,
   isSupporter: boolean,
+  weapon: WeaponInfo | undefined,
   tier?: number
 ): ArkGridCore {
   const core: ArkGridCore = {
@@ -368,7 +416,7 @@ export function createCore(
     },
     tier: tier ? tier : 0,
   };
-  resetCoreCoeff(core, isSupporter);
+  resetCoreCoeff(core, isSupporter, weapon);
   return core;
 }
 

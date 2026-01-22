@@ -28,12 +28,13 @@
     updateOpenApiJWT,
   } from '../../lib/state/appConfig.state.svelte';
   import {
+    type WeaponInfo,
     addGem,
     clearCores,
-    clearGems,
     currentProfileName,
     updateCore,
     updateIsSupporter,
+    updateWeapon,
   } from '../../lib/state/profile.state.svelte';
 
   let importing: boolean = $state(false);
@@ -118,10 +119,40 @@
     };
   }
 
+  function parseArmoryEquipmentTooltip(tooltip: string) {
+    // 장비에서 무기 공격력 고정 수치와 %증가 수치 옵션을 가져와서 반환
+    const text = tooltip.replace(/<[^>]*>/g, '');
+
+    const fixedValues: number[] = [];
+    const percentValues: number[] = [];
+
+    // 고정 수치: 무기 공격력 +정수
+    const fixedRegex = /무기 공격력\ \+(\d+)\b/g;
+    let match: RegExpExecArray | null;
+
+    while ((match = fixedRegex.exec(text)) !== null) {
+      fixedValues.push(Number(match[1]));
+    }
+
+    const fixedRegexBracelet = /(?<!동안 )무기 공격력이 (\d+) 증가한다\./g;
+    while ((match = fixedRegexBracelet.exec(text)) !== null) {
+      fixedValues.push(Number(match[1]));
+    }
+
+    // 3. 퍼센트 수치: 무기 공격력 +실수%
+    const percentRegex = /무기 공격력 *\+(\d+\.\d+)%/g;
+
+    while ((match = percentRegex.exec(text)) !== null) {
+      percentValues.push(Number(match[1]));
+    }
+
+    return { fixedValues, percentValues };
+  }
+
   async function importFromOpenAPI() {
     if (
       !window.confirm(
-        `⚠️ 현재 프로필을 초기화합니다. ⚠️\n${currentProfileName.current == DEFAULT_PROFILE_NAME ? '입력할' : currentProfileName.current} 캐릭터의 장착된 아크 그리드 정보를 가져와 현재 프로필에 덮어 씌웁니다. 진행하시겠습니까?`
+        `${currentProfileName.current == DEFAULT_PROFILE_NAME ? '입력할' : currentProfileName.current} 캐릭터의 정보를 가져와 현재 프로필에 적용합니다. 진행하시겠습니까?`
       )
     ) {
       return;
@@ -142,11 +173,13 @@
     if (characterName === null) return;
     characterName = characterName.trim();
 
+    let confirmAddingGems: boolean | null = null;
+
     try {
       // fetch
       const res = await apiClient.armories.armoriesGetProfileAll(
         characterName,
-        { filters: 'arkpassive+arkgrid' }
+        { filters: 'arkpassive+arkgrid+equipment' }
       );
       // apiClient가 ok가 아니라면 알아서 error로 던져줌
       // 하지만 데이터가 없는 경우 null로 오는 걸 캐치
@@ -159,7 +192,23 @@
       const arkpassive: LostArkOpenAPI.ArkPassive | undefined =
         res.data.ArkPassive;
       const arkgrid: LostArkOpenAPI.ArkGrid | undefined = res.data.ArkGrid;
+      const armoryEquipment: LostArkOpenAPI.ArmoryEquipment[] | undefined =
+        res.data.ArmoryEquipment;
       let isSupporter = false;
+
+      // 장비에서 무기 공격력 추출
+      const weapon: WeaponInfo = { fixed: 0, percent: 0 };
+      if (armoryEquipment) {
+        for (const equipment of armoryEquipment) {
+          if (equipment.Tooltip) {
+            const { fixedValues, percentValues } = parseArmoryEquipmentTooltip(
+              equipment.Tooltip
+            );
+            for (const v of fixedValues) weapon.fixed += v;
+            for (const v of percentValues) weapon.percent += v;
+          }
+        }
+      }
       if (arkpassive) {
         const title = arkpassive.Title;
         if (
@@ -170,11 +219,29 @@
         ) {
           isSupporter = true;
         }
+
+        if (arkpassive.Points) {
+          for (const p of arkpassive.Points) {
+            if (p.Name == '깨달음') {
+              // 깨달음 레벨당 무기 공격력 0.1%
+              const rank = p.Description?.match(/(\d+)랭크 (\d+)레벨/);
+              if (rank) {
+                weapon.percent += 0.1 * Number(rank[2]);
+              }
+            }
+          }
+        }
       }
       if (arkgrid?.Slots) {
+        if (confirmAddingGems === null) {
+          confirmAddingGems = window.confirm(
+            '장착 중인 젬을 현재 프로필에 추가하시겠습니까?\n' +
+              '⚠️ 이미 추가한 젬이 있을 경우 중복될 수 있습니다.\n' +
+              '⚠️ 응답과 상관 없이 나머지 정보는 모두 반영됩니다.'
+          );
+        }
         // 코어 데이터가 존재하는 경우 갱신 시작
         clearCores();
-        clearGems();
 
         // 모든 slot에 대해서
         for (const coreSlot of arkgrid.Slots) {
@@ -212,19 +279,22 @@
           updateCore(
             attr,
             ctype,
-            createCore(attr, ctype, grade, isSupporter, tier)
+            createCore(attr, ctype, grade, isSupporter, weapon, tier)
           );
 
           // 장착 중인 젬 추가
           // TODO 젬 목록 API
-          if (coreSlot.Gems) {
-            for (let gem of coreSlot.Gems) {
-              addGem(parseOpenApiGem(gem));
+          if (confirmAddingGems) {
+            if (coreSlot.Gems) {
+              for (let gem of coreSlot.Gems) {
+                addGem(parseOpenApiGem(gem));
+              }
             }
           }
         }
       }
       updateIsSupporter(isSupporter);
+      updateWeapon(weapon.fixed, weapon.percent);
       toast.push(`데이터 가져오기 완료.`);
     } catch (e) {
       window.alert(`Open API 요청 실패!\n${e.error.Message}`);

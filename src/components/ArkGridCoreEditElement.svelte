@@ -13,6 +13,7 @@
   } from '../lib/models/arkGridCores';
   import { appConfig } from '../lib/state/appConfig.state.svelte';
   import {
+    type WeaponInfo,
     addCore,
     getCore,
     resetCore,
@@ -22,8 +23,9 @@
     attr: ArkGridAttr;
     ctype: ArkGridCoreType;
     isSupporter: boolean;
+    weapon: WeaponInfo | undefined;
   };
-  let { attr, ctype, isSupporter }: Props = $props();
+  let { attr, ctype, isSupporter, weapon }: Props = $props();
   // 조합 → 이미지 경로 함수
 
   const coeffKeys = ['p10', 'p14', 'p17', 'p18', 'p19', 'p20'] as const;
@@ -91,7 +93,7 @@
               name="{attr} {ctype} grade"
               bind:group={core.grade}
               onchange={() => {
-                resetCoreCoeff(core, isSupporter);
+                resetCoreCoeff(core, isSupporter, weapon);
               }}
               value={grade}
             />
@@ -112,7 +114,7 @@
                 name="{attr} {ctype} tier"
                 bind:group={core.tier}
                 onchange={() => {
-                  resetCoreCoeff(core, isSupporter);
+                  resetCoreCoeff(core, isSupporter, weapon);
                 }}
                 value={tier}
                 disabled={isSupporter &&

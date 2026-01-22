@@ -28,7 +28,7 @@
         const core = cores[attr][ctype];
         if (!core) continue;
         core.tier = 0; // 티어 모두 초기화. TODO 티어 저장? 굳이?
-        resetCoreCoeff(core, isSupporter);
+        resetCoreCoeff(core, isSupporter, profile.weapon);
       }
     }
   }
@@ -38,7 +38,11 @@
   <div class="title">코어 설정 - {isSupporter ? '서포터 (베타)' : '딜러'}</div>
   {#each attrs as attr}
     {#each ctypes as ctype}
-      <ArkGridCoreEditElement {attr} {ctype} {isSupporter}
+      <ArkGridCoreEditElement
+        {attr}
+        {ctype}
+        {isSupporter}
+        weapon={profile.weapon}
       ></ArkGridCoreEditElement>
     {/each}
   {/each}

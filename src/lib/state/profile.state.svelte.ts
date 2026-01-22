@@ -28,11 +28,16 @@ export interface AllGems {
   orderGems: ArkGridGem[];
   chaosGems: ArkGridGem[];
 }
+export type WeaponInfo = {
+  fixed: number;
+  percent: number;
+};
 export interface CharacterProfile {
   characterName: string;
   gems: AllGems;
   cores: Record<ArkGridAttr, Record<ArkGridCoreType, ArkGridCore | null>>;
   isSupporter: boolean;
+  weapon?: WeaponInfo;
 }
 
 export function initNewProfile(name: string): CharacterProfile {
@@ -129,8 +134,15 @@ export function addCore(
   ctype: ArkGridCoreType,
   isSupporter: boolean
 ) {
-  const cores = getCurrentProfile().cores;
-  cores[attr][ctype] = createCore(attr, ctype, LostArkGrades.EPIC, isSupporter);
+  const profile = getCurrentProfile();
+  const cores = profile.cores;
+  cores[attr][ctype] = createCore(
+    attr,
+    ctype,
+    LostArkGrades.EPIC,
+    isSupporter,
+    profile.weapon
+  );
 }
 export function resetCore(attr: ArkGridAttr, ctype: ArkGridCoreType) {
   const cores = getCurrentProfile().cores;
@@ -156,4 +168,12 @@ export function updateCore(
 export function updateIsSupporter(v: boolean) {
   const profile = getCurrentProfile();
   profile.isSupporter = v;
+}
+
+export function updateWeapon(fixed: number, percent: number) {
+  const profile = getCurrentProfile();
+  profile.weapon = {
+    fixed,
+    percent,
+  };
 }
