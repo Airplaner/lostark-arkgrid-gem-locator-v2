@@ -152,7 +152,10 @@
   async function importFromOpenAPI() {
     if (
       !window.confirm(
-        `${currentProfileName.current == DEFAULT_PROFILE_NAME ? '입력할' : currentProfileName.current} 캐릭터의 정보를 가져와 현재 프로필에 적용합니다. 진행하시겠습니까?`
+        `${currentProfileName.current == DEFAULT_PROFILE_NAME ? '입력할' : currentProfileName.current} 캐릭터의 다음 정보를 가져와 현재 프로필에 반영합니다.\n` +
+          '- 장착 중인 아크 그리드 코어\n' +
+          '- 무기 코어 전투력 계산을 위한 장비\n' +
+          '- (선택) 장착 중인 아크 그리드 젬'
       )
     ) {
       return;
@@ -247,13 +250,13 @@
         for (const coreSlot of arkgrid.Slots) {
           if (!coreSlot.Name || !coreSlot.Grade) {
             window.alert(
-              `Open API 응답이 이상합니다. 콘솔 로그를 확인해주세요.`
+              `OpenAPI 응답이 이상합니다. 콘솔 로그를 확인해주세요.`
             );
             console.log(coreSlot);
             continue;
           }
 
-          // Open API 응답 -> 내부 데이터로 변환
+          // OpenAPI 응답 -> 내부 데이터로 변환
           const attr = reverseLookup(ArkGridAttrs, coreSlot.Name.slice(0, 2));
           const ctype = reverseLookup(ArkGridCoreTypes, coreSlot.Name[4]);
           const grade = reverseLookup(LostArkGrades, coreSlot.Grade);
@@ -295,9 +298,9 @@
       }
       updateIsSupporter(isSupporter);
       updateWeapon(weapon.fixed, weapon.percent);
-      toast.push(`데이터 가져오기 완료.`);
+      toast.push(`OpenAPI 데이터 반영 완료.`);
     } catch (e) {
-      window.alert(`Open API 요청 실패!\n${e.error.Message}`);
+      window.alert(`OpenAPI 요청 실패!\n${e.error.Message}`);
       console.error(e);
       return;
     } finally {
@@ -327,8 +330,8 @@
 </script>
 
 <div class="buttons">
-  <button onclick={updateOpenApiConfig}>Open API 설정</button>
-  <button onclick={importFromOpenAPI}>데이터 가져오기</button>
+  <button onclick={updateOpenApiConfig}>OpenAPI 설정</button>
+  <button onclick={importFromOpenAPI}>OpenAPI 데이터 반영</button>
   <button
     hidden={!appConfig.current.uiConfig.debugMode}
     onclick={() => toggleUI('debugMode')}
