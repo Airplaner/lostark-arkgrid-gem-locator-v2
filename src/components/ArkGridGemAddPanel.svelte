@@ -57,8 +57,8 @@
     optionType: ArkGridGemOptionTypes.BOSS_DAMAGE,
     value: 1,
   });
-  let willPower = $state(5);
-  let corePoint = $state(3);
+  let willPower = $state(3);
+  let corePoint = $state(5);
 </script>
 
 <button onclick={open}>젬 추가</button>
@@ -93,8 +93,8 @@
     </div>
 
     <div class="buttons">
-      <button onclick={confirm}>확인</button>
       <button onclick={close}>취소</button>
+      <button onclick={confirm}>확인</button>
     </div>
   </div>
 </dialog>
