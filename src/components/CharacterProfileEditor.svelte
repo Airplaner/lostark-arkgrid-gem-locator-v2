@@ -55,7 +55,7 @@
 {#if profile}
   <div class="dual-panel">
     <div bind:this={originRef as HTMLDivElement}>
-      <ArkGridCoreEditPanel bind:cores={profile.cores} />
+      <ArkGridCoreEditPanel {profile} />
     </div>
     <div bind:this={otherRef as HTMLDivElement}>
       <ArkGridAllGemListPanel gems={profile.gems} />

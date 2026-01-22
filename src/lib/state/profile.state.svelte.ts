@@ -124,9 +124,13 @@ export function getCore(attr: ArkGridAttr, ctype: ArkGridCoreType) {
   const cores = getCurrentProfile().cores;
   return cores[attr][ctype];
 }
-export function addCore(attr: ArkGridAttr, ctype: ArkGridCoreType) {
+export function addCore(
+  attr: ArkGridAttr,
+  ctype: ArkGridCoreType,
+  isSupporter: boolean
+) {
   const cores = getCurrentProfile().cores;
-  cores[attr][ctype] = createCore(attr, ctype, LostArkGrades.EPIC);
+  cores[attr][ctype] = createCore(attr, ctype, LostArkGrades.EPIC, isSupporter);
 }
 export function resetCore(attr: ArkGridAttr, ctype: ArkGridCoreType) {
   const cores = getCurrentProfile().cores;
@@ -146,7 +150,7 @@ export function updateCore(
   core: ArkGridCore
 ) {
   const cores = getCurrentProfile().cores;
-  cores[attr][ctype] = core;
+  cores[attr][ctype] = JSON.parse(JSON.stringify(core));
 }
 
 export function updateIsSupporter(v: boolean) {
