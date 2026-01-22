@@ -28,6 +28,7 @@ export const ArkGridCoreNameTierMap: Record<string, number> = {
   '낙인의 흔적': 0,
   '강철의 흔적': 1,
   '치명적인 흔적': 1,
+  생명: 1,
 };
 
 export type ArkGridCoreCoeffs = {
@@ -233,47 +234,47 @@ export function getDefaultCoreCoeff(
         };
       }
     } else if (attr == ArkGridAttrs.Chaos) {
-      if (
-        (type == ArkGridCoreTypes.SUN || type == ArkGridCoreTypes.MOON) &&
-        tier == 0
-      ) {
-        // 혼돈의 해, 달
-        // 1티어: 신념의 강화, 낙인의 흔적
-        return {
-          p10: 60,
-          p14: 120,
-          p17: 360,
-          p18: 378,
-          p19: 396,
-          p20: 420,
-        };
-      } else if (tier == 1) {
-        // 2티어
-        if (type == ArkGridCoreTypes.SUN) {
-          // 해 - 흐르는 마나, 불굴의 강화
-          return {
-            p10: 0,
-            p14: 48,
-            p17: 132,
-            p18: 148,
-            p19: 164,
-            p20: 180,
-          };
-        } else if (type == ArkGridCoreTypes.MOON) {
-          // 달 - 강철의 흔적, 치명적인 흔적
+      if (type == ArkGridCoreTypes.SUN || type == ArkGridCoreTypes.MOON) {
+        // 혼돈의 해, 혼돈의 달
+        if (tier == 0) {
+          // 혼돈의 해, 달
+          // 1티어: 신념의 강화, 낙인의 흔적
           return {
             p10: 60,
-            p14: 60,
-            p17: 180,
-            p18: 180,
-            p19: 180,
-            p20: 180,
+            p14: 120,
+            p17: 360,
+            p18: 378,
+            p19: 396,
+            p20: 420,
           };
+        } else if (tier == 1) {
+          // 2티어
+          if (type == ArkGridCoreTypes.SUN) {
+            // 해 - 흐르는 마나, 불굴의 강화
+            return {
+              p10: 0,
+              p14: 48,
+              p17: 132,
+              p18: 148,
+              p19: 164,
+              p20: 180,
+            };
+          } else if (type == ArkGridCoreTypes.MOON) {
+            // 달 - 강철의 흔적, 치명적인 흔적
+            return {
+              p10: 60,
+              p14: 60,
+              p17: 180,
+              p18: 180,
+              p19: 180,
+              p20: 180,
+            };
+          }
         }
       } else if (type == ArkGridCoreTypes.STAR) {
         // 혼돈의 별
         if (tier == 0) {
-          // 무기
+          // 무기 TODO 무공
           return {
             p10: 35,
             p14: 70,
@@ -282,7 +283,7 @@ export function getDefaultCoreCoeff(
             p19: 241,
             p20: 253,
           };
-        }
+        } // TODO 생명
       }
     }
   }

@@ -15,7 +15,6 @@
   import {
     addCore,
     getCore,
-    getCurrentProfile,
     resetCore,
   } from '../lib/state/profile.state.svelte';
 
@@ -56,18 +55,10 @@
               '강철의/치명적인 흔적',
               '그 외',
             ],
-            [ArkGridCoreTypes.STAR]: ['무기', '그 외'],
+            [ArkGridCoreTypes.STAR]: ['무기', '생명', '그 외'],
           };
     }
   );
-  function resetCoeffWhenCoreChanges(
-    attr: ArkGridAttr,
-    ctype: ArkGridCoreType
-  ) {
-    if (core) {
-      resetCoreCoeff(core, isSupporter);
-    }
-  }
   let maxCorePoint = $derived(getMaxCorePoint(core));
 </script>
 
@@ -99,7 +90,9 @@
               type="radio"
               name="{attr} {ctype} grade"
               bind:group={core.grade}
-              onchange={() => resetCoeffWhenCoreChanges(attr, ctype)}
+              onchange={() => {
+                resetCoreCoeff(core, isSupporter);
+              }}
               value={grade}
             />
             {grade}
@@ -118,8 +111,14 @@
                 type="radio"
                 name="{attr} {ctype} tier"
                 bind:group={core.tier}
-                onchange={() => resetCoeffWhenCoreChanges(attr, ctype)}
+                onchange={() => {
+                  resetCoreCoeff(core, isSupporter);
+                }}
                 value={tier}
+                disabled={isSupporter &&
+                  attr == ArkGridAttrs.Chaos &&
+                  ctype == ArkGridCoreTypes.STAR &&
+                  tier == 1}
               />
               {tierName}
             </label>

@@ -3,7 +3,7 @@ export class Core {
     public energy: number,
     public point: number,
     public coeff: number[]
-  ) { }
+  ) {}
 }
 
 export class Gem {
@@ -14,7 +14,7 @@ export class Gem {
     public att: number,
     public skill: number,
     public boss: number
-  ) { }
+  ) {}
 }
 
 export function buildScoreMap(coeff: number, maxLevel: number) {
@@ -146,6 +146,10 @@ export class GemSetPack {
     }
   }
 }
+
+export const gemOptionLevelCoeffs = [400, 700, 1000]; // 공격력, 추가 피해, 보스 피해
+export const gemOptionLevelCoeffsSupporter = [600, 1050, 1500]; // 아피강, 낙인력, 아공강
+
 export class GemSetPackTuple {
   // GemSetPack이 두 개 있는 것, 즉 완성된 하나의 아크 그리드
   att: number;
@@ -154,20 +158,23 @@ export class GemSetPackTuple {
   score: number;
   constructor(
     public gsp1: GemSetPack | null,
-    public gsp2: GemSetPack | null
+    public gsp2: GemSetPack | null,
+    public isSupporter: boolean
   ) {
     this.att = (gsp1?.att ?? 0) + (gsp2?.att ?? 0);
     this.skill = (gsp1?.skill ?? 0) + (gsp2?.skill ?? 0);
     this.boss = (gsp1?.boss ?? 0) + (gsp2?.boss ?? 0);
+    const coeffs = isSupporter
+      ? gemOptionLevelCoeffsSupporter
+      : gemOptionLevelCoeffs;
     this.score =
       ((((((gsp1?.coreScore ?? 1) *
         (gsp2?.coreScore ?? 1) *
-        (Math.floor((this.att * 400) / 120) + 10000)) /
+        (Math.floor((this.att * coeffs[0]) / 120) + 10000)) /
         10000) *
-        (Math.floor((this.skill * 700) / 120) + 10000)) /
+        (Math.floor((this.skill * coeffs[1]) / 120) + 10000)) /
         10000) *
-        (Math.floor((this.boss * 1000) / 120) + 10000)) /
+        (Math.floor((this.boss * coeffs[2]) / 120) + 10000)) /
       10000;
   }
 }
-

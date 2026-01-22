@@ -16,6 +16,8 @@
     GemSetPack,
     GemSetPackTuple,
     buildScoreMap,
+    gemOptionLevelCoeffs,
+    gemOptionLevelCoeffsSupporter,
   } from '../lib/solver/models';
   import { getBestGemSetPacks, getPossibleGemSets } from '../lib/solver/solver';
   import {
@@ -44,6 +46,72 @@
       ])
     )
   ) as Record<ArkGridAttr, Record<ArkGridCoreType, SolveCoreEdit | null>>;
+
+  // 이론상 최대 전투력을 구하기 위한 종결젬들
+  const perfectGems = [
+    {
+      req: 3,
+      point: 5,
+      option1: { optionType: ArkGridGemOptionTypes.ATTACK, value: 5 },
+      option2: {
+        optionType: ArkGridGemOptionTypes.SKILL_DAMAGE,
+        value: 5,
+      },
+    },
+    {
+      req: 4,
+      point: 5,
+      option1: { optionType: ArkGridGemOptionTypes.ATTACK, value: 5 },
+      option2: {
+        optionType: ArkGridGemOptionTypes.BOSS_DAMAGE,
+        value: 5,
+      },
+    },
+    {
+      req: 5,
+      point: 5,
+      option1: {
+        optionType: ArkGridGemOptionTypes.SKILL_DAMAGE,
+        value: 5,
+      },
+      option2: {
+        optionType: ArkGridGemOptionTypes.BOSS_DAMAGE,
+        value: 5,
+      },
+    },
+  ];
+  const perfectGemsSupporter = [
+    {
+      req: 3,
+      point: 5,
+      option1: { optionType: ArkGridGemOptionTypes.STIGMA, value: 5 },
+      option2: {
+        optionType: ArkGridGemOptionTypes.PARTY_DAMAGE,
+        value: 5,
+      },
+    },
+    {
+      req: 4,
+      point: 5,
+      option1: { optionType: ArkGridGemOptionTypes.PARTY_DAMAGE, value: 5 },
+      option2: {
+        optionType: ArkGridGemOptionTypes.PARTY_ATTACK,
+        value: 5,
+      },
+    },
+    {
+      req: 5,
+      point: 5,
+      option1: {
+        optionType: ArkGridGemOptionTypes.STIGMA,
+        value: 5,
+      },
+      option2: {
+        optionType: ArkGridGemOptionTypes.PARTY_ATTACK,
+        value: 5,
+      },
+    },
+  ];
 
   export type SolveAnswerScoreSet = {
     score: number;
@@ -77,46 +145,49 @@
       chaos: solveAnswer?.gemSetPackTuple.gsp2 === null && !allChaosCoresNull,
     };
   });
+  let isSupporter = $derived(profile.isSupporter);
 
-  function convertToSolverGems(gem: ArkGridGem[]): {
+  let gemOptionCoeff = $derived(
+    !isSupporter ? gemOptionLevelCoeffs : gemOptionLevelCoeffsSupporter
+  );
+
+  function convertToSolverGems(
+    gem: ArkGridGem[],
+    isSupporter: boolean
+  ): {
     gems: Gem[];
     reverseMap: ArkGridGem[];
   } {
     // Svelte에서 사용하는 ArkGridGem을 solver가 사용하는 형태로 변경
     const reverseMap: ArkGridGem[] = [];
+    const optionIndexMap = !isSupporter
+      ? [
+          ArkGridGemOptionTypes.ATTACK,
+          ArkGridGemOptionTypes.SKILL_DAMAGE,
+          ArkGridGemOptionTypes.BOSS_DAMAGE,
+        ]
+      : [
+          ArkGridGemOptionTypes.PARTY_DAMAGE,
+          ArkGridGemOptionTypes.STIGMA,
+          ArkGridGemOptionTypes.PARTY_ATTACK,
+        ]; // 수집할 옵션들
     const gems = gem.map((g, index) => {
-      let att = 0,
-        boss = 0,
-        skill = 0;
+      let coeff = [0, 0, 0];
 
-      switch (g.option1.optionType) {
-        case ArkGridGemOptionTypes.ATTACK:
-          att = g.option1.value;
-          break;
-        case ArkGridGemOptionTypes.SKILL_DAMAGE:
-          skill = g.option1.value;
-          break;
-        case ArkGridGemOptionTypes.BOSS_DAMAGE:
-          boss = g.option1.value;
-          break;
-        default:
-          break;
-      }
-      switch (g.option2.optionType) {
-        case ArkGridGemOptionTypes.ATTACK:
-          att = g.option2.value;
-          break;
-        case ArkGridGemOptionTypes.SKILL_DAMAGE:
-          skill = g.option2.value;
-          break;
-        case ArkGridGemOptionTypes.BOSS_DAMAGE:
-          boss = g.option2.value;
-          break;
-        default:
-          break;
+      for (const option of [g.option1, g.option2]) {
+        const index = optionIndexMap.findIndex((p) => p == option.optionType);
+        if (index == -1) continue;
+        coeff[index] += option.value;
       }
       reverseMap[index] = g;
-      return new Gem(BigInt(index), g.req, g.point, att, skill, boss);
+      return new Gem(
+        BigInt(index),
+        g.req,
+        g.point,
+        coeff[0],
+        coeff[1],
+        coeff[2]
+      );
     });
     return {
       gems,
@@ -158,8 +229,12 @@
     return result;
   }
 
-  function solve() {
-    console.log('-------풀이 시작-------');
+  function solve(
+    inOrderGems: ArkGridGem[],
+    inChaosGems: ArkGridGem[],
+    isSupporter = false, // 서폿용?
+    perfectSolve = false // 중복 무시?
+  ) {
     /* sovler.Core로 변경 */
     const orderCores: Core[] = [];
     const chaosCores: Core[] = [];
@@ -175,15 +250,11 @@
         }
       }
     }
-    console.log('질서 코어', orderCores);
-    console.log('혼돈 코어', chaosCores);
-
     /* sovler.Gem으로 변경 */
     const { gems: orderGems, reverseMap: orderGemReverseMap } =
-      convertToSolverGems(getCurrentProfile().gems.orderGems);
+      convertToSolverGems(inOrderGems, isSupporter);
     const { gems: chaosGems, reverseMap: chaosGemReverseMap } =
-      convertToSolverGems(getCurrentProfile().gems.chaosGems);
-    console.log(`질서 젬 ${orderGems.length}개, 혼돈 젬 ${chaosGems.length}개`);
+      convertToSolverGems(inChaosGems, isSupporter);
 
     /* 각 코어별 장착 가능한 조합 (GemSet) 수집 */
     const orderGssList = orderCores.map((c) => {
@@ -192,13 +263,29 @@
     const chaosGssList = chaosCores.map((c) => {
       return getPossibleGemSets(c, chaosGems);
     });
-
-    orderGssList.forEach((gss, i) => {
-      console.log(`질서 코어 ${i + 1} 조합: ${gss.length}개`);
-    });
-    chaosGssList.forEach((gss, i) => {
-      console.log(`혼돈 코어 ${i + 1} 조합: ${gss.length}개`);
-    });
+    if (perfectSolve) {
+      // perfectSolve에서는 어짜피 중복 무시할 거라 장착 후 공, 추, 보만 보고 중복 제거
+      for (const gssList of [orderGssList, chaosGssList]) {
+        for (let i = 0; i < gssList.length; i++) {
+          const gss = gssList[i];
+          const seen = new Set<string>();
+          const uniqueGss: GemSet[] = [];
+          for (const gs of gss) {
+            const key = JSON.stringify({
+              att: gs.att,
+              skill: gs.skill,
+              boss: gs.boss,
+              coreScore: gs.coreCoeff,
+            });
+            if (!seen.has(key)) {
+              seen.add(key);
+              uniqueGss.push(gs);
+            }
+          }
+          gssList[i] = uniqueGss;
+        }
+      }
+    }
     const allGssList = orderGssList.concat(chaosGssList);
     /* 공격력, 추가 피해, 보스 피해 Lv의 최대 */
     // 가지고 있는 모든 젬을 사용했을 때 도달할 수 있는 최대 "공격력" 구하기
@@ -214,11 +301,11 @@
       skillMax += getMaxStat(gss, 'skill');
       bossMax += getMaxStat(gss, 'boss');
     }
-    console.log('시스템 전체 공, 추, 보', attMax, skillMax, bossMax);
+
     const scoreMaps = [
-      buildScoreMap(400, attMax),
-      buildScoreMap(700, skillMax),
-      buildScoreMap(1000, bossMax),
+      buildScoreMap(gemOptionCoeff[0], attMax),
+      buildScoreMap(gemOptionCoeff[1], skillMax),
+      buildScoreMap(gemOptionCoeff[2], bossMax),
     ];
 
     // 각 GemSet의 전투력 범위 설정
@@ -230,19 +317,26 @@
 
     // 질서와 혼돈 코어에 대해서 중복을 고려한, 장착 가능한 GemSet들이 3개 모인 GemSetPack 계산
     let start = performance.now();
-    const orderGspList = getBestGemSetPacks(orderGssList, scoreMaps);
-    console.log('질서 배치 개수', orderGspList.length);
+    const orderGspList = getBestGemSetPacks(
+      orderGssList,
+      scoreMaps,
+      perfectSolve
+    );
     console.log(`질서 배치 실행 시간: ${performance.now() - start} ms`);
     start = performance.now();
-    const chaosGspList = getBestGemSetPacks(chaosGssList, scoreMaps);
-    console.log('혼돈 배치 개수', chaosGspList.length);
+    const chaosGspList = getBestGemSetPacks(
+      chaosGssList,
+      scoreMaps,
+      perfectSolve
+    );
     console.log(`혼돈 배치 실행 시간: ${performance.now() - start} ms`);
 
     // gspList는 maxScore 기준으로 내림차순 정렬되어 있음
     // 서로의 영향력이 적을 수록 실제 전투력은 maxScore와 가까우니, 우선 각 첫 번째 원소를 대상으로 시작 설정
     let answer = new GemSetPackTuple(
       orderGspList[0] ?? null,
-      chaosGspList[0] ?? null
+      chaosGspList[0] ?? null,
+      isSupporter
     );
 
     start = performance.now();
@@ -270,194 +364,79 @@
     if (gemSetPackSet[0].length > 0 && gemSetPackSet[1].length > 0) {
       for (const gsp1 of gemSetPackSet[0]) {
         for (const gsp2 of gemSetPackSet[1]) {
-          const gspt = new GemSetPackTuple(gsp1, gsp2);
+          const gspt = new GemSetPackTuple(gsp1, gsp2, isSupporter);
           if (gspt.score > answer.score) {
             answer = gspt;
           }
         }
       }
     }
-    if (answer.gsp1 === null) {
-      console.log('🚗 질서 배치 실패!');
+    if (!perfectSolve) {
+      // 진짜인 경우에만 결과 갱신
+      unassignGems();
+      solveAnswer = {
+        assignedGems: JSON.parse(
+          JSON.stringify([
+            assignGem(answer.gsp1?.gs1, orderGemReverseMap, 0),
+            assignGem(answer.gsp1?.gs2, orderGemReverseMap, 1),
+            assignGem(answer.gsp1?.gs3, orderGemReverseMap, 2),
+            assignGem(answer.gsp2?.gs1, chaosGemReverseMap, 3),
+            assignGem(answer.gsp2?.gs2, chaosGemReverseMap, 4),
+            assignGem(answer.gsp2?.gs3, chaosGemReverseMap, 5),
+          ])
+        ), // deep copy gems
+        gemSetPackTuple: answer,
+      };
     }
-    if (answer.gsp2 === null) {
-      console.log('🚗 혼돈 배치 실패!');
-    }
-    console.log(answer);
-    unassignGems();
-    solveAnswer = {
-      assignedGems: JSON.parse(
-        JSON.stringify([
-          assignGem(answer.gsp1?.gs1, orderGemReverseMap, 0),
-          assignGem(answer.gsp1?.gs2, orderGemReverseMap, 1),
-          assignGem(answer.gsp1?.gs3, orderGemReverseMap, 2),
-          assignGem(answer.gsp2?.gs1, chaosGemReverseMap, 3),
-          assignGem(answer.gsp2?.gs2, chaosGemReverseMap, 4),
-          assignGem(answer.gsp2?.gs3, chaosGemReverseMap, 5),
-        ])
-      ), // deep copy gems
-      gemSetPackTuple: answer,
-    };
     return answer;
   }
-  function bestSolve() {
-    const perfectGems = [
-      {
-        req: 3,
-        point: 5,
-        option1: { optionType: ArkGridGemOptionTypes.ATTACK, value: 5 },
-        option2: {
-          optionType: ArkGridGemOptionTypes.SKILL_DAMAGE,
-          value: 5,
-        },
-      },
-      {
-        req: 4,
-        point: 5,
-        option1: { optionType: ArkGridGemOptionTypes.ATTACK, value: 5 },
-        option2: {
-          optionType: ArkGridGemOptionTypes.BOSS_DAMAGE,
-          value: 5,
-        },
-      },
-      {
-        req: 5,
-        point: 5,
-        option1: {
-          optionType: ArkGridGemOptionTypes.SKILL_DAMAGE,
-          value: 5,
-        },
-        option2: {
-          optionType: ArkGridGemOptionTypes.BOSS_DAMAGE,
-          value: 5,
-        },
-      },
-    ];
-    const orderCores: Core[] = [];
-    const chaosCores: Core[] = [];
-    for (const attr of Object.values(ArkGridAttrs)) {
-      for (const ctype of Object.values(ArkGridCoreTypes)) {
-        const core = coreComponents[attr][ctype];
-        if (!core) continue;
-        const targetCores =
-          attr === ArkGridAttrs.Order ? orderCores : chaosCores;
-        const solverCore = core.convertToSolverCore();
-        if (solverCore) {
-          targetCores.push(solverCore);
-        }
-      }
-    }
+  function runSolve(isSupporter: boolean) {
+    const orderGems = getCurrentProfile().gems.orderGems;
+    const chaosGems = getCurrentProfile().gems.chaosGems;
     const perfectOrderGems: ArkGridGem[] = [];
     const perfectChaosGems: ArkGridGem[] = [];
-    for (const gem of perfectGems) {
+    for (const gem of !isSupporter ? perfectGems : perfectGemsSupporter) {
       for (let i = 0; i < 4; i++) {
         perfectOrderGems.push({ gemAttr: ArkGridAttrs.Order, ...gem });
         perfectChaosGems.push({ gemAttr: ArkGridAttrs.Chaos, ...gem });
       }
     }
-    const { gems: orderGems, reverseMap: orderGemReverseMap } =
-      convertToSolverGems(perfectOrderGems);
-    const { gems: chaosGems, reverseMap: chaosGemReverseMap } =
-      convertToSolverGems(perfectChaosGems);
-    const orderGssList = orderCores.map((c) => {
-      return getPossibleGemSets(c, orderGems);
-    });
-    const chaosGssList = chaosCores.map((c) => {
-      return getPossibleGemSets(c, chaosGems);
-    });
-    for (const gssList of [orderGssList, chaosGssList]) {
-      for (let i = 0; i < gssList.length; i++) {
-        const gss = gssList[i];
-        const seen = new Set<string>();
-        const uniqueGss: GemSet[] = [];
-        for (const gs of gss) {
-          const key = JSON.stringify({
-            att: gs.att,
-            skill: gs.skill,
-            boss: gs.boss,
-            coreScore: gs.coreCoeff,
-          });
-          if (!seen.has(key)) {
-            seen.add(key);
-            uniqueGss.push(gs);
-          }
-        }
-        gssList[i] = uniqueGss;
-      }
-    }
-    const allGssList = orderGssList.concat(chaosGssList);
-    let attMax = 0,
-      skillMax = 0,
-      bossMax = 0;
-    for (const gss of allGssList) {
-      attMax += getMaxStat(gss, 'att');
-      skillMax += getMaxStat(gss, 'skill');
-      bossMax += getMaxStat(gss, 'boss');
-    }
-    const scoreMaps = [
-      buildScoreMap(400, attMax),
-      buildScoreMap(700, skillMax),
-      buildScoreMap(1000, bossMax),
-    ];
-    // 각 GemSet의 전투력 범위 설정
-    for (const gss of allGssList) {
-      for (const gs of gss) {
-        gs.setScoreRange(scoreMaps);
-      }
-    }
-    const orderGspList = getBestGemSetPacks(orderGssList, scoreMaps, true);
-    const chaosGspList = getBestGemSetPacks(chaosGssList, scoreMaps, true);
-    let answer = new GemSetPackTuple(
-      orderGspList[0] ?? null,
-      chaosGspList[0] ?? null
-    );
-    const gemSetPackSet: GemSetPack[][] = [[], []];
-    for (const [i, gspList] of [orderGspList, chaosGspList].entries()) {
-      const seen = new Set<string>();
-      for (const gsp of gspList) {
-        const signature = {
-          att: gsp.att,
-          skill: gsp.skill,
-          boss: gsp.boss,
-          coreScore: gsp.coreScore,
-        };
-        const key = JSON.stringify(signature);
-        if (!seen.has(key)) {
-          seen.add(key);
-          gemSetPackSet[i].push(gsp);
-        }
-      }
-    }
-    if (gemSetPackSet[0].length > 0 && gemSetPackSet[1].length > 0) {
-      for (const gsp1 of gemSetPackSet[0]) {
-        for (const gsp2 of gemSetPackSet[1]) {
-          const gspt = new GemSetPackTuple(gsp1, gsp2);
-          if (gspt.score > answer.score) {
-            answer = gspt;
-          }
-        }
-      }
-    }
-    return answer;
-  }
-  function runSolve() {
-    const score = (solve().score - 1) * 100; // 내 최고 점수
-    const bestScore = (bestSolve().score - 1) * 100; // 내 코어로 가능한 점수
+    const score =
+      (solve(orderGems, chaosGems, isSupporter, false).score - 1) * 100; // 내 최고 점수
+    const bestScore =
+      (solve(perfectOrderGems, perfectChaosGems, isSupporter, true).score - 1) *
+      100; // 내 코어로 가능한 점수
+
     const perfectScore = // 이론상 최고 점수
-      ((((((1.09 * // 고대 질서 해
-        1.09 * // 고대 질서 달
-        1.06 * // 고대 질서 별
-        1.04 * // 고대 혼돈 해
-        1.04 * // 고대 혼돈 별
-        1.04 * // 고대 혼돈 달
-        (Math.floor((60 * 400) / 120) + 10000)) /
-        10000) * // 공격력 Lv. 60
-        (Math.floor((90 * 700) / 120) + 10000)) /
-        10000) * // 추가 피해 Lv. 90
-        (Math.floor((90 * 1000) / 120) + 10000)) /
-        10000 - // 보스 피해 Lv. 90
-        1) *
-      100;
+      !isSupporter // 딜러
+        ? ((((((1.09 * // 고대 질서 해
+            1.09 * // 고대 질서 달
+            1.06 * // 고대 질서 별
+            1.04 * // 고대 혼돈 해
+            1.04 * // 고대 혼돈 별
+            1.04 * // 고대 혼돈 달
+            (Math.floor((60 * gemOptionCoeff[0]) / 120) + 10000)) /
+            10000) * // 공격력 Lv. 60
+            (Math.floor((90 * gemOptionCoeff[1]) / 120) + 10000)) /
+            10000) * // 추가 피해 Lv. 90
+            (Math.floor((90 * gemOptionCoeff[2]) / 120) + 10000)) /
+            10000 - // 보스 피해 Lv. 90
+            1) *
+          100
+        : ((((((1.0942 * // 고대 질서 해
+            1.0942 * // 고대 질서 달
+            1.033 * // 고대 질서 별
+            1.06 * // 고대 혼돈 해
+            1.06 * // 고대 혼돈 별
+            1.0353 * // 고대 혼돈 달 TODO 무공
+            (Math.floor((60 * gemOptionCoeff[0]) / 120) + 10000)) /
+            10000) * // 아군 피해 강화 Lv. 60
+            (Math.floor((90 * gemOptionCoeff[1]) / 120) + 10000)) /
+            10000) * // 낙인력 Lv. 90
+            (Math.floor((90 * gemOptionCoeff[2]) / 120) + 10000)) /
+            10000 - // 아군 공격 강화 Lv. 90
+            1) *
+          100;
     scoreSet = {
       score,
       bestScore,
@@ -496,7 +475,9 @@
         <div class="small">목표 포인트를 조절해보세요.</div>
       </div>
     {/if}
-    <button class="solve-button" onclick={runSolve}>실행</button>
+    <button class="solve-button" onclick={() => runSolve(isSupporter)}
+      >최적화 실행</button
+    >
 
     {#if solveAnswer && scoreSet && answerCores}
       <SolveResult {answerCores} {scoreSet} {solveAnswer}></SolveResult>
