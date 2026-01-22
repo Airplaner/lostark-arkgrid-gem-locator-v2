@@ -66,7 +66,7 @@ export function resetCoreCoeff(
   weapon: WeaponInfo | undefined
 ) {
   core.coeffs = getDefaultCoreCoeff(core, isSupporter, weapon);
-  if (weapon) adjustCoeff(core, isSupporter);
+  if (!weapon) adjustCoeff(core, isSupporter);
   // 무기 정보가 주어졌다면 유물 - 고대 추가 계수 부여하지 않음
 }
 
