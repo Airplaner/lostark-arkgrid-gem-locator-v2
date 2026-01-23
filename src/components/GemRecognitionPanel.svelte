@@ -29,8 +29,6 @@
   let isRecording = $state<boolean>(false);
   let isDebugging = $state<boolean>(false);
   let isLoading = $state<boolean>(false);
-  let scrollOrderGems: ScrollCommand = $state(null);
-  let scrollChaosGems: ScrollCommand = $state(null);
   let gemListElem: GemRecognitionGemList | null = null;
 
   onMount(() => {

@@ -8,6 +8,7 @@
     type AllGems,
     addGem,
     clearGems,
+    getCurrentProfile,
   } from '../lib/state/profile.state.svelte';
   import ArkGridGemList from './ArkGridGemList.svelte';
 
@@ -53,18 +54,18 @@
     container.scroll(command);
   }
 
-  function applyGemList() {
+  function applyGemList(overrideGem: boolean) {
     // 현재 수집한 젬을 현재 프로필에 덮어 씌우기
     let done = false;
     if (orderGems.length > 0) {
-      clearGems(ArkGridAttrs.Order);
+      if (overrideGem) clearGems(ArkGridAttrs.Order);
       for (const gem of orderGems) {
         addGem(gem);
       }
       done = true;
     }
     if (chaosGems.length > 0) {
-      clearGems(ArkGridAttrs.Chaos);
+      if (overrideGem) clearGems(ArkGridAttrs.Chaos);
       for (const gem of chaosGems) {
         addGem(gem);
       }
@@ -102,10 +103,34 @@
   <div class="buttons">
     <div>
       <button
-        onclick={() => {
-          if (applyGemList()) toast.push('반영 완료!');
-        }}
         disabled={orderGems.length == 0 && chaosGems.length == 0}
+        onclick={() => {
+          // 혼돈 젬을 인식하지 않은 경우 한 번 경고
+          // if (chaosGems.length == 0) {
+          //   if (
+          //     !window.confirm(
+          //       '혼돈 젬을 인식하지 않았습니다. 진행하시겠습니까?'
+          //     )
+          //   )
+          //     return;
+          // }
+
+          // 현재 프로필에 젬이 있는 경우 덮어 씌울 것인지 물음
+          const profile = getCurrentProfile();
+          let overrideGem = true;
+
+          if (
+            profile.gems.orderGems.length > 0 ||
+            profile.gems.chaosGems.length > 0
+          ) {
+            overrideGem = window.confirm(
+              '⚠️현재 프로필에 젬이 존재합니다.\n' +
+                '해당 젬을 모두 삭제하고 덮어 씌우시겠습니까?\n' +
+                '취소할 경우 인식된 젬이 추가만 됩니다.'
+            );
+          }
+          if (applyGemList(overrideGem)) toast.push('반영 완료!');
+        }}
       >
         ✅ 현재 프로필에 반영
       </button>
