@@ -157,8 +157,8 @@
 
 <style>
   .panel {
-    min-height: 40rem;
-    max-height: 45rem;
+    min-height: 46rem;
+    max-height: 46rem;
   }
   .tab-container {
     display: flex;
