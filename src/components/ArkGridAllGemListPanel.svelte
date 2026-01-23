@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { toast } from '@zerodevx/svelte-toast';
   import { tick } from 'svelte';
 
   import { type ArkGridAttr, ArkGridAttrs } from '../lib/constants/enums';
@@ -52,6 +53,17 @@
   let currentAttr: ArkGridAttr = $derived(
     activeTab == 0 ? ArkGridAttrs.Order : ArkGridAttrs.Chaos
   );
+
+  function clearGemWithConfirm(gemAttr: ArkGridAttr) {
+    if (
+      !window.confirm(
+        `현재 프로필의 모든 ${gemAttr} 젬을 삭제합니다. 진행하시겠습니까?`
+      )
+    )
+      return;
+    clearGems(gemAttr);
+    toast.push(`${gemAttr} 젬 삭제 완료`);
+  }
 </script>
 
 <div class="panel">
@@ -71,20 +83,11 @@
   </div>
   <ArkGridGemList gems={currentGems} bind:this={container}></ArkGridGemList>
   <div class="buttons">
-    <button
-      hidden={!appConfig.current.uiConfig.debugMode}
-      onclick={() => {
-        addGem({
-          gemAttr: activeTab == 0 ? ArkGridAttrs.Order : ArkGridAttrs.Chaos,
-          req: 3,
-          point: 5,
-          option1: { optionType: '공격력', value: 1 },
-          option2: { optionType: '추가 피해', value: 1 },
-        });
-      }}>샘플 추가</button
-    >
     <ArkGridGemAddPanel gemAttr={currentAttr}></ArkGridGemAddPanel>
-    <button onclick={() => clearGems(currentAttr)}>초기화</button>
+    <button
+      disabled={currentGems.length == 0}
+      onclick={() => clearGemWithConfirm(currentAttr)}>초기화</button
+    >
   </div>
 </div>
 
@@ -108,7 +111,7 @@
   .buttons {
     display: flex;
     gap: 0.4rem;
-    justify-content: right;
+    justify-content: space-between;
   }
   .buttons > button {
     /* 너비는 자동이지만 최소 5em */
