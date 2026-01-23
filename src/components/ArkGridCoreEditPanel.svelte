@@ -35,7 +35,12 @@
 </script>
 
 <div class="panel">
-  <div class="title">코어 설정 - {isSupporter ? '서포터 (베타)' : '딜러'}</div>
+  <div class="title-and-button">
+    <div class="title">코어 설정 - {isSupporter ? '서포터' : '딜러'}</div>
+    <button onclick={toggleIsSupporter}
+      >{isSupporter ? '딜러' : '서포터'}로 전환</button
+    >
+  </div>
   {#each attrs as attr}
     {#each ctypes as ctype}
       <ArkGridCoreEditElement
@@ -47,7 +52,6 @@
     {/each}
   {/each}
   <div class="buttons">
-    <button onclick={toggleIsSupporter}>현재 프로필 딜러 ↔ 서포터 전환</button>
     <button
       onclick={() => {
         toggleUI('showCoreCoeff');
@@ -73,5 +77,14 @@
     /* 너비는 자동이지만 최소 5em */
     width: auto;
     min-width: 5em;
+  }
+  .title-and-button {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  .title-and-button .title {
+    font-size: 1.4rem;
+    font-weight: 700;
   }
 </style>
