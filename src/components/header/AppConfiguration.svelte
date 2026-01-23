@@ -110,7 +110,7 @@
       name: gemName,
       grade: gem.Grade
         ? reverseLookup(LostArkGrades, gem.Grade)
-        : determineGemGrade(req, point, gemOptions[0], gemOptions[1]),
+        : determineGemGrade(req, point, gemOptions[0], gemOptions[1], gemName),
       gemAttr: isOrder ? ArkGridAttrs.Order : ArkGridAttrs.Chaos,
       req,
       point,

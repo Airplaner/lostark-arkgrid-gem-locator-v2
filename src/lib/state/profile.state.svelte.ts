@@ -84,7 +84,13 @@ export function addGem(gem: ArkGridGem) {
   const gems = getCurrentProfile().gems;
   const targetGems =
     gem.gemAttr == ArkGridAttrs.Order ? gems.orderGems : gems.chaosGems;
-  gem.grade = determineGemGrade(gem.req, gem.point, gem.option1, gem.option2);
+  gem.grade = determineGemGrade(
+    gem.req,
+    gem.point,
+    gem.option1,
+    gem.option2,
+    gem.name
+  );
   // validate gem (안정인데 옵션 등)
   targetGems.push(gem);
 }
