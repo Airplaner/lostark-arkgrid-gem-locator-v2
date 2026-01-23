@@ -1,15 +1,12 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
 
-  import {
-    type ArkGridAttr,
-    ArkGridAttrs,
-    type ScrollCommand,
-  } from '../lib/constants/enums';
+  import { type ArkGridAttr, ArkGridAttrs } from '../lib/constants/enums';
   import {
     type ArkGridGem,
     type ArkGridGemOptionType,
     ArkGridGemOptionTypes,
+    determineGemGrade,
     isSameArkGridGem,
   } from '../lib/models/arkGridGems';
   import { appConfig, toggleUI } from '../lib/state/appConfig.state.svelte';
@@ -173,12 +170,14 @@
     type MatOptionString = Record<ArkGridGemOptionType, CvMat>;
     type MatOptionValue = Record<'1' | '2' | '3' | '4' | '5', CvMat>;
     type MatGemAttr = Record<ArkGridAttr, CvMat>;
+    type MatGemImage = Record<string, CvMat>;
     interface LoadedAsset {
       matAnchor: CvMat;
       matNumeric: MatNumeric;
       matOptionString: MatOptionString;
       matOptionValue: MatOptionValue;
       matGemAttr: MatGemAttr;
+      matGemImage: MatGemImage;
     }
 
     // TODO 현재 component의 isLoading, isRecording state와 강하게 결합되어 있음
@@ -251,6 +250,18 @@
       const gemAttrNames = ['질서', '혼돈'];
       const matGemAttrPromises = gemAttrNames.map((name) => loadAsset(name));
 
+      // 6. 젬 문양
+      const gemImageKeys = [
+        '질서의 젬 : 안정',
+        '질서의 젬 : 견고',
+        '질서의 젬 : 불변',
+        '혼돈의 젬 : 침식',
+        '혼돈의 젬 : 왜곡',
+        '혼돈의 젬 : 붕괴',
+      ];
+      const gemImageNames = ['안정', '견고', '불변', '침식', '왜곡', '붕괴'];
+      const matGemImagePromises = gemImageNames.map((name) => loadAsset(name));
+
       // 모든 Promise를 병렬로 실행
       const [
         matAnchor,
@@ -258,12 +269,14 @@
         matOptionStringResults,
         matOptionValueResults,
         matGemAttrResults,
+        matGemImageResults,
       ] = await Promise.all([
         matAnchorPromise,
         Promise.all(matNumericPromises),
         Promise.all(matOptionStringPromises),
         Promise.all(matOptionValuePromises),
         Promise.all(matGemAttrPromises),
+        Promise.all(matGemImagePromises),
       ]);
 
       // 결과를 객체로 재조립
@@ -283,6 +296,10 @@
         gemAttrKeys.map((key, i) => [key, matGemAttrResults[i]])
       );
 
+      const matGemImage: MatGemImage = Object.fromEntries(
+        gemImageKeys.map((key, i) => [key, matGemImageResults[i]])
+      );
+
       isLoading = false;
       loadedAsset = {
         matAnchor,
@@ -290,6 +307,7 @@
         matOptionString,
         matOptionValue,
         matGemAttr,
+        matGemImage,
       };
 
       return loadedAsset;
@@ -319,6 +337,7 @@
         matOptionString,
         matOptionValue,
         matGemAttr,
+        matGemImage,
       } = await preloadPromise;
 
       // TrackProcessor 생성
@@ -407,6 +426,13 @@
                 w: 1586 - 1176, // 410
                 h: 391 - 331, // 60
               };
+              const gemImageRect = {
+                x: rowRect.x + 1198 - 1176,
+                y: rowRect.y + 347 - 331,
+                w: 1212 - 1198,
+                h: 375 - 347,
+              };
+              const gemName = findBestMatch(frame, gemImageRect, matGemImage);
 
               const willPowerRect = {
                 x: rowRect.x + (1240 - 1176),
@@ -472,6 +498,7 @@
 
               // 제대로 인식이 됐는지 확인
               if (
+                gemName === null ||
                 gemAttr === null ||
                 corePoint === null ||
                 willPower === null ||
@@ -487,7 +514,8 @@
                   break;
                 }
               } else {
-                currentGems.push({
+                const gem: ArkGridGem = {
+                  name: gemName,
                   gemAttr: gemAttr,
                   req: Number(willPower),
                   point: Number(corePoint),
@@ -499,7 +527,15 @@
                     optionType: optionBType,
                     value: Number(optionBValue),
                   },
-                });
+                };
+                gem.grade = determineGemGrade(
+                  gem.req,
+                  gem.point,
+                  gem.option1,
+                  gem.option2,
+                  gem.name
+                );
+                currentGems.push(gem);
               }
             }
 
