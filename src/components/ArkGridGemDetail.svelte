@@ -38,12 +38,13 @@
 
 <div class="gem-box">
   <div class="gem">
-    <div class="col image">
+    <div class="col gemImage" data-grade={gem.grade}>
       <img src={getGemImage(gem)} alt={gem.name} />
     </div>
     <div class="col main-options">
       <div class="main-option">
-        {gem.req}<img src={imgWillPower} alt="W" />
+        <span> {gem.req}</span>
+        <img src={imgWillPower} alt="W" />
       </div>
       <div class="main-option">
         {gem.point}<img src={imgCorePoint} alt="P" />
@@ -52,10 +53,20 @@
     <div class="vl"></div>
     <div class="col sub-options">
       <div class="sub-option">
-        {gem.option1.optionType} Lv.{gem.option1.value}
+        <span class="option-type">
+          {gem.option1.optionType}
+        </span>
+        <span class="option-level">
+          Lv.{gem.option1.value}
+        </span>
       </div>
       <div class="sub-option">
-        {gem.option2.optionType} Lv.{gem.option2.value}
+        <span class="option-type">
+          {gem.option2.optionType}
+        </span>
+        <span class="option-level">
+          Lv.{gem.option2.value}
+        </span>
       </div>
     </div>
   </div>
@@ -75,7 +86,6 @@
     padding: 0.4rem;
     justify-content: space-between;
     align-items: center;
-    background-color: white;
   }
   .gem-box .edit-button {
     flex: 0 0 auto;
@@ -103,12 +113,16 @@
   .gem > .col.main-options > .main-option {
     display: flex;
     align-items: center;
+    gap: 0.3rem;
   }
   .gem > .col.main-options img {
+    display: block;
     height: 80%;
-    margin-top: 1px;
+
+    /* 살짝 올라가보이는 것을 보정 */
+    transform: translateY(1px);
   }
-  .gem > .col.image {
+  .gem > .col.gemImage {
     flex: 1;
     min-width: 1.5rem;
     max-width: 2.5rem;
@@ -116,6 +130,7 @@
   .gem > .col > img {
     height: 100%;
     object-fit: contain;
+    transform: translateX(1px);
   }
 
   .gem > .col.main-options {
@@ -153,5 +168,20 @@
     justify-content: center;
     gap: 0.1em;
     flex-wrap: nowrap;
+  }
+  div[data-grade] {
+    border-radius: 20%;
+  }
+  /* 공홈 코어 css*/
+  div[data-grade='전설'] {
+    background: linear-gradient(135deg, #4d3000, #bc7d01);
+  }
+
+  div[data-grade='유물'] {
+    background: linear-gradient(135deg, #341a09, #a24006);
+  }
+
+  div[data-grade='고대'] {
+    background: linear-gradient(135deg, #3d3325, #dcc999);
   }
 </style>
