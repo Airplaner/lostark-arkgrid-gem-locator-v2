@@ -19,7 +19,7 @@
 <main>
   <SvelteToast options={{ reversed: true, intro: { y: 192 } }} />
   <div class="contents">
-    <div class="title">아크 그리드 최적화</div>
+    <div class="title">아크 그리드 전투력 최적화</div>
     <AppConfiguration></AppConfiguration>
     <ProfileEdit></ProfileEdit>
     <GemRecognitionPanel></GemRecognitionPanel>
