@@ -244,9 +244,13 @@
         if (!core) continue;
         const targetCores =
           attr === ArkGridAttrs.Order ? orderCores : chaosCores;
-        const solverCore = core.convertToSolverCore();
-        if (solverCore) {
-          targetCores.push(solverCore);
+        if (!profile.cores[attr][ctype]) {
+          targetCores.push(new Core(0, 0, [0]));
+        } else {
+          const solverCore = core.convertToSolverCore();
+          if (solverCore) {
+            targetCores.push(solverCore);
+          }
         }
       }
     }
