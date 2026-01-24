@@ -28,7 +28,7 @@
   </div>
 </main>
 
-<footer style="">
+<footer>
   게임 관련 이미지 및 명칭의 저작권은 스마일게이트에 있습니다. 계산 로직 및
   사이트 소스 코드는 개발자의 저작물이며, 비상업적 팬사이트로 운영됩니다.
   권리자가 요청할 경우 해당 콘텐츠는 즉시 삭제됩니다.
@@ -56,8 +56,7 @@
     --toastContainerLeft: calc(50vw - 8rem);
   }
   footer {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     text-align: center;
-    font-weight: 300;
   }
 </style>

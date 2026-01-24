@@ -27,6 +27,7 @@ body {
   /* 360px - 8px * 2 */
   max-width: 90rem;
   margin: auto auto;
+  user-select: none;
 }
 
 .panel {
@@ -60,10 +61,12 @@ body {
   grid-template-columns: 1.1fr 1fr;
   align-items: start;
 }
+
 /* 화면이 960px 이하로 좁아지면 세로 배치 */
 @media (max-width: 960px) {
   .dual-panel {
-    grid-template-columns: 1fr; /* 한 줄에 1개 */
+    grid-template-columns: 1fr;
+    /* 한 줄에 1개 */
   }
 }
 
@@ -123,6 +126,7 @@ button:disabled {
     transform: rotate(360deg);
   }
 }
+
 input[type="radio"]:disabled {
   filter: brightness(65%);
 }
