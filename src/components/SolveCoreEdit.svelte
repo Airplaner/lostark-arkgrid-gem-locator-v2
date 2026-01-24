@@ -5,7 +5,6 @@
     type ArkGridCoreCoeffs,
     type ArkGridCoreType,
     getDefaultCoreEnergy,
-    getDefaultCoreGoalPoint,
     getMaxCorePoint,
   } from '../lib/models/arkGridCores';
   import { Core } from '../lib/solver/models';
@@ -17,12 +16,14 @@
   }
   let { attr, ctype, core }: Props = $props();
 
-  let energy = $state(0);
   let point = $state(0);
 
   $effect(() => {
-    energy = getDefaultCoreEnergy(core);
-    point = getDefaultCoreGoalPoint(core);
+    if (!core) return;
+    const maxPoint = getMaxCorePoint(core);
+    if (point > maxPoint) {
+      point = maxPoint;
+    }
   });
 
   let maxCorePoint = $derived(getMaxCorePoint(core));
@@ -39,7 +40,11 @@
   }
   export function convertToSolverCore(): Core | null {
     if (!core) return null;
-    return new Core(energy, point, buildCoreArray(core.coeffs));
+    return new Core(
+      getDefaultCoreEnergy(core),
+      point,
+      buildCoreArray(core.coeffs)
+    );
   }
 </script>
 
@@ -49,9 +54,9 @@
     {#if core}
       <select bind:value={point}>
         {#each [20, 19, 18, 17, 14, 10, 0] as targetPoint}
-          {#if targetPoint <= maxCorePoint}
-            <option value={targetPoint}>{targetPoint}</option>
-          {/if}
+          <option value={targetPoint} disabled={targetPoint > maxCorePoint}>
+            {targetPoint}
+          </option>
         {/each}
       </select>
     {:else}
