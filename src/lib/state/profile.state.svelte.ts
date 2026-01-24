@@ -183,3 +183,10 @@ export function updateWeapon(fixed: number, percent: number) {
     percent,
   };
 }
+
+export const roleImages = import.meta.glob<string>('/src/assets/role/*.png', {
+  eager: true,
+  import: 'default',
+});
+export const imgRoleCombat = roleImages['/src/assets/role/combat.png'];
+export const imgRoleSupporter = roleImages['/src/assets/role/supporter.png'];

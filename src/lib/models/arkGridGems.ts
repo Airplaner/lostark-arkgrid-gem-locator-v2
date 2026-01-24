@@ -15,6 +15,33 @@ export const ArkGridGemOptionTypes = {
 export type ArkGridGemOptionType =
   (typeof ArkGridGemOptionTypes)[keyof typeof ArkGridGemOptionTypes];
 
+export const ARKGRID_GEM_NAME = {
+  'order_1': {
+    ko: '질서의 젬 : 안정',
+    en: 'Order Astrogem: Stability'
+  },
+  'order_2': {
+    ko: '질서의 젬 : 견고',
+    en: 'Order Astrogem: Solidity'
+  },
+  'order_3': {
+    ko: '질서의 젬 : 불변',
+    en: 'Order Astrogem: Immutability'
+  },
+  'chaos_1': {
+    ko: '혼돈의 젬 : 침식',
+    en: 'Chaos Astrogem: Corrosion'
+  },
+  'chaos_2': {
+    ko: '혼돈의 젬 : 왜곡',
+    en: 'Chaos Astrogem: Distortion'
+  },
+  'chaos_3': {
+    ko: '혼돈의 젬 : 붕괴',
+    en: 'Chaos Astrogem: Destruction'
+  },
+}
+export type ArkGridGemName = keyof typeof ARKGRID_GEM_NAME;
 export const ArkGridGemNames = [
   '질서의 젬 : 안정',
   '질서의 젬 : 견고',

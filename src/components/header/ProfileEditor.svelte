@@ -9,6 +9,8 @@
     type CharacterProfile,
     currentProfileName,
     deleteProfile,
+    imgRoleCombat,
+    imgRoleSupporter,
     initNewProfile,
     setCurrentProfileName,
   } from '../../lib/state/profile.state.svelte';
@@ -24,6 +26,12 @@
         class:active={profile.characterName === currentProfileName.current}
       >
         {profile.characterName}
+        {#if profile.characterName !== DEFAULT_PROFILE_NAME}
+          <img
+            src={profile.isSupporter ? imgRoleSupporter : imgRoleCombat}
+            alt="role"
+          />
+        {/if}
       </button>
     {/each}
     <button
@@ -135,6 +143,15 @@
   .profile-select-button {
     /* 추가, 삭제 버튼과 구분되게 좀 크게 */
     height: 2.6rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.2rem;
+    box-sizing: border-box;
+  }
+  .profile-select-button > img {
+    height: 1.2rem;
+    box-sizing: border-box;
   }
   .buttons {
     display: flex;

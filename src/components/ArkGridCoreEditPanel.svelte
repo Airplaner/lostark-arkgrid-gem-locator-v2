@@ -4,6 +4,8 @@
   import { appConfig, toggleUI } from '../lib/state/appConfig.state.svelte';
   import {
     type CharacterProfile,
+    imgRoleCombat,
+    imgRoleSupporter,
     updateIsSupporter,
   } from '../lib/state/profile.state.svelte';
   import ArkGridCoreEditElement from './ArkGridCoreEditElement.svelte';
@@ -36,7 +38,13 @@
 
 <div class="panel">
   <div class="title-and-button">
-    <div class="title">코어 설정 - {isSupporter ? '서포터' : '딜러'}</div>
+    <div class="title">
+      코어 설정 - {isSupporter ? '서포터' : '딜러'}
+      <img
+        src={profile.isSupporter ? imgRoleSupporter : imgRoleCombat}
+        alt="role"
+      />
+    </div>
     <button onclick={toggleIsSupporter}
       >{isSupporter ? '딜러' : '서포터'}로 전환</button
     >
@@ -86,5 +94,16 @@
   .title-and-button .title {
     font-size: 1.4rem;
     font-weight: 700;
+  }
+  .title {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    gap: 0.3rem;
+    align-items: center;
+  }
+  .title > img {
+    height: 75%;
+    transform: translateY(1px);
   }
 </style>
