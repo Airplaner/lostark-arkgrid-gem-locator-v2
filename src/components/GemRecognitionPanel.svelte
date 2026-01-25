@@ -30,7 +30,7 @@
 
   onMount(() => {
     const ctx = debugCanvas.getContext('2d');
-    if (!ctx) throw Error;
+    if (!ctx) throw Error('debugCanvas에서 context 획득 실패');
     debugCtx = ctx;
   });
 
@@ -73,7 +73,7 @@
     off.width = img.width;
     off.height = img.height;
     const c = off.getContext('2d');
-    if (!c) throw Error();
+    if (!c) throw Error('동적으로 canvas 생성 및 context 획득 실패');
     c.drawImage(img, 0, 0);
     const data = c.getImageData(0, 0, img.width, img.height);
     const mat = cv.matFromImageData(data);

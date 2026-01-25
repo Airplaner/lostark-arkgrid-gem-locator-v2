@@ -137,14 +137,6 @@
     </div>
     <div>
       <button
-        hidden={!appConfig.current.uiConfig.debugMode}
-        onclick={() => scroll('top')}>▲</button
-      >
-      <button
-        hidden={!appConfig.current.uiConfig.debugMode}
-        onclick={() => scroll('bottom')}>▼</button
-      >
-      <button
         disabled={orderGems.length == 0 && chaosGems.length == 0}
         onclick={() => {
           orderGems.length = 0;
