@@ -28,10 +28,12 @@ const defaultUIConfig: UIConfig = {
   showCoreCoeff: false,
   debugMode: false,
 };
+export type AppLocale = 'ko_kr' | 'en_us';
 interface AppConfig {
   characterProfiles: CharacterProfile[];
   openApiConfig: OpenApiConfig;
   uiConfig: UIConfig;
+  locale: AppLocale;
 }
 
 // serializer object for svelte-persisted-state
@@ -53,6 +55,12 @@ const bigIntSerializer = {
     });
   },
 };
+function migrateAppConfig(appConfig: Partial<AppConfig>) {
+  // locale 없으면 ko_kr로 추가
+  if (appConfig.locale === undefined) {
+    appConfig.locale = 'ko_kr';
+  }
+}
 
 export const appConfig = persistedState<AppConfig>(
   'appConfig',
@@ -60,10 +68,12 @@ export const appConfig = persistedState<AppConfig>(
     characterProfiles: [initNewProfile(DEFAULT_PROFILE_NAME)],
     openApiConfig: {},
     uiConfig: defaultUIConfig,
+    locale: 'ko_kr',
   },
   {
     serializer: bigIntSerializer,
     beforeRead: (value) => {
+      migrateAppConfig(value);
       // localStore에 있는 건 app이 기대하는 형태가 아닐 수 있음
       for (const profile of value.characterProfiles) {
         migrateProfile(profile);
@@ -123,5 +133,13 @@ export function updateOpenApiJWT(jwtInput: string) {
     apiClient.setSecurityData({
       jwt: jwtTrimed
     });
+  }
+}
+
+export function toggleLocale() {
+  if (appConfig.current.locale == 'ko_kr') {
+    appConfig.current.locale = 'en_us';
+  } else {
+    appConfig.current.locale = 'ko_kr';
   }
 }

@@ -9,7 +9,11 @@
     determineGemGrade,
     isSameArkGridGem,
   } from '../lib/models/arkGridGems';
-  import { appConfig, toggleUI } from '../lib/state/appConfig.state.svelte';
+  import {
+    appConfig,
+    toggleLocale,
+    toggleUI,
+  } from '../lib/state/appConfig.state.svelte';
   import GemRecognitionGemList from './GemRecognitionGemList.svelte';
 
   const OPENCV_URL =
@@ -26,6 +30,9 @@
   let isRecording = $state<boolean>(false);
   let isDebugging = $state<boolean>(false);
   let isLoading = $state<boolean>(false);
+  let gemOptionLevelXOffset = $derived(
+    appConfig.current.locale == 'en_us' ? 70 : 40
+  ); // 영문 클라이언트는 조금 더 우측에 위치
   let gemListElem: GemRecognitionGemList | null = null;
 
   onMount(() => {
@@ -67,7 +74,9 @@
 
   async function loadAsset(name: string) {
     // 주어진 이름의 어셋을 읽고 grayscale로 변환한 뒤 cv.Mat으로 반환한다.
-    const url = `${import.meta.env.BASE_URL}/opencv/${name}.png`;
+    const directoryName =
+      appConfig.current.locale == 'en_us' ? 'opencv_en_us' : 'opencv';
+    const url = `${import.meta.env.BASE_URL}/${directoryName}/${name}.png`;
     const img = await createImageBitmap(await fetch(url).then((r) => r.blob()));
     const off = document.createElement('canvas');
     off.width = img.width;
@@ -457,7 +466,7 @@
                 h: willPowerRect.h,
               };
               const optionAValueRect = {
-                x: optionARect.x + 40,
+                x: optionARect.x + gemOptionLevelXOffset,
                 y: optionARect.y,
                 w: 1447 - 1301 - 40,
                 h: optionARect.h,
@@ -480,7 +489,7 @@
                 h: optionARect.h,
               };
               const optionBValueRect = {
-                x: optionBRect.x + 40,
+                x: optionBRect.x + gemOptionLevelXOffset,
                 y: optionBRect.y,
                 w: 1447 - 1301 - 40,
                 h: optionBRect.h,
@@ -746,24 +755,47 @@
       ? 'none'
       : 'flex'}
   >
-    <div>
-      {#if !isRecording}
-        <button onclick={captureController.startCapture}
-          >🖥️ 화면 공유 시작</button
+    <div class="buttons">
+      <div class="left">
+        {#if !isRecording}
+          <button onclick={captureController.startCapture}
+            >🖥️ 화면 공유 시작</button
+          >
+        {:else}
+          <button onclick={captureController.stopCapture}
+            >🖥️ 화면 공유 종료</button
+          >
+        {/if}
+        <button hidden onclick={captureController.dispose}>자원 정리</button>
+        <button
+          class:active={isDebugging}
+          onclick={() => (isDebugging = !isDebugging)}
+          disabled={!isRecording}
         >
-      {:else}
-        <button onclick={captureController.stopCapture}
-          >🖥️ 화면 공유 종료</button
+          공유 중인 화면 {isDebugging ? '끄기' : '보기'}
+        </button>
+      </div>
+      <div class="right">
+        <button
+          onclick={() => {
+            if (appConfig.current.locale == 'ko_kr') {
+              if (
+                !window.confirm(
+                  'Would you like to switch the screen recognition to the English client? ' +
+                    'Even you enabled the feature, this site has not been translated into English. ' +
+                    'Please use your browser’s translation feature.\n\n' +
+                    '영문 클라이언트를 사용자를 위한 기능입니다. 화면 인식 기준을 영문 클라이언트로 전환하시겠습니까?'
+                )
+              ) {
+                return;
+              }
+            }
+            captureController.dispose();
+            toggleLocale();
+          }}
+          disabled={isRecording}>Locale: {appConfig.current.locale}</button
         >
-      {/if}
-      <button hidden onclick={captureController.dispose}>자원 정리</button>
-      <button
-        class:active={isDebugging}
-        onclick={() => (isDebugging = !isDebugging)}
-        disabled={!isRecording}
-      >
-        공유 중인 화면 {isDebugging ? '끄기' : '보기'}
-      </button>
+      </div>
     </div>
     <div hidden={!isDebugging}>
       <canvas
@@ -898,5 +930,16 @@
     max-width: 100%;
     height: auto;
     display: block;
+  }
+  .content > .buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .buttons > div {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
   }
 </style>
