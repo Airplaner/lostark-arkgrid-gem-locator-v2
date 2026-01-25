@@ -46,7 +46,7 @@ export interface CharacterProfile {
 
 // 준비물
 export type SolveBefore = {
-  coreGoalPoint: number[]
+  coreGoalPoint: number[] // not used
 }
 
 // 최적화 결과
