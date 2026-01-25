@@ -5,7 +5,7 @@
     type ArkGridCoreType,
     ArkGridCoreTypes,
   } from '../../lib/models/arkGridCores';
-  import type { SolveAnswer } from '../SolvePanel.svelte';
+  import type { SolveAnswer } from '../../lib/state/profile.state.svelte';
   import CoreGemEquipped from '../solveResult/CoreGemEquipped.svelte';
 
   type Props = {

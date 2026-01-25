@@ -3,7 +3,7 @@
     type ArkGridGemOptionType,
     ArkGridGemOptionTypes,
   } from '../../lib/models/arkGridGems';
-  import type { SolveAnswer } from '../SolvePanel.svelte';
+  import type { SolveAnswer } from '../../lib/state/profile.state.svelte';
 
   type Props = {
     solveAnswer: SolveAnswer;

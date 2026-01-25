@@ -12,6 +12,7 @@
     imgRoleCombat,
     imgRoleSupporter,
     initNewProfile,
+    migrateProfile,
     setCurrentProfileName,
   } from '../../lib/state/profile.state.svelte';
 </script>
@@ -104,6 +105,7 @@
               const data: CharacterProfile = JSON.parse(
                 e.target?.result as string
               );
+              migrateProfile(data);
               if (addNewProfile(data)) {
                 alert('✅ 프로필 추가 성공!');
                 currentProfileName.current = data.characterName;

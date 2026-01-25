@@ -10,7 +10,7 @@ import {
   type ArkGridCoreType,
   ArkGridCoreTypes,
 } from '../models/arkGridCores';
-import { type CharacterProfile, initNewProfile } from './profile.state.svelte';
+import { type CharacterProfile, initNewProfile, migrateProfile } from './profile.state.svelte';
 import { apiClient } from '../openapi/openapi';
 
 export interface OpenApiConfig {
@@ -63,7 +63,14 @@ export const appConfig = persistedState<AppConfig>(
   },
   {
     serializer: bigIntSerializer,
-  }
+    beforeRead: (value) => {
+      // localStore에 있는 건 app이 기대하는 형태가 아닐 수 있음
+      for (const profile of value.characterProfiles) {
+        migrateProfile(profile);
+      }
+      return value
+    }
+  },
 );
 
 export function initArkGridCores(): Record<

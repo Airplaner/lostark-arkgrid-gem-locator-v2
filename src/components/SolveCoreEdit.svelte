@@ -14,15 +14,13 @@
     ctype: ArkGridCoreType;
     core: ArkGridCore | null;
   }
-  let { attr, ctype, core }: Props = $props();
-
-  let point = $state(0);
+  let { attr, ctype, core = $bindable() }: Props = $props();
 
   $effect(() => {
     if (!core) return;
     const maxPoint = getMaxCorePoint(core);
-    if (point > maxPoint) {
-      point = maxPoint;
+    if (core.goalPoint > maxPoint) {
+      core.goalPoint = maxPoint;
     }
   });
 
@@ -42,7 +40,7 @@
     if (!core) return null;
     return new Core(
       getDefaultCoreEnergy(core),
-      point,
+      core.goalPoint,
       buildCoreArray(core.coeffs)
     );
   }
@@ -52,7 +50,7 @@
   <div class="title">{attr}의 {ctype}</div>
   <div>
     {#if core}
-      <select bind:value={point}>
+      <select bind:value={core.goalPoint}>
         {#each [20, 19, 18, 17, 14, 10, 0] as targetPoint}
           <option value={targetPoint} disabled={targetPoint > maxCorePoint}>
             {targetPoint}

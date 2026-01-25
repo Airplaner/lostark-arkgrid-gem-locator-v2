@@ -19,6 +19,7 @@ import {
   getProfile,
   initArkGridCores,
 } from './appConfig.state.svelte';
+import type { GemSetPackTuple } from '../solver/models';
 
 export let currentProfileName = persistedState<string>(
   'currentProfileName',
@@ -38,8 +39,74 @@ export interface CharacterProfile {
   cores: Record<ArkGridAttr, Record<ArkGridCoreType, ArkGridCore | null>>;
   isSupporter: boolean;
   weapon?: WeaponInfo;
+  solveInfo: SolveInfo;
 }
 
+// 결과
+
+// 준비물
+export type SolveBefore = {
+  coreGoalPoint: number[]
+}
+
+// 최적화 결과
+export type SolveAnswerScoreSet = {
+  score: number;
+  bestScore: number;
+  perfectScore: number;
+};
+export type SolveAnswer = {
+  assignedGems: ArkGridGem[][];
+  gemSetPackTuple: GemSetPackTuple;
+};
+export type SolveAfter = {
+  solveAnswer?: SolveAnswer;
+  scoreSet?: SolveAnswerScoreSet;
+  answerCores?: Record<
+    ArkGridAttr,
+    Record<ArkGridCoreType, ArkGridCore | null>>
+}
+export type SolveInfo = {
+  before: SolveBefore
+  after?: SolveAfter
+}
+export function updateSolveAnswer(solveAnswer: SolveAnswer) {
+  // 현재 프로필의 solve after에 solve answer 설정
+  const profile = getCurrentProfile()
+  if (!profile.solveInfo.after) {
+    profile.solveInfo.after = {
+      solveAnswer: solveAnswer
+    }
+  } else {
+    profile.solveInfo.after.solveAnswer = solveAnswer;
+  }
+}
+
+export function updateScoreSet(scoreSet: SolveAnswerScoreSet) {
+  // 현재 프로필의 solve after에 score set 설정
+  const profile = getCurrentProfile()
+  if (!profile.solveInfo.after) {
+    profile.solveInfo.after = {
+      scoreSet: scoreSet
+    }
+  } else {
+    profile.solveInfo.after.scoreSet = scoreSet;
+  }
+}
+
+export function updateAnswerCores(cores: Record<
+  ArkGridAttr,
+  Record<ArkGridCoreType, ArkGridCore | null>>) {
+  // 현재 프로필의 solve after에 answer core 설정
+  const profile = getCurrentProfile()
+  if (!profile.solveInfo.after) {
+    profile.solveInfo.after = {
+      answerCores: cores
+    }
+  } else {
+    profile.solveInfo.after.answerCores = cores;
+  }
+}
 export function initNewProfile(name: string): CharacterProfile {
   return {
     characterName: name,
@@ -49,17 +116,64 @@ export function initNewProfile(name: string): CharacterProfile {
     },
     cores: initArkGridCores(),
     isSupporter: false,
+    solveInfo: {
+      before: {
+        coreGoalPoint: [0, 0, 0, 0, 0, 0]
+      }
+    }
   };
 }
 
+export function migrateProfile(
+  profile: Partial<CharacterProfile>
+) {
+  // 업데이트로 추가되는 required 필드를 추가
+
+  // 1. profile.isSupporter
+  if (profile.isSupporter === undefined) {
+    // console.log("isSupporter 정의 안돼있어서 추가!")
+    profile.isSupporter = false;
+  }
+  // 2. profile.solveInfo
+  if (profile.solveInfo === undefined) {
+    // console.log(profile, "solveInfo추가!")
+    profile.solveInfo = {
+      before: { coreGoalPoint: [0, 0, 0, 0, 0, 0] }
+    }
+  }
+
+  // 3. core.goalPoint
+  for (const attr of Object.values(ArkGridAttrs)) {
+    for (const ctype of Object.values(ArkGridCoreTypes)) {
+      if (profile.cores) { // 당연히 있겠지만...
+        const core = profile.cores[attr][ctype];
+        if (core && core.goalPoint === undefined) {
+          // console.log(core, "에 goalpoint 추가!")
+          core.goalPoint = 0;
+        }
+      }
+    }
+  }
+}
+
+
 export function getCurrentProfile() {
   // 현재 프로필을 반드시 반환합니다.
+  // 프로필을 찾았다면 반환
   const profile = getProfile(currentProfileName.current);
   if (profile) return profile;
   else {
-    const defaultProfile = initNewProfile(DEFAULT_PROFILE_NAME);
-    if (!addNewProfile(defaultProfile)) throw Error;
-    return defaultProfile;
+    // 기본 프로필을 찾고 있으면 변경하고 반환
+    const defaultProfile = getProfile(DEFAULT_PROFILE_NAME)
+    setCurrentProfileName(DEFAULT_PROFILE_NAME);
+    if (defaultProfile) return defaultProfile;
+
+    // 기본 프로필이 없다면 생성 후 반환
+    const newDefaultProfile = initNewProfile(DEFAULT_PROFILE_NAME);
+    if (!addNewProfile(newDefaultProfile)) {
+      throw Error('기본 프로필 생성 실패!');
+    }
+    return newDefaultProfile;
   }
 }
 

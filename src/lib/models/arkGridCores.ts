@@ -47,6 +47,7 @@ export interface ArkGridCore {
   grade: LostArkGrade;
   coeffs: ArkGridCoreCoeffs;
   tier: number;
+  goalPoint: number;
   /*
   딜러
   0: 현란, 불타
@@ -437,6 +438,7 @@ export function createCore(
       p20: 0,
     },
     tier: tier ? tier : 0,
+    goalPoint: 0,
   };
   resetCoreCoeff(core, isSupporter, weapon);
   return core;

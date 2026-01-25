@@ -24,6 +24,9 @@
     type CharacterProfile,
     getCurrentProfile,
     unassignGems,
+    updateAnswerCores,
+    updateScoreSet,
+    updateSolveAnswer,
   } from '../lib/state/profile.state.svelte';
   import SolveCoreEdit from './SolveCoreEdit.svelte';
   import SolveResult from './solveResult/SolveResult.svelte';
@@ -31,7 +34,7 @@
   type Props = {
     profile: CharacterProfile;
   };
-  let { profile }: Props = $props();
+  let { profile = $bindable() }: Props = $props();
 
   const coreComponents: Record<
     ArkGridAttr,
@@ -113,36 +116,28 @@
     },
   ];
 
-  export type SolveAnswerScoreSet = {
-    score: number;
-    bestScore: number;
-    perfectScore: number;
-  };
-  export type SolveAnswer = {
-    assignedGems: ArkGridGem[][];
-    gemSetPackTuple: GemSetPackTuple;
-  };
-  let scoreSet = $state<SolveAnswerScoreSet | null>(null);
-  let solveAnswer = $state<SolveAnswer | null>(null);
-  let answerCores = $state<Record<
-    ArkGridAttr,
-    Record<ArkGridCoreType, ArkGridCore | null>
-  > | null>(null);
-
   let failedSign = $derived.by(() => {
     // 배치 실패 여부 반환
+    if (profile.solveInfo.after) {
+      const answerCores = profile.solveInfo.after.answerCores;
+      const solveAnswer = profile.solveInfo.after.solveAnswer;
 
-    // 코어가 애초에 없으면 실패를 안 함
-    const allOrderCoresNull =
-      !answerCores ||
-      Object.values(answerCores[ArkGridAttrs.Order]).every((v) => v == null);
-    const allChaosCoresNull =
-      !answerCores ||
-      Object.values(answerCores[ArkGridAttrs.Chaos]).every((v) => v == null);
+      // 코어가 애초에 없으면 실패를 안 함
+      const allOrderCoresNull =
+        !answerCores ||
+        Object.values(answerCores[ArkGridAttrs.Order]).every((v) => v == null);
+      const allChaosCoresNull =
+        !answerCores ||
+        Object.values(answerCores[ArkGridAttrs.Chaos]).every((v) => v == null);
 
+      return {
+        order: solveAnswer?.gemSetPackTuple.gsp1 === null && !allOrderCoresNull,
+        chaos: solveAnswer?.gemSetPackTuple.gsp2 === null && !allChaosCoresNull,
+      };
+    }
     return {
-      order: solveAnswer?.gemSetPackTuple.gsp1 === null && !allOrderCoresNull,
-      chaos: solveAnswer?.gemSetPackTuple.gsp2 === null && !allChaosCoresNull,
+      order: false,
+      chaos: false,
     };
   });
   let isSupporter = $derived(profile.isSupporter);
@@ -378,7 +373,7 @@
     if (!perfectSolve) {
       // 진짜인 경우에만 결과 갱신
       unassignGems();
-      solveAnswer = {
+      updateSolveAnswer({
         assignedGems: JSON.parse(
           JSON.stringify([
             assignGem(answer.gsp1?.gs1, orderGemReverseMap, 0),
@@ -390,7 +385,8 @@
           ])
         ), // deep copy gems
         gemSetPackTuple: answer,
-      };
+      });
+      unassignGems(); // gem들에 달린 assign 필드 삭제
     }
     return answer;
   }
@@ -441,12 +437,12 @@
             10000 - // 아군 공격 강화 Lv. 90
             1) *
           100;
-    scoreSet = {
+    updateScoreSet({
       score,
       bestScore,
       perfectScore,
-    };
-    answerCores = JSON.parse(JSON.stringify(profile.cores));
+    });
+    updateAnswerCores(JSON.parse(JSON.stringify(profile.cores)));
   }
 </script>
 
@@ -461,7 +457,7 @@
             <SolveCoreEdit
               {attr}
               {ctype}
-              core={profile.cores[attr][ctype]}
+              bind:core={profile.cores[attr][ctype]}
               bind:this={coreComponents[attr][ctype]}
             ></SolveCoreEdit>
           {/each}
@@ -482,9 +478,8 @@
     <button class="solve-button" onclick={() => runSolve(isSupporter)}
       >최적화 실행</button
     >
-
-    {#if solveAnswer && scoreSet && answerCores}
-      <SolveResult {answerCores} {scoreSet} {solveAnswer}></SolveResult>
+    {#if profile.solveInfo.after}
+      <SolveResult solveAfter={profile.solveInfo.after}></SolveResult>
     {/if}
   </div>
 </div>

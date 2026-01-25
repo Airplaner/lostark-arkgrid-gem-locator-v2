@@ -1,33 +1,32 @@
 <script lang="ts">
-  import { type ArkGridAttr } from '../../lib/constants/enums';
-  import {
-    type ArkGridCore,
-    type ArkGridCoreType,
-  } from '../../lib/models/arkGridCores';
-  import type { SolveAnswer, SolveAnswerScoreSet } from '../SolvePanel.svelte';
+  import type { SolveAfter } from '../../lib/state/profile.state.svelte';
   import CoreGemEquippedList from './CoreGemEquippedList.svelte';
   import GemOptionStats from './GemOptionStats.svelte';
   import ScoreIndicator from './ScoreIndicator.svelte';
 
   type Props = {
-    answerCores: Record<
-      ArkGridAttr,
-      Record<ArkGridCoreType, ArkGridCore | null>
-    >;
-    scoreSet: SolveAnswerScoreSet;
-    solveAnswer: SolveAnswer;
+    solveAfter: SolveAfter;
   };
-  let { answerCores, scoreSet, solveAnswer }: Props = $props();
+  let { solveAfter }: Props = $props();
 </script>
 
 <div class="root">
   <div class="title"></div>
   <div class="container">
     <div class="left">
-      <ScoreIndicator {scoreSet}></ScoreIndicator>
-      <GemOptionStats {solveAnswer}></GemOptionStats>
+      {#if solveAfter.scoreSet}
+        <ScoreIndicator scoreSet={solveAfter.scoreSet}></ScoreIndicator>
+      {/if}
+      {#if solveAfter.solveAnswer}
+        <GemOptionStats solveAnswer={solveAfter.solveAnswer}></GemOptionStats>
+      {/if}
     </div>
-    <CoreGemEquippedList {answerCores} {solveAnswer}></CoreGemEquippedList>
+    {#if solveAfter.answerCores && solveAfter.solveAnswer}
+      <CoreGemEquippedList
+        answerCores={solveAfter.answerCores}
+        solveAnswer={solveAfter.solveAnswer}
+      ></CoreGemEquippedList>
+    {/if}
   </div>
 </div>
 

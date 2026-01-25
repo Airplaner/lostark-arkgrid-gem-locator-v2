@@ -61,5 +61,5 @@
       <ArkGridAllGemListPanel gems={profile.gems} />
     </div>
   </div>
-  <SolvePanel {profile}></SolvePanel>
+  <SolvePanel bind:profile></SolvePanel>
 {/if}
