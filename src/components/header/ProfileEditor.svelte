@@ -3,7 +3,9 @@
   import {
     addNewProfile,
     appConfig,
+    bigIntSerializer,
     getProfile,
+    migrateAppConfig,
   } from '../../lib/state/appConfig.state.svelte';
   import {
     type CharacterProfile,
@@ -63,11 +65,9 @@
       title="현재 프로필 내보내기"
       hidden={!appConfig.current.uiConfig.debugMode}
       onclick={() => {
-        const jsonStr = JSON.stringify(
-          getProfile(currentProfileName.current),
-          null,
-          2
-        ); // null,2는 보기 좋게 들여쓰기
+        const jsonStr = bigIntSerializer.stringify(
+          getProfile(currentProfileName.current)
+        );
 
         // 2. Blob 생성
         const blob = new Blob([jsonStr], { type: 'application/json' });
@@ -102,7 +102,7 @@
           const reader = new FileReader();
           reader.onload = (e) => {
             try {
-              const data: CharacterProfile = JSON.parse(
+              const data: CharacterProfile = bigIntSerializer.parse(
                 e.target?.result as string
               );
               migrateProfile(data);

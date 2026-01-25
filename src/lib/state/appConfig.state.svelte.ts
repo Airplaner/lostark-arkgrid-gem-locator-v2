@@ -37,7 +37,7 @@ interface AppConfig {
 }
 
 // serializer object for svelte-persisted-state
-const bigIntSerializer = {
+export const bigIntSerializer = {
   // bigInt의 경우 string으로 바꾼 뒤 가장 끝에 n을 붙여서 직렬화
   stringify: (value: any) => {
     return JSON.stringify(value, (_, v) =>
@@ -55,7 +55,7 @@ const bigIntSerializer = {
     });
   },
 };
-function migrateAppConfig(appConfig: Partial<AppConfig>) {
+export function migrateAppConfig(appConfig: Partial<AppConfig>) {
   // locale 없으면 ko_kr로 추가
   if (appConfig.locale === undefined) {
     appConfig.locale = 'ko_kr';
