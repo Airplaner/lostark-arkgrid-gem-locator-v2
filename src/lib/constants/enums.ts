@@ -21,8 +21,6 @@ export function reverseLookup<const T extends Record<string, string>>(
 
 export const DEFAULT_PROFILE_NAME = '기본';
 
-export type ScrollCommand =
-  | 'top'
-  | 'bottom'
-  | null;
+export type ScrollCommand = 'top' | 'bottom' | null;
 
+export const DISCORD_URL = 'https://discord.gg/Zk4K3xt9ub';

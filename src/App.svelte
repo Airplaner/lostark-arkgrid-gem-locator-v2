@@ -1,10 +1,15 @@
 <script lang="ts">
   import { SvelteToast } from '@zerodevx/svelte-toast';
+  import { stopPropagation } from 'svelte/legacy';
 
   import CharacterProfileEditor from './components/CharacterProfileEditor.svelte';
   import GemRecognitionPanel from './components/GemRecognitionPanel.svelte';
+  import Credit from './components/footer/Credit.svelte';
+  import Policy from './components/footer/Policy.svelte';
+  import Terms from './components/footer/Terms.svelte';
   import AppConfiguration from './components/header/AppConfiguration.svelte';
   import ProfileEdit from './components/header/ProfileEditor.svelte';
+  import { DISCORD_URL } from './lib/constants/enums';
   import {
     type CharacterProfile,
     getCurrentProfile,
@@ -14,6 +19,19 @@
   $effect(() => {
     currentProfile = getCurrentProfile();
   });
+  let dialog = $state<HTMLDialogElement>();
+  type Footers = 'credit' | 'policy' | 'terms';
+  let currentFooter = $state<Footers | null>(null);
+
+  const openDialong = (component: Footers) => {
+    currentFooter = component;
+    if (dialog) dialog.showModal();
+  };
+
+  const closeDialog = () => {
+    if (dialog) dialog.close();
+    currentFooter = null;
+  };
 </script>
 
 <main>
@@ -29,10 +47,43 @@
 </main>
 
 <footer>
-  게임 관련 이미지 및 명칭의 저작권은 스마일게이트에 있습니다. 계산 로직 및
-  사이트 소스 코드는 개발자의 저작물이며, 비상업적 팬사이트로 운영됩니다.
-  권리자가 요청할 경우 해당 콘텐츠는 즉시 삭제됩니다.
+  <a class="footer-link" href="#credits" onclick={() => openDialong('credit')}
+    >Credits</a
+  >
+
+  <a class="footer-link" href="#privacy" onclick={() => openDialong('policy')}
+    >Privacy Policy</a
+  >
+
+  <a class="footer-link" href="#terms" onclick={() => openDialong('terms')}
+    >Terms</a
+  >
+  <a
+    href={DISCORD_URL}
+    target="_blank"
+    rel="noopener noreferrer"
+    class="footer-link discord-btn"
+  >
+    <i class="fa-brands fa-discord"></i>
+    Discord
+  </a>
 </footer>
+
+<dialog
+  class="footer-dialog"
+  bind:this={dialog}
+  onclick={(e) => {
+    if (e.target === dialog) closeDialog();
+  }}
+>
+  {#if currentFooter === 'credit'}
+    <Credit />
+  {:else if currentFooter === 'policy'}
+    <Policy />
+  {:else if currentFooter === 'terms'}
+    <Terms />
+  {/if}
+</dialog>
 
 <style>
   .contents {
@@ -56,7 +107,20 @@
     --toastContainerLeft: calc(50vw - 8rem);
   }
   footer {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
+    display: flex;
+    flex-direction: row;
     text-align: center;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+  }
+  .footer-dialog {
+    width: 20rem;
+  }
+  .footer-link {
+    color: #9ca3af; /* 은은한 회색 */
+    text-decoration: none; /* 밑줄 제거 */
+    cursor: pointer;
   }
 </style>
