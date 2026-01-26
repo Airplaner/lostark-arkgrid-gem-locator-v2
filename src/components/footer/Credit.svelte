@@ -1,4 +1,4 @@
-<small class="content">
+<div class="content">
   <h2>Credits</h2>
   <p>
     게임 관련 이미지 및 명칭의 저작권은 스마일게이트에 있습니다. 계산 로직 및
@@ -15,4 +15,4 @@
     </a>
   </p>
   <p>Thanks to 루페온 퐁듀 길드, 아브렐슈드 청염각, 피드백을 주신 모든 분들</p>
-</small>
+</div>
