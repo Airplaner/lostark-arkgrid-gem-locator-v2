@@ -758,8 +758,9 @@
     <div class="buttons">
       <div class="left">
         {#if !isRecording}
-          <button onclick={captureController.startCapture}
-            >🖥️ 화면 공유 시작</button
+          <button
+            onclick={captureController.startCapture}
+            data-track="start-capture">🖥️ 화면 공유 시작</button
           >
         {:else}
           <button onclick={captureController.stopCapture}
