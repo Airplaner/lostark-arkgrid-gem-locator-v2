@@ -10,6 +10,14 @@
     isSameArkGridGem,
   } from '../lib/models/arkGridGems';
   import {
+    type EnUsTemplateName,
+    enUsCoords,
+  } from '../lib/opencv-template-coords/en_us';
+  import {
+    type KoKrTemplateName,
+    koKrCoords,
+  } from '../lib/opencv-template-coords/ko_kr';
+  import {
     appConfig,
     toggleLocale,
     toggleUI,
@@ -41,12 +49,12 @@
     debugCtx = ctx;
   });
 
-  interface Rect {
+  type Rect = {
     x: number;
     y: number;
     w: number;
     h: number;
-  }
+  };
   async function loadOpenCV() {
     if ((window as any).cv) {
       cv = (window as any).cv;
@@ -72,23 +80,68 @@
     });
   }
 
-  async function loadAsset(name: string) {
-    // 주어진 이름의 어셋을 읽고 grayscale로 변환한 뒤 cv.Mat으로 반환한다.
-    const directoryName =
-      appConfig.current.locale == 'en_us' ? 'opencv_en_us' : 'opencv';
-    const url = `${import.meta.env.BASE_URL}/${directoryName}/${name}.png`;
+  /**
+   * 스프라이트 이미지를 한 번 fetch → cv.Mat 생성
+   */
+  async function fetchSpriteMat(url: string): Promise<CvMat> {
     const img = await createImageBitmap(await fetch(url).then((r) => r.blob()));
     const off = document.createElement('canvas');
     off.width = img.width;
     off.height = img.height;
-    const c = off.getContext('2d');
-    if (!c) throw Error('동적으로 canvas 생성 및 context 획득 실패');
-    c.drawImage(img, 0, 0);
-    const data = c.getImageData(0, 0, img.width, img.height);
+    const ctx = off.getContext('2d');
+    if (!ctx) throw new Error('Canvas context creation failed');
+    ctx.drawImage(img, 0, 0);
+    const data = ctx.getImageData(0, 0, img.width, img.height);
     const mat = cv.matFromImageData(data);
     cv.cvtColor(mat, mat, cv.COLOR_RGBA2GRAY);
     img.close();
     return mat;
+  }
+
+  /**
+   * ROI로 CvMat 복사
+   */
+  function createRoi(
+    mat: CvMat,
+    rect: { x: number; y: number; w: number; h: number }
+  ): CvMat {
+    const roi = mat.roi(new cv.Rect(rect.x, rect.y, rect.w, rect.h));
+    return roi;
+  }
+
+  /**
+   * 모든 언어별 템플릿 CvMat 로드
+   */
+  type GemTemplates = {
+    ko_kr: Record<KoKrTemplateName, CvMat>;
+    en_us: Record<EnUsTemplateName, CvMat>;
+  };
+  export async function loadGemTemplates(): Promise<GemTemplates> {
+    const result = {
+      ko_kr: {} as any,
+      en_us: {} as any,
+    };
+
+    // 1️⃣ ko_kr 스프라이트 한 번만 fetch
+    const koSprite = await fetchSpriteMat(
+      `${import.meta.env.BASE_URL}/opencv_template_ko_kr.png`
+    );
+    for (const [name, rect] of Object.entries(koKrCoords)) {
+      result.ko_kr[name] = createRoi(koSprite, rect);
+    }
+    // koSprite는 더 이상 필요 없으면 삭제 가능
+    koSprite.delete();
+
+    // 2️⃣ en_us 스프라이트 한 번만 fetch
+    const enSprite = await fetchSpriteMat(
+      `${import.meta.env.BASE_URL}/opencv_template_en_us.png`
+    );
+    for (const [name, rect] of Object.entries(enUsCoords)) {
+      result.en_us[name] = createRoi(enSprite, rect);
+    }
+    enSprite.delete();
+
+    return result;
   }
 
   function debugRectJS(
@@ -96,7 +149,8 @@
     color = 'red',
     lineWidth = 1,
     key: any = null,
-    score: number | null = null
+    score: number | null = null,
+    fontSize: number = 12
   ) {
     // 디버깅용
     // Rect영역을 color로 표시하고,
@@ -106,13 +160,17 @@
     debugCtx.strokeRect(rect.x, rect.y, rect.w, rect.h);
 
     if (key && score !== null) {
-      debugCtx.font = '14px 굴림'; // 폰트 설정
+      debugCtx.font = `${fontSize}px Arial`; // 폰트 설정
       debugCtx.fillStyle = color; // 색 지정
       debugCtx.textBaseline = 'top'; // y 기준을 rect.y로 맞춤
-      debugCtx.fillText(key, rect.x, rect.y); // 조금 위로 올려 표시
+      debugCtx.fillText(key, rect.x + lineWidth, rect.y + lineWidth); // 조금 위로 올려 표시
 
-      debugCtx.font = '12px 굴림'; // 폰트 설정
-      debugCtx.fillText(score.toFixed(2), rect.x, rect.y + 14); // 조금 위로 올려 표시
+      debugCtx.font = `${fontSize}px Arial`; // 폰트 설정
+      debugCtx.fillText(
+        score.toFixed(2),
+        rect.x + lineWidth,
+        rect.y + lineWidth + fontSize
+      ); // 조금 위로 올려 표시
     }
   }
   type CvMat = any;
@@ -188,7 +246,6 @@
       matGemAttr: MatGemAttr;
       matGemImage: MatGemImage;
     }
-
     // TODO 현재 component의 isLoading, isRecording state와 강하게 결합되어 있음
     let reader: ReadableStreamDefaultReader<VideoFrame> | null = null;
     let track: MediaStreamTrack | null = null;
@@ -209,105 +266,48 @@
       isLoading = true;
       await loadOpenCV();
 
-      // 1. Anchor
-      const matAnchorPromise = loadAsset('anchor');
+      const gt = await loadGemTemplates();
+      const mats = gt[appConfig.current.locale];
 
-      // 2. 숫자 어셋
-      const numericKeys = [
-        '1',
-        '2',
-        '3',
-        '4',
-        '5',
-        '6',
-        '7',
-        '8',
-        '9',
-      ] as const;
-      const matNumericPromises = numericKeys.map((key) => loadAsset(key));
-
-      // 3. 옵션 문자열
-      const optionKeys = [
-        ArkGridGemOptionTypes.ATTACK,
-        ArkGridGemOptionTypes.SKILL_DAMAGE,
-        ArkGridGemOptionTypes.BOSS_DAMAGE,
-        ArkGridGemOptionTypes.STIGMA,
-        ArkGridGemOptionTypes.PARTY_ATTACK,
-        ArkGridGemOptionTypes.PARTY_DAMAGE,
-      ] as const;
-      const optionNames = [
-        '공격력',
-        '추가피해',
-        '보스피해',
-        '낙인력',
-        '아군공격강화',
-        '아군피해강화',
-      ];
-      const matOptionStringPromises = optionNames.map((name) =>
-        loadAsset(name)
-      );
-
-      // 4. 옵션 값
-      const optionValueKeys = ['1', '2', '3', '4', '5'] as const;
-      const optionValueNames = ['lv1', 'lv2', 'lv3', 'lv4', 'lv5'];
-      const matOptionValuePromises = optionValueNames.map((name) =>
-        loadAsset(name)
-      );
-
-      // 5. 젬 속성
-      const gemAttrKeys = [ArkGridAttrs.Order, ArkGridAttrs.Chaos] as const;
-      const gemAttrNames = ['질서', '혼돈'];
-      const matGemAttrPromises = gemAttrNames.map((name) => loadAsset(name));
-
-      // 6. 젬 문양
-      const gemImageKeys = [
-        '질서의 젬 : 안정',
-        '질서의 젬 : 견고',
-        '질서의 젬 : 불변',
-        '혼돈의 젬 : 침식',
-        '혼돈의 젬 : 왜곡',
-        '혼돈의 젬 : 붕괴',
-      ];
-      const gemImageNames = ['안정', '견고', '불변', '침식', '왜곡', '붕괴'];
-      const matGemImagePromises = gemImageNames.map((name) => loadAsset(name));
-
-      // 모든 Promise를 병렬로 실행
-      const [
-        matAnchor,
-        matNumericResults,
-        matOptionStringResults,
-        matOptionValueResults,
-        matGemAttrResults,
-        matGemImageResults,
-      ] = await Promise.all([
-        matAnchorPromise,
-        Promise.all(matNumericPromises),
-        Promise.all(matOptionStringPromises),
-        Promise.all(matOptionValuePromises),
-        Promise.all(matGemAttrPromises),
-        Promise.all(matGemImagePromises),
-      ]);
-
-      // 결과를 객체로 재조립
-      const matNumeric: MatNumeric = Object.fromEntries(
-        numericKeys.map((key, i) => [key, matNumericResults[i]])
-      );
-
-      const matOptionString: MatOptionString = Object.fromEntries(
-        optionKeys.map((key, i) => [key, matOptionStringResults[i]])
-      );
-
-      const matOptionValue: MatOptionValue = Object.fromEntries(
-        optionValueKeys.map((key, i) => [key, matOptionValueResults[i]])
-      );
-
-      const matGemAttr: MatGemAttr = Object.fromEntries(
-        gemAttrKeys.map((key, i) => [key, matGemAttrResults[i]])
-      );
-
-      const matGemImage: MatGemImage = Object.fromEntries(
-        gemImageKeys.map((key, i) => [key, matGemImageResults[i]])
-      );
+      const matAnchor = mats['anchor.png'];
+      const matNumeric = {
+        1: mats['1.png'],
+        2: mats['2.png'],
+        3: mats['3.png'],
+        4: mats['4.png'],
+        5: mats['5.png'],
+        6: mats['6.png'],
+        7: mats['7.png'],
+        8: mats['8.png'],
+        9: mats['9.png'],
+      };
+      const matOptionString = {
+        [ArkGridGemOptionTypes.ATTACK]: mats['공격력.png'],
+        [ArkGridGemOptionTypes.SKILL_DAMAGE]: mats['추가피해.png'],
+        [ArkGridGemOptionTypes.BOSS_DAMAGE]: mats['보스피해.png'],
+        [ArkGridGemOptionTypes.STIGMA]: mats['낙인력.png'],
+        [ArkGridGemOptionTypes.PARTY_ATTACK]: mats['아군공격강화.png'],
+        [ArkGridGemOptionTypes.PARTY_DAMAGE]: mats['아군피해강화.png'],
+      };
+      const matOptionValue = {
+        1: mats['lv1.png'],
+        2: mats['lv2.png'],
+        3: mats['lv3.png'],
+        4: mats['lv4.png'],
+        5: mats['lv5.png'],
+      };
+      const matGemAttr = {
+        [ArkGridAttrs.Order]: mats['질서.png'],
+        [ArkGridAttrs.Chaos]: mats['혼돈.png'],
+      };
+      const matGemImage = {
+        '질서의 젬 : 안정': mats['안정.png'],
+        '질서의 젬 : 견고': mats['견고.png'],
+        '질서의 젬 : 불변': mats['불변.png'],
+        '혼돈의 젬 : 침식': mats['침식.png'],
+        '혼돈의 젬 : 왜곡': mats['왜곡.png'],
+        '혼돈의 젬 : 붕괴': mats['붕괴.png'],
+      };
 
       isLoading = false;
       loadedAsset = {
@@ -395,16 +395,11 @@
           const result = new cv.Mat();
           cv.matchTemplate(frame, matAnchor, result, cv.TM_CCOEFF_NORMED);
           const mm = cv.minMaxLoc(result);
-
-          if (mm.maxVal > 0.9) {
-            // TODO threshold 조절 가능하게
-
-            currentGems.length = 0;
-            const anchorX = mm.maxLoc.x;
-            const anchorY = mm.maxLoc.y;
-
-            // anchor 위치 표시
-            if (isDebugging) {
+          const anchorX = mm.maxLoc.x;
+          const anchorY = mm.maxLoc.y;
+          // anchor 위치 표시
+          if (isDebugging) {
+            if (mm.maxVal > 0.9) {
               debugRectJS(
                 {
                   x: anchorX,
@@ -412,9 +407,32 @@
                   w: matAnchor.cols,
                   h: matAnchor.rows,
                 },
-                'white'
+                'green',
+                2,
+                'anchor',
+                mm.maxVal
+              );
+            } else {
+              debugRectJS(
+                {
+                  x: debugCanvas.width / 4,
+                  y: debugCanvas.height / 4,
+                  w: debugCanvas.width / 2,
+                  h: debugCanvas.height / 2,
+                },
+                'red',
+                10,
+                '젬 화면을 찾지 못했습니다.',
+                mm.maxVal,
+                80
               );
             }
+          }
+          if (mm.maxVal > 0.9) {
+            // TODO threshold 조절 가능하게
+
+            currentGems.length = 0;
+
             // 질서 혹은 혼돈 판단
             const gemAttrRect = {
               x: anchorX,
@@ -654,7 +672,6 @@
             }
           } else {
             // anchor not found
-            // console.log(mm.maxVal);
           }
 
           // 매 frame마다 메모리 정리
