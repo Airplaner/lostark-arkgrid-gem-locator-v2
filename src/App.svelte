@@ -9,7 +9,7 @@
   import Terms from './components/footer/Terms.svelte';
   import AppConfiguration from './components/header/AppConfiguration.svelte';
   import ProfileEdit from './components/header/ProfileEditor.svelte';
-  import { DISCORD_URL } from './lib/constants/enums';
+  import { DISCORD_URL, KAKAOTALK_URL } from './lib/constants/enums';
   import {
     type CharacterProfile,
     getCurrentProfile,
@@ -76,10 +76,19 @@
     href={DISCORD_URL}
     target="_blank"
     rel="noopener noreferrer"
-    class="footer-link discord-btn"
+    class="footer-link"
   >
     <i class="fa-brands fa-discord"></i>
     Discord
+  </a>
+  <a
+    href={KAKAOTALK_URL}
+    target="_blank"
+    rel="noopener noreferrer"
+    class="footer-link"
+  >
+    <i class="fa-brands fa-kakao-talk"></i>
+    Kakaotalk
   </a>
 </footer>
 

@@ -24,3 +24,4 @@ export const DEFAULT_PROFILE_NAME = '기본';
 export type ScrollCommand = 'top' | 'bottom' | null;
 
 export const DISCORD_URL = 'https://discord.gg/Zk4K3xt9ub';
+export const KAKAOTALK_URL = "https://open.kakao.com/o/s5bTYodi";
