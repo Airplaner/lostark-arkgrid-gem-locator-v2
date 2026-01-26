@@ -54,15 +54,13 @@
     activeTab == 0 ? ArkGridAttrs.Order : ArkGridAttrs.Chaos
   );
 
-  function clearGemWithConfirm(gemAttr: ArkGridAttr) {
+  function clearGemWithConfirm() {
     if (
-      !window.confirm(
-        `현재 프로필의 모든 ${gemAttr} 젬을 삭제합니다. 진행하시겠습니까?`
-      )
+      !window.confirm(`현재 프로필의 모든 젬을 삭제합니다. 진행하시겠습니까?`)
     )
       return;
-    clearGems(gemAttr);
-    toast.push(`${gemAttr} 젬 삭제 완료`);
+    clearGems();
+    toast.push(`젬 삭제 완료`);
   }
 </script>
 
@@ -85,8 +83,8 @@
   <div class="buttons">
     <ArkGridGemAddPanel gemAttr={currentAttr}></ArkGridGemAddPanel>
     <button
-      disabled={currentGems.length == 0}
-      onclick={() => clearGemWithConfirm(currentAttr)}>초기화</button
+      disabled={gems.orderGems.length == 0 && gems.chaosGems.length == 0}
+      onclick={() => clearGemWithConfirm()}>초기화</button
     >
   </div>
 </div>
