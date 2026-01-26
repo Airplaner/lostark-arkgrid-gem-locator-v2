@@ -40,9 +40,7 @@
   let isRecording = $state<boolean>(false);
   let isDebugging = $state<boolean>(false);
   let isLoading = $state<boolean>(false);
-  let gemOptionLevelXOffset = $derived(
-    appConfig.current.locale == 'en_us' ? 70 : 40
-  ); // 영문 클라이언트는 조금 더 우측에 위치
+  let detectionThreshold = $state<number>(0.85);
   let gemListElem: GemRecognitionGemList | null = null;
 
   onMount(() => {
@@ -405,7 +403,6 @@
               cv.TM_CCOEFF_NORMED
             );
             const mm = cv.minMaxLoc(result);
-            console.log(candidateLocale, mm.maxVal);
             if (mm.maxVal > bestMaxVal) {
               bestMaxVal = mm.maxVal;
               bestMm = mm;
@@ -416,10 +413,11 @@
           if (!bestLocale || !bestMm) break;
           const anchorX = bestMm.maxLoc.x;
           const anchorY = bestMm.maxLoc.y;
+          const gemOptionLevelXOffset = bestLocale == 'ko_kr' ? 40 : 70;
 
           // anchor 위치 표시
           if (isDebugging) {
-            if (bestMm.maxVal > 0.9) {
+            if (bestMm.maxVal > detectionThreshold) {
               debugRectJS(
                 {
                   x: anchorX,
@@ -429,8 +427,9 @@
                 },
                 'green',
                 2,
-                'anchor',
-                bestMm.maxVal
+                `Detected Locale: ${bestLocale}`,
+                bestMm.maxVal,
+                20
               );
             } else {
               debugRectJS(
@@ -448,9 +447,7 @@
               );
             }
           }
-          if (bestMm.maxVal > 0.9) {
-            // TODO threshold 조절 가능하게
-
+          if (bestMm.maxVal > detectionThreshold) {
             currentGems.length = 0;
 
             // 질서 혹은 혼돈 판단
@@ -463,7 +460,8 @@
             const gemAttr = findBestMatch(
               frame,
               gemAttrRect,
-              globalLoadedAsset[bestLocale].matGemAttr
+              globalLoadedAsset[bestLocale].matGemAttr,
+              detectionThreshold
             );
             if (gemAttr === null) continue;
             let totalGems =
@@ -486,7 +484,8 @@
               const gemName = findBestMatch(
                 frame,
                 gemImageRect,
-                globalLoadedAsset[bestLocale].matGemImage
+                globalLoadedAsset[bestLocale].matGemImage,
+                detectionThreshold
               );
 
               const willPowerRect = {
@@ -498,7 +497,8 @@
               const willPower = findBestMatch(
                 frame,
                 willPowerRect,
-                globalLoadedAsset[bestLocale].matNumeric
+                globalLoadedAsset[bestLocale].matNumeric,
+                detectionThreshold
               );
 
               const corePointRect = {
@@ -510,7 +510,8 @@
               const corePoint = findBestMatch(
                 frame,
                 corePointRect,
-                globalLoadedAsset[bestLocale].matNumeric
+                globalLoadedAsset[bestLocale].matNumeric,
+                detectionThreshold
               );
 
               const optionARect = {
@@ -528,12 +529,14 @@
               const optionAType = findBestMatch(
                 frame,
                 optionARect,
-                globalLoadedAsset[bestLocale].matOptionString
+                globalLoadedAsset[bestLocale].matOptionString,
+                detectionThreshold
               );
               const optionAValue = findBestMatch(
                 frame,
                 optionAValueRect,
-                globalLoadedAsset[bestLocale].matOptionValue
+                globalLoadedAsset[bestLocale].matOptionValue,
+                detectionThreshold
               );
 
               const optionBRect = {
@@ -551,12 +554,14 @@
               const optionBType = findBestMatch(
                 frame,
                 optionBRect,
-                globalLoadedAsset[bestLocale].matOptionString
+                globalLoadedAsset[bestLocale].matOptionString,
+                detectionThreshold
               );
               const optionBValue = findBestMatch(
                 frame,
                 optionBValueRect,
-                globalLoadedAsset[bestLocale].matOptionValue
+                globalLoadedAsset[bestLocale].matOptionValue,
+                detectionThreshold
               );
 
               // 제대로 인식이 됐는지 확인
@@ -654,7 +659,7 @@
                     // 내 화면의 sameCount부터 끝에 있는 젬들까지 추가 대상임
                     for (let i = sameCount; i < 9; i++) {
                       totalGems.push(currentGems[i]);
-                      console.log('추가:', currentGems[i]);
+                      // console.log('추가:', currentGems[i]);
                     }
                     gemListElem?.selectTab(
                       gemAttr == ArkGridAttrs.Order ? 0 : 1
@@ -694,7 +699,7 @@
                       // 내 화면의 0부터 9-sameCount-1에 있는 젬들까지 추가 대상임
                       for (let i = 9 - sameCount - 1; i >= 0; i--) {
                         totalGems.unshift(currentGems[i]);
-                        console.log('추가:', currentGems[i]);
+                        // console.log('추가:', currentGems[i]);
                       }
                       gemListElem?.selectTab(
                         gemAttr == ArkGridAttrs.Order ? 0 : 1
@@ -860,11 +865,21 @@
       </div>
     </div>
     <div hidden={!isDebugging}>
-      <canvas
-        class="debugView"
-        bind:this={debugCanvas}
-        style="border: 1px black solid;"
-      ></canvas>
+      <div class="debug-screen">
+        <div class="threshold-controller">
+          <label for="slider">화면 인식 정밀도 {detectionThreshold}</label>
+          <input
+            id="slider"
+            type="range"
+            min="0.5"
+            max="0.85"
+            step="0.05"
+            bind:value={detectionThreshold}
+          />
+        </div>
+        <canvas bind:this={debugCanvas} style="border: 1px black solid;"
+        ></canvas>
+      </div>
     </div>
     <div class="dual-panel">
       <div class="guide">
@@ -923,10 +938,6 @@
   /* 오버레이 + 중앙 정렬 */
   .panel {
     position: relative;
-  }
-  .debugView {
-    width: 100%;
-    height: auto;
   }
   .status-dot {
     width: 12px;
@@ -1003,5 +1014,23 @@
     display: flex;
     align-items: stretch;
     gap: 8px;
+  }
+  .debug-screen {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    justify-content: center;
+  }
+  .debug-screen > .threshold-controller {
+    display: flex;
+    /* height: 60px; */
+    align-items: center;
+    gap: 1rem;
+  }
+  .debug-screen > .threshold-controller > label {
+    width: 9.5rem;
+  }
+  .debug-screen > .threshold-controller > input {
+    transform: translateY(2px);
   }
 </style>
