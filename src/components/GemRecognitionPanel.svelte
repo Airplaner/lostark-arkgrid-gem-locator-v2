@@ -18,7 +18,9 @@
     koKrCoords,
   } from '../lib/opencv-template-coords/ko_kr';
   import {
+    type AppLocale,
     appConfig,
+    supportedLocales,
     toggleLocale,
     toggleUI,
   } from '../lib/state/appConfig.state.svelte';
@@ -246,11 +248,12 @@
       matGemAttr: MatGemAttr;
       matGemImage: MatGemImage;
     }
+    type GlobalLoadedAsset = Record<AppLocale, LoadedAsset>;
     // TODO 현재 component의 isLoading, isRecording state와 강하게 결합되어 있음
     let reader: ReadableStreamDefaultReader<VideoFrame> | null = null;
     let track: MediaStreamTrack | null = null;
     let processor: MediaStreamTrackProcessor | null = null;
-    let loadedAsset: LoadedAsset | null = null;
+    let globalLoadedAsset: GlobalLoadedAsset | null = null;
 
     // 분석용 canvas, DOM엔 연결하지 않음
     const canvas: HTMLCanvasElement = document.createElement('canvas');
@@ -259,67 +262,69 @@
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
     async function preloadAsset() {
-      if (loadedAsset !== null) {
-        return loadedAsset;
+      if (globalLoadedAsset !== null) {
+        return globalLoadedAsset;
       }
 
+      globalLoadedAsset = {} as GlobalLoadedAsset;
       isLoading = true;
       await loadOpenCV();
 
       const gt = await loadGemTemplates();
-      const mats = gt[appConfig.current.locale];
+      for (const targetLocale of supportedLocales) {
+        const mats = gt[targetLocale];
 
-      const matAnchor = mats['anchor.png'];
-      const matNumeric = {
-        1: mats['1.png'],
-        2: mats['2.png'],
-        3: mats['3.png'],
-        4: mats['4.png'],
-        5: mats['5.png'],
-        6: mats['6.png'],
-        7: mats['7.png'],
-        8: mats['8.png'],
-        9: mats['9.png'],
-      };
-      const matOptionString = {
-        [ArkGridGemOptionTypes.ATTACK]: mats['공격력.png'],
-        [ArkGridGemOptionTypes.SKILL_DAMAGE]: mats['추가피해.png'],
-        [ArkGridGemOptionTypes.BOSS_DAMAGE]: mats['보스피해.png'],
-        [ArkGridGemOptionTypes.STIGMA]: mats['낙인력.png'],
-        [ArkGridGemOptionTypes.PARTY_ATTACK]: mats['아군공격강화.png'],
-        [ArkGridGemOptionTypes.PARTY_DAMAGE]: mats['아군피해강화.png'],
-      };
-      const matOptionValue = {
-        1: mats['lv1.png'],
-        2: mats['lv2.png'],
-        3: mats['lv3.png'],
-        4: mats['lv4.png'],
-        5: mats['lv5.png'],
-      };
-      const matGemAttr = {
-        [ArkGridAttrs.Order]: mats['질서.png'],
-        [ArkGridAttrs.Chaos]: mats['혼돈.png'],
-      };
-      const matGemImage = {
-        '질서의 젬 : 안정': mats['안정.png'],
-        '질서의 젬 : 견고': mats['견고.png'],
-        '질서의 젬 : 불변': mats['불변.png'],
-        '혼돈의 젬 : 침식': mats['침식.png'],
-        '혼돈의 젬 : 왜곡': mats['왜곡.png'],
-        '혼돈의 젬 : 붕괴': mats['붕괴.png'],
-      };
+        const matAnchor = mats['anchor.png'];
+        const matNumeric = {
+          1: mats['1.png'],
+          2: mats['2.png'],
+          3: mats['3.png'],
+          4: mats['4.png'],
+          5: mats['5.png'],
+          6: mats['6.png'],
+          7: mats['7.png'],
+          8: mats['8.png'],
+          9: mats['9.png'],
+        };
+        const matOptionString = {
+          [ArkGridGemOptionTypes.ATTACK]: mats['공격력.png'],
+          [ArkGridGemOptionTypes.SKILL_DAMAGE]: mats['추가피해.png'],
+          [ArkGridGemOptionTypes.BOSS_DAMAGE]: mats['보스피해.png'],
+          [ArkGridGemOptionTypes.STIGMA]: mats['낙인력.png'],
+          [ArkGridGemOptionTypes.PARTY_ATTACK]: mats['아군공격강화.png'],
+          [ArkGridGemOptionTypes.PARTY_DAMAGE]: mats['아군피해강화.png'],
+        };
+        const matOptionValue = {
+          1: mats['lv1.png'],
+          2: mats['lv2.png'],
+          3: mats['lv3.png'],
+          4: mats['lv4.png'],
+          5: mats['lv5.png'],
+        };
+        const matGemAttr = {
+          [ArkGridAttrs.Order]: mats['질서.png'],
+          [ArkGridAttrs.Chaos]: mats['혼돈.png'],
+        };
+        const matGemImage = {
+          '질서의 젬 : 안정': mats['안정.png'],
+          '질서의 젬 : 견고': mats['견고.png'],
+          '질서의 젬 : 불변': mats['불변.png'],
+          '혼돈의 젬 : 침식': mats['침식.png'],
+          '혼돈의 젬 : 왜곡': mats['왜곡.png'],
+          '혼돈의 젬 : 붕괴': mats['붕괴.png'],
+        };
 
-      isLoading = false;
-      loadedAsset = {
-        matAnchor,
-        matNumeric,
-        matOptionString,
-        matOptionValue,
-        matGemAttr,
-        matGemImage,
-      };
-
-      return loadedAsset;
+        isLoading = false;
+        globalLoadedAsset[targetLocale] = {
+          matAnchor,
+          matNumeric,
+          matOptionString,
+          matOptionValue,
+          matGemAttr,
+          matGemImage,
+        };
+      }
+      return globalLoadedAsset;
     }
     async function startCapture() {
       // OpenCV와 어셋 로딩 promise 생성
@@ -340,14 +345,7 @@
         window.alert('화면 공유에 실패하였습니다.');
         return;
       }
-      const {
-        matAnchor,
-        matNumeric,
-        matOptionString,
-        matOptionValue,
-        matGemAttr,
-        matGemImage,
-      } = await preloadPromise;
+      await preloadPromise;
 
       // TrackProcessor 생성
       track = stream.getVideoTracks()[0];
@@ -392,25 +390,47 @@
           cv.cvtColor(frame, frame, cv.COLOR_RGBA2GRAY);
 
           // 🔍 anchor 찾기
-          const result = new cv.Mat();
-          cv.matchTemplate(frame, matAnchor, result, cv.TM_CCOEFF_NORMED);
-          const mm = cv.minMaxLoc(result);
-          const anchorX = mm.maxLoc.x;
-          const anchorY = mm.maxLoc.y;
+          if (!globalLoadedAsset) break;
+          // 한글, 영어 anchor를 모두 찾기 시도
+          let bestLocale: AppLocale | null = null;
+          let bestMm: any = null;
+          let bestMaxVal = -Infinity;
+
+          for (const candidateLocale of supportedLocales) {
+            const result = new cv.Mat();
+            cv.matchTemplate(
+              frame,
+              globalLoadedAsset[candidateLocale].matAnchor,
+              result,
+              cv.TM_CCOEFF_NORMED
+            );
+            const mm = cv.minMaxLoc(result);
+            console.log(candidateLocale, mm.maxVal);
+            if (mm.maxVal > bestMaxVal) {
+              bestMaxVal = mm.maxVal;
+              bestMm = mm;
+              bestLocale = candidateLocale;
+            }
+            result.delete();
+          }
+          if (!bestLocale || !bestMm) break;
+          const anchorX = bestMm.maxLoc.x;
+          const anchorY = bestMm.maxLoc.y;
+
           // anchor 위치 표시
           if (isDebugging) {
-            if (mm.maxVal > 0.9) {
+            if (bestMm.maxVal > 0.9) {
               debugRectJS(
                 {
                   x: anchorX,
                   y: anchorY,
-                  w: matAnchor.cols,
-                  h: matAnchor.rows,
+                  w: globalLoadedAsset[bestLocale].matAnchor.cols,
+                  h: globalLoadedAsset[bestLocale].matAnchor.rows,
                 },
                 'green',
                 2,
                 'anchor',
-                mm.maxVal
+                bestMm.maxVal
               );
             } else {
               debugRectJS(
@@ -423,12 +443,12 @@
                 'red',
                 10,
                 '젬 화면을 찾지 못했습니다.',
-                mm.maxVal,
+                bestMm.maxVal,
                 80
               );
             }
           }
-          if (mm.maxVal > 0.9) {
+          if (bestMm.maxVal > 0.9) {
             // TODO threshold 조절 가능하게
 
             currentGems.length = 0;
@@ -440,7 +460,11 @@
               w: 1613 - 1166,
               h: 233 - 210,
             };
-            const gemAttr = findBestMatch(frame, gemAttrRect, matGemAttr);
+            const gemAttr = findBestMatch(
+              frame,
+              gemAttrRect,
+              globalLoadedAsset[bestLocale].matGemAttr
+            );
             if (gemAttr === null) continue;
             let totalGems =
               gemAttr == ArkGridAttrs.Order ? totalOrderGems : totalChaosGems;
@@ -459,7 +483,11 @@
                 w: 1212 - 1198,
                 h: 375 - 347,
               };
-              const gemName = findBestMatch(frame, gemImageRect, matGemImage);
+              const gemName = findBestMatch(
+                frame,
+                gemImageRect,
+                globalLoadedAsset[bestLocale].matGemImage
+              );
 
               const willPowerRect = {
                 x: rowRect.x + (1240 - 1176),
@@ -467,7 +495,11 @@
                 w: 1264 - 1240,
                 h: 30,
               };
-              const willPower = findBestMatch(frame, willPowerRect, matNumeric);
+              const willPower = findBestMatch(
+                frame,
+                willPowerRect,
+                globalLoadedAsset[bestLocale].matNumeric
+              );
 
               const corePointRect = {
                 x: willPowerRect.x,
@@ -475,7 +507,11 @@
                 w: willPowerRect.w,
                 h: willPowerRect.h,
               };
-              const corePoint = findBestMatch(frame, corePointRect, matNumeric);
+              const corePoint = findBestMatch(
+                frame,
+                corePointRect,
+                globalLoadedAsset[bestLocale].matNumeric
+              );
 
               const optionARect = {
                 x: rowRect.x + 1301 - 1176,
@@ -492,12 +528,12 @@
               const optionAType = findBestMatch(
                 frame,
                 optionARect,
-                matOptionString
+                globalLoadedAsset[bestLocale].matOptionString
               );
               const optionAValue = findBestMatch(
                 frame,
                 optionAValueRect,
-                matOptionValue
+                globalLoadedAsset[bestLocale].matOptionValue
               );
 
               const optionBRect = {
@@ -515,12 +551,12 @@
               const optionBType = findBestMatch(
                 frame,
                 optionBRect,
-                matOptionString
+                globalLoadedAsset[bestLocale].matOptionString
               );
               const optionBValue = findBestMatch(
                 frame,
                 optionBValueRect,
-                matOptionValue
+                globalLoadedAsset[bestLocale].matOptionValue
               );
 
               // 제대로 인식이 됐는지 확인
@@ -676,7 +712,6 @@
 
           // 매 frame마다 메모리 정리
           frame.delete();
-          result.delete();
           rawFrame.close();
         }
 
@@ -701,32 +736,37 @@
     }
 
     async function dispose() {
-      if (loadedAsset === null) {
+      isLoading = true;
+      if (globalLoadedAsset === null) {
+        isLoading = false;
         return;
       }
-      const {
-        matAnchor,
-        matNumeric,
-        matOptionString,
-        matOptionValue,
-        matGemAttr,
-      } = loadedAsset;
-
-      try {
-        matAnchor.delete();
-        const matGroups: Record<string, CvMat>[] = [
-          matGemAttr,
+      for (const targetLocale of supportedLocales) {
+        const {
+          matAnchor,
           matNumeric,
           matOptionString,
           matOptionValue,
-        ];
-        for (const matTarget of matGroups) {
-          for (const key in matTarget) {
-            matTarget[key].delete();
+          matGemAttr,
+        } = globalLoadedAsset[targetLocale];
+
+        try {
+          matAnchor.delete();
+          const matGroups: Record<string, CvMat>[] = [
+            matGemAttr,
+            matNumeric,
+            matOptionString,
+            matOptionValue,
+          ];
+          for (const matTarget of matGroups) {
+            for (const key in matTarget) {
+              matTarget[key].delete();
+            }
           }
-        }
-      } catch {}
-      loadedAsset = null;
+        } catch {}
+      }
+      globalLoadedAsset = null;
+      isLoading = false;
     }
 
     return { startCapture, stopCapture, dispose };
@@ -784,7 +824,6 @@
             >🖥️ 화면 공유 종료</button
           >
         {/if}
-        <button hidden onclick={captureController.dispose}>자원 정리</button>
         <button
           class:active={isDebugging}
           onclick={() => (isDebugging = !isDebugging)}
@@ -795,6 +834,11 @@
       </div>
       <div class="right">
         <button
+          hidden={!appConfig.current.uiConfig.debugMode}
+          onclick={captureController.dispose}>자원 정리</button
+        >
+        <button
+          hidden={!appConfig.current.uiConfig.debugMode}
           onclick={() => {
             if (appConfig.current.locale == 'ko_kr') {
               if (

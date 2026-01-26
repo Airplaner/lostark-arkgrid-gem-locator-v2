@@ -29,6 +29,8 @@ const defaultUIConfig: UIConfig = {
   debugMode: false,
 };
 export type AppLocale = 'ko_kr' | 'en_us';
+export const supportedLocales: AppLocale[] = ['en_us', 'ko_kr'];
+
 interface AppConfig {
   characterProfiles: CharacterProfile[];
   openApiConfig: OpenApiConfig;
