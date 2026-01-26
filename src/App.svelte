@@ -35,16 +35,18 @@
 
   onMount(() => {
     // data-track 이라는 attr이 달린 것만 수집
-    document.addEventListener('click', (e) => {
-      const el = e.target as HTMLElement | null;
-      const target = el?.closest('[data-track]');
-      if (!target) return; // data-track 없는 건 무시
+    if (import.meta.env.PROD) {
+      document.addEventListener('click', (e) => {
+        const el = e.target as HTMLElement | null;
+        const target = el?.closest('[data-track]');
+        if (!target) return; // data-track 없는 건 무시
 
-      const label = (target as HTMLElement).dataset.track; // data-track 값
-      (window as any).gtag('event', 'click', {
-        event_label: label,
+        const label = (target as HTMLElement).dataset.track; // data-track 값
+        (window as any).gtag('event', 'click', {
+          event_label: label,
+        });
       });
-    });
+    }
   });
 </script>
 
