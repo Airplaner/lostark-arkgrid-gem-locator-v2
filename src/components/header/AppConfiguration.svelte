@@ -192,6 +192,9 @@
         );
         return;
       }
+      (window as any).gtag('event', 'import-from-open-api', {
+        event_label: 'success',
+      });
       const arkpassive: LostArkOpenAPI.ArkPassive | undefined =
         res.data.ArkPassive;
       const arkgrid: LostArkOpenAPI.ArkGrid | undefined = res.data.ArkGrid;
@@ -331,7 +334,9 @@
 
 <div class="buttons">
   <button onclick={updateOpenApiConfig}>OpenAPI 설정</button>
-  <button onclick={importFromOpenAPI}>OpenAPI 데이터 반영</button>
+  <button onclick={importFromOpenAPI} data-track="import-from-openapi"
+    >OpenAPI 데이터 반영</button
+  >
   <button
     hidden={!appConfig.current.uiConfig.debugMode}
     onclick={() => toggleUI('debugMode')}

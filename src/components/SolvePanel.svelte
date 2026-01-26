@@ -475,8 +475,10 @@
         <div class="small">목표 포인트를 조절해보세요.</div>
       </div>
     {/if}
-    <button class="solve-button" onclick={() => runSolve(isSupporter)}
-      >최적화 실행</button
+    <button
+      class="solve-button"
+      onclick={() => runSolve(isSupporter)}
+      data-track="run-solve">최적화 실행</button
     >
     {#if profile.solveInfo.after}
       <SolveResult solveAfter={profile.solveInfo.after}></SolveResult>

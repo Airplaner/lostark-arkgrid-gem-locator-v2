@@ -46,7 +46,8 @@
         if (profileName === null || profileName.length == 0) return;
         addNewProfile(initNewProfile(profileName));
         setCurrentProfileName(profileName);
-      }}>📄</button
+      }}
+      data-track="add-profile">📄</button
     >
     <button
       title="현재 프로필 삭제"
