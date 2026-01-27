@@ -46,7 +46,7 @@ templateFolders.forEach(({ folder, lang }) => {
     Object.entries(result.coordinates).forEach(([filePath, rect]) => {
       const fileName = path.basename(filePath);
       tsContentLines.push(
-        `  "${fileName}": { x: ${rect.x}, y: ${rect.y}, w: ${rect.width}, h: ${rect.height} },`
+        `  '${fileName}': { x: ${rect.x}, y: ${rect.y}, w: ${rect.width}, h: ${rect.height} },`
       );
     });
 

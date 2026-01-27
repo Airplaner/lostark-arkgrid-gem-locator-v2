@@ -34,7 +34,7 @@
   let isRecording = $state<boolean>(false);
   let isDebugging = $state<boolean>(false);
   let isLoading = $state<boolean>(false);
-  let detectionThreshold = $state<number>(0.85);
+  let detectionThreshold = $state<number>(0.75);
   let gemListElem: GemRecognitionGemList | null = null;
 
   onMount(() => {
@@ -287,8 +287,8 @@
           debugRectJS(
             { x: frame.cols / 4, y: frame.rows / 4, w: frame.cols / 2, h: frame.rows / 2 },
             {
-              key: '아크 그리드 젬 목록을 찾지 못하였습니다.',
-              fontSize: 60,
+              key: '아크 그리드 젬 목록을 찾을 수 없습니다.',
+              fontSize: 50,
               fontColor: 'red',
               rectColor: 'red',
               rectLineWidth: 10,
@@ -452,13 +452,54 @@
             // 종료
             break;
           }
-          // 1. 화면 인식에 사용할 캔버스 크기를 입력과 맞게 설정
-          canvas.width = rawFrame.displayWidth;
-          canvas.height = rawFrame.displayHeight;
+          let resoultionScale = 1;
+          let expectResolution = 'FHD';
+          const rawHeight = rawFrame.displayHeight;
+
+          // 윈도우 타이틀 바 높이는 32px정도라고 함
+          if (rawHeight < 1080) {
+            // FHD 창모드
+            resoultionScale = 1080 / (rawHeight - 27); // 윈도우 10 기준 실제로 27px
+            expectResolution = `(경고) FHD 미만`;
+          } else if (rawHeight >= 1080 && rawHeight <= 1080 + 48) {
+            // FHD, UWFHD
+          } else if (rawHeight >= 1440 && rawHeight <= 1440 + 48) {
+            // QHD, UWQHD
+            resoultionScale = 3 / 4;
+            expectResolution = 'QHD';
+          } else if (rawHeight >= 2160 && rawHeight <= 2160 + 48) {
+            // UHD
+            resoultionScale = 1 / 2;
+            expectResolution = 'UHD';
+          } else {
+            // ?
+            expectResolution = '(경고) Unknown';
+          }
+          // 1. 화면 인식에 사용할 캔버스 크기를 FHD에 맞게 설정
+          canvas.width = Math.floor(rawFrame.displayWidth * resoultionScale);
+          canvas.height = Math.floor(rawFrame.displayHeight * resoultionScale);
           debugCanvas.width = canvas.width;
           debugCanvas.height = canvas.height;
           if (isDebugging) {
             debugCtx.drawImage(rawFrame, 0, 0, debugCanvas.width, debugCanvas.height);
+            debugCtx.font = `40px Arial`;
+            debugCtx.fillStyle = 'white';
+            debugCtx.strokeStyle = 'black'; // 테두리 색
+            debugCtx.lineWidth = 10 * resoultionScale; // 테두리 두께
+            const x = 25;
+            const y = 100;
+            // 테두리 먼저 그리기
+            debugCtx.strokeText(
+              `해상도: ${expectResolution} (${rawFrame.displayWidth}x${rawFrame.displayHeight})`,
+              x,
+              y
+            );
+            // 그 위에 흰 글씨 채우기
+            debugCtx.fillText(
+              `해상도: ${expectResolution} (${rawFrame.displayWidth}x${rawFrame.displayHeight})`,
+              x,
+              y
+            );
           }
           if (!ctx) break;
 
@@ -524,9 +565,9 @@
 
             // 5-2) 젬 의지력
             const willPowerRect = {
-              x: rowRect.x + (1240 - 1176),
+              x: rowRect.x + (1240 - 1176) + 1,
               y: rowRect.y,
-              w: 1264 - 1240,
+              w: 1264 - 1240 - 1,
               h: 30,
             };
             const willPower =
@@ -568,12 +609,13 @@
             // 옵션을 찾았다면, 옵션의 너비만큼 거리를 벌려서 optionA의 레벨을 찾음
             const optionAType = optionAMatch?.bestKey ?? null;
             const optionALoc = optionAMatch?.bestLoc ?? null;
-            const optionALevelXOffset = optionALoc ? optionALoc.x + optionALoc.w : 60;
+            const optionALevelXOffset = optionALoc ? optionALoc.x + optionALoc.w + 16 : 60;
+            // lv. 글자를 제외하기 위해서 +16
 
             const optionAValueRect = {
               x: optionARect.x + optionALevelXOffset,
               y: optionARect.y,
-              w: 1447 - 1301,
+              w: 48,
               h: optionARect.h,
             };
             const optionAValue =
@@ -599,11 +641,11 @@
             );
             const optionBType = optionBMatch?.bestKey ?? null;
             const optionBLoc = optionBMatch?.bestLoc ?? null;
-            const optionBLevelXOffset = optionBLoc ? optionBLoc.x + optionBLoc.w : 60;
+            const optionBLevelXOffset = optionBLoc ? optionBLoc.x + optionBLoc.w + 16 : 60;
             const optionBValueRect = {
               x: optionBRect.x + optionBLevelXOffset,
               y: optionBRect.y,
-              w: 1447 - 1301,
+              w: 48,
               h: optionBRect.h,
             };
             const optionBValue =
@@ -902,27 +944,45 @@
         {#if appConfig.current.uiConfig.showGemRecognitionGuide}
           <div class="content">
             <p>
-              1. 모니터의 해상도가 <b>FHD (1920x1080)</b>이거나
-              <b>WFHD (2560x1980)</b>인 경우 그대로 진행해주세요.<br />
-              모니터의 해상도가 그 이상인 경우, 화면 인식을 위해 반드시 로스트아크 해상도를
-              <b>"1920x1080 (16:9)"</b>으로 설정한 뒤 화면을 "창 모드"로 설정해주세요.
+              1. 게임에서 젬 목록 화면을 연 뒤 모든 젬을 장착 해제해주세요.<br />
+              안 쓰는 아크 그리드 프리셋으로 전환하는 것으로 손쉽게 젬을 해제할 수 있습니다.
             </p>
-
-            <img src={guideImages['../assets/guide/1.png']} alt="guide-img1" />
-            <p>
-              3. 게임에서 젬 목록 화면을 연 뒤 모든 젬을 장착 해제하고, [🖥️ 화면 공유 시작] 버튼을
-              통해 화면을 공유해주세요<br /> (안쓰는 아크 그리드 프리셋으로 전환하는 것으로 손쉽게 젬을
-              해제할 수 있습니다.)
-            </p>
+            <p>2. [🖥️ 화면 공유 시작] 버튼을 통해 로스트아크 게임 화면을 공유해주세요</p>
             <img src={guideImages['../assets/guide/2.png']} alt="guide-img2" />
             <p>
-              4. 마우스가 젬을 건드리지 않도록 스크롤바 위에 위치시키는 것을 추천드립니다. 스크롤을
+              2. 마우스가 젬을 건드리지 않도록 스크롤바 위에 위치시키는 것을 추천드립니다. 스크롤을
               내리면서 인식된 젬이 목록에 추가되는 것을 확인해주세요.
             </p>
             <p>
-              5. 수집된 젬의 개수를 확인하고, <b>질서와 혼돈 모든 젬</b>이 수집되었으면 [✅ 현재
+              3. 수집된 젬의 개수를 확인하고, <b>질서와 혼돈 모든 젬</b>이 수집되었으면 [✅ 현재
               프로필에 반영] 버튼을 눌러 프로필에 저장해주세요.
             </p>
+            <br />
+            <h2>FAQ</h2>
+            <p>
+              Q. 화면 공유에 실패하거나 거부하였다고 나옵니다.<br />
+              A. 데스크톱 환경에서 크롬 혹은 엣지 브라우저로 실행해주세요.
+            </p>
+            <p>
+              Q. 젬이 인식되지 않습니다.<br />
+              A. [공유 중인 화면 보기]를 눌러 다음 사항을 확인해주세요.
+            </p>
+            <ol>
+              <li>게임 화면이 올바르게 나오고 갱신 중인지 확인해주세요.</li>
+              <li>
+                '아크 그리드 젬 목록을 찾을 수 없습니다' 문구가 보이는 경우, 게임 내에서 아크 그리드
+                창을 연 뒤 젬 목록을 열어주세요.
+              </li>
+              <li>
+                젬 옵션을 추출하는 영역이 실제 위치와 일치하지 않는다면 게임 해상도를 "1920x1080
+                (16:9)"로 화면을 "창 모드"로 변경해주세요.
+              </li>
+              <li>
+                젬 옵션을 추출하는 영역 중 일부가 빨갛게 되어 있다면 상단 '화면 인식 정밀도'를
+                낮춰서 시도해주세요.
+              </li>
+              <br />
+            </ol>
           </div>
         {/if}
       </div>
