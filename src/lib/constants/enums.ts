@@ -25,3 +25,6 @@ export type ScrollCommand = 'top' | 'bottom' | null;
 
 export const DISCORD_URL = 'https://discord.gg/Zk4K3xt9ub';
 export const KAKAOTALK_URL = 'https://open.kakao.com/o/s5bTYodi';
+
+export type SupportedResolution = 'FHD' | 'QHD' | '4K';
+export const supportedResolutions: SupportedResolution[] = ['FHD', 'QHD', '4K'] as const;
