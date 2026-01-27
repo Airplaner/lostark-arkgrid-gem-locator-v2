@@ -27,7 +27,7 @@
     import: 'default',
   });
   let cv: any;
-  let debugCanvas: HTMLCanvasElement;
+  let debugCanvas: HTMLCanvasElement | null;
   let debugCtx: CanvasRenderingContext2D;
   let totalOrderGems = $state<ArkGridGem[]>([]);
   let totalChaosGems = $state<ArkGridGem[]>([]);
@@ -38,6 +38,10 @@
   let gemListElem: GemRecognitionGemList | null = null;
 
   onMount(() => {
+    if (!debugCanvas) {
+      // mount 이후라 당연히 있어야 하지만...
+      throw Error('DebugCanvas 없음');
+    }
     const ctx = debugCanvas.getContext('2d');
     if (!ctx) throw Error('debugCanvas에서 context 획득 실패');
     debugCtx = ctx;
@@ -413,6 +417,10 @@
     async function startCapture() {
       // OpenCV와 어셋 로딩 promise 생성
       // TODO openCV는 중복해서 로드되지 않으나, 나머지 asset들은 공유 시작할 때마다 로드됨
+      if (isRecording || isLoading) {
+        // console.log('녹화 혹은 데이터 로딩 중');
+        return;
+      }
       const preloadPromise = preloadAsset();
       let stream: MediaStream | null = null;
       try {
@@ -444,20 +452,46 @@
       totalOrderGems.length = 0;
       totalChaosGems.length = 0;
       const currentGems: ArkGridGem[] = [];
-      isRecording = true;
+
       const allAnchorMats = {
         ko_kr: globalLoadedAsset['ko_kr'].matAnchor,
         en_us: globalLoadedAsset['en_us'].matAnchor,
       };
+      if (!reader) return;
+
+      // reader.read()로부터 데이터가 늦게 들어오는 동안 로딩 보여줌
+      isLoading = true;
+      const { value: firstFrame, done } = await reader.read();
+      firstFrame?.close(); // 첫 프레임은 버림
+      if (done) {
+        // 첫 프레임이 도착하기 전에 공유를 중단한 경우
+        isLoading = false;
+        return;
+      }
+      // 프레임이 왔으니 로딩 해제 후 녹화 시작
+      isRecording = true;
+      isLoading = false;
 
       async function loop() {
         while (isRecording) {
-          if (!reader) break;
+          if (!reader) {
+            window.alert('Reader를 찾을 수 없습니다. 새고 로침이 필요합니다.');
+            break;
+          }
+          if (!globalLoadedAsset) {
+            window.alert(
+              '화면 인식에 필요한 데이터가 로드되지 않았습니다. 새로 고침이 필요합니다.'
+            );
+            break;
+          }
+          if (!ctx) {
+            window.alert('화면 인식 도중 오류가 발생하였습니다. 새로 고침이 필요합니다.');
+            break;
+          }
           const { value: rawFrame, done } = await reader.read();
-          // TODO throttling
-
           if (done) {
             // 종료
+            rawFrame?.close();
             break;
           }
           let resoultionScale = 1;
@@ -466,29 +500,29 @@
 
           // 윈도우 타이틀 바 높이는 32px정도라고 함
           if (rawHeight < 1080) {
-            // FHD 창모드
+            // FHD 미만인 경우, FHD로 늘림
             resoultionScale = 1080 / (rawHeight - 27); // 윈도우 10 기준 실제로 27px
             expectResolution = `(경고) FHD 미만`;
           } else if (rawHeight >= 1080 && rawHeight <= 1080 + 48) {
-            // FHD, UWFHD
+            // FHD, UWFHD의 경우 그대로 사용
           } else if (rawHeight >= 1440 && rawHeight <= 1440 + 48) {
-            // QHD, UWQHD
+            // QHD, UWQHD의 경우 해상도 3/4배
             resoultionScale = 3 / 4;
             expectResolution = 'QHD';
           } else if (rawHeight >= 2160 && rawHeight <= 2160 + 48) {
-            // UHD
+            // UHD의 경우 해상도 1/2배
             resoultionScale = 1 / 2;
             expectResolution = 'UHD';
           } else {
-            // ?
+            // ? FHD 그대로 사용
             expectResolution = '(경고) Unknown';
           }
           // 1. 화면 인식에 사용할 캔버스 크기를 FHD에 맞게 설정
           canvas.width = Math.floor(rawFrame.displayWidth * resoultionScale);
           canvas.height = Math.floor(rawFrame.displayHeight * resoultionScale);
-          debugCanvas.width = canvas.width;
-          debugCanvas.height = canvas.height;
-          if (isDebugging) {
+          if (isDebugging && debugCanvas) {
+            debugCanvas.width = canvas.width;
+            debugCanvas.height = canvas.height;
             debugCtx.drawImage(rawFrame, 0, 0, debugCanvas.width, debugCanvas.height);
             debugCtx.font = `40px Arial`;
             debugCtx.fillStyle = 'white';
@@ -509,16 +543,14 @@
               y
             );
           }
-          if (!ctx) break;
 
           // 2. 입력을 canvas에 그린 뒤 gray scale로 변환
-          ctx.drawImage(rawFrame, 0, 0, canvas.width, canvas.height);
+          ctx.drawImage(rawFrame, 0, 0, canvas.width, canvas.height); // 이때 resize가 일어남
           const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           const frame = cv.matFromImageData(imgData);
           cv.cvtColor(frame, frame, cv.COLOR_RGBA2GRAY);
 
           // 3. anchor 찾기
-          if (!globalLoadedAsset) break;
           const findAnchor = findBestMatch(frame, null, allAnchorMats, detectionThreshold);
           if (!findAnchor) continue; // 못 찾으면 프레임 생략
           const anchorX = findAnchor.bestLoc.x;
@@ -795,51 +827,77 @@
           frame.delete();
           rawFrame.close();
         }
+        // console.log('loop 탈출 - 화면 공유 자원 정리 시작');
+        isLoading = true;
 
-        // loop 종료 후
-        debugCanvas.width = 0;
-        debugCanvas.height = 0;
+        if (debugCanvas) {
+          debugCanvas.width = 0;
+          debugCanvas.height = 0;
+        }
         canvas.width = 0;
         canvas.height = 0;
-        isRecording = false;
+
+        // track 종료
+        if (track) {
+          // console.log('track이 있네! stop하고 remove', stream);
+          track.stop();
+          stream?.removeTrack(track);
+        }
         isDebugging = false;
-        stream?.getVideoTracks().forEach((track) => track.stop());
-        await reader?.cancel();
-        reader?.releaseLock();
-        track?.stop();
-        reader = processor = track = null;
+        isLoading = false;
+        isRecording = false;
+        // console.log('화면 공유 자원 정리 완료!');
+        // opencv 자원은 정리하지 않음
       }
       loop();
     }
 
     async function stopCapture() {
-      isRecording = false;
+      isRecording = false; // 이후 loop 탈출 기대
     }
 
     async function dispose() {
       isLoading = true;
+      isRecording = false;
+      // 화면 공유 자원 정리
+      if (track) {
+        track.stop();
+        track = null;
+      }
+
+      // opencv 자원 정리
       if (globalLoadedAsset === null) {
         isLoading = false;
         return;
       }
       for (const targetLocale of supportedLocales) {
-        const { matAnchor, matNumeric, matOptionString, matOptionValue, matGemAttr } =
-          globalLoadedAsset[targetLocale];
+        const {
+          matAnchor,
+          matWillPower,
+          matCorePoint,
+          matOptionString,
+          matOptionValue,
+          matGemAttr,
+        } = globalLoadedAsset[targetLocale];
 
         try {
           matAnchor.delete();
-          const matGroups: Record<string, CvMat>[] = [
-            matGemAttr,
-            matNumeric,
-            matOptionString,
-            matOptionValue,
-          ];
-          for (const matTarget of matGroups) {
-            for (const key in matTarget) {
+        } catch (e: any) {}
+        const matGroups: Record<string, CvMat>[] = [
+          matGemAttr,
+          matWillPower,
+          matCorePoint,
+          matOptionString,
+          matOptionValue,
+        ];
+        for (const matTarget of matGroups) {
+          for (const key in matTarget) {
+            try {
+              // matWillPower와 matCorePoint는 Mat을 공유 중이라 에러 발생
               matTarget[key].delete();
-            }
+            } catch (e: any) {}
           }
-        } catch {}
+        }
       }
       globalLoadedAsset = null;
       isLoading = false;
@@ -851,7 +909,7 @@
   if (import.meta.hot) {
     import.meta.hot.dispose(() => {
       // HMR로 모듈 교체 전 cleanup
-      captureController.dispose?.();
+      captureController.dispose();
     });
   }
 
