@@ -97,7 +97,7 @@
   .bar {
     width: 3px;
     height: 1.3rem;
-    background: black;
+    background-color: var(--anti-bg);
   }
 
   .score-bar > .moving {
