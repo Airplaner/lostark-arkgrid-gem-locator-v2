@@ -201,6 +201,11 @@
     let bestTempate: CvMat | null = null;
 
     for (const [key, templateMat] of Object.entries(templates) as [T, CvMat][]) {
+      // template이 roi보다 크면 matchTemplate 실행하지 않음
+      if (templateMat.rows > roi.rows || templateMat.cols > roi.cols) {
+        console.warn('Template size is larger than ROI. matchTemplate skipped.');
+        continue;
+      }
       const result = new cv.Mat();
       cv.matchTemplate(roi, templateMat, result, cv.TM_CCOEFF_NORMED);
       const mm = cv.minMaxLoc(result);
@@ -564,7 +569,7 @@
             const optionAValueRect = {
               x: optionARect.x + optionALevelXOffset,
               y: optionARect.y,
-              w: 1447 - 1301 - optionALevelXOffset,
+              w: 1447 - 1301,
               h: optionARect.h,
             };
             const optionAValue =
@@ -594,7 +599,7 @@
             const optionBValueRect = {
               x: optionBRect.x + optionBLevelXOffset,
               y: optionBRect.y,
-              w: 1447 - 1301 - optionBLevelXOffset,
+              w: 1447 - 1301,
               h: optionBRect.h,
             };
             const optionBValue =
