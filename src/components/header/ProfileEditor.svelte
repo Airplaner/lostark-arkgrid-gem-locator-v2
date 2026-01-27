@@ -149,8 +149,14 @@
     gap: 0.5rem;
     flex-wrap: wrap;
   }
+  button {
+    background-color: var(--card);
+  }
+  button:hover {
+    background-color: var(--card-innner);
+  }
   button.active {
-    background: #fff;
+    background-color: var(--card-innner);
     font-weight: bold;
     border: 2px solid;
   }

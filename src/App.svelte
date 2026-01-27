@@ -10,6 +10,7 @@
   import AppConfiguration from './components/header/AppConfiguration.svelte';
   import ProfileEdit from './components/header/ProfileEditor.svelte';
   import { DISCORD_URL, KAKAOTALK_URL } from './lib/constants/enums';
+  import { appConfig, enableDarkMode } from './lib/state/appConfig.state.svelte';
   import { type CharacterProfile, getCurrentProfile } from './lib/state/profile.state.svelte';
 
   let currentProfile = $state<CharacterProfile>(getCurrentProfile());
@@ -30,6 +31,10 @@
     currentFooter = null;
   };
 
+  $effect(() => {
+    document.documentElement.classList.toggle('dark-mode', appConfig.current.uiConfig.darkMode);
+  });
+
   onMount(() => {
     // data-track 이라는 attr이 달린 것만 수집
     if (import.meta.env.PROD) {
@@ -43,6 +48,12 @@
           event_label: label,
         });
       });
+    }
+
+    // 다크 모드
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (prefersDark) {
+      enableDarkMode();
     }
   });
 </script>

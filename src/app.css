@@ -1,18 +1,75 @@
 :root {
-  /* 전역 색상 정의 */
-  --bg: #f8fafc;
-  --card: #ffffff;
-  --border: #e2e8f0;
-  --muted: #64748b;
-  --primary: #3b82f6;
-  --primary-hover: #2563eb;
-  --text: #1e293b;
+  /* tailwindcss */
+  --color-gray-50: oklch(0.985 0.002 247.839);
+  --color-gray-100: oklch(0.967 0.003 264.542);
+  --color-gray-200: oklch(0.928 0.006 264.531);
+  --color-gray-300: oklch(0.872 0.01 258.338);
+  --color-gray-400: oklch(0.707 0.022 261.325);
+  --color-gray-500: oklch(0.551 0.027 264.364);
+  --color-gray-600: oklch(0.446 0.03 256.802);
+  --color-gray-700: oklch(0.373 0.034 259.733);
+  --color-gray-800: oklch(0.278 0.033 256.848);
+  --color-gray-900: oklch(0.21 0.034 264.665);
+  --color-gray-950: oklch(0.13 0.028 261.692);
+
+  --color-slate-50: oklch(0.984 0.003 247.858);
+  --color-slate-100: oklch(0.968 0.007 247.896);
+  --color-slate-200: oklch(0.929 0.013 255.508);
+  --color-slate-300: oklch(0.869 0.022 252.894);
+  --color-slate-400: oklch(0.704 0.04 256.788);
+  --color-slate-500: oklch(0.554 0.046 257.417);
+  --color-slate-600: oklch(0.446 0.043 257.281);
+  --color-slate-700: oklch(0.372 0.044 257.287);
+  --color-slate-800: oklch(0.279 0.041 260.031);
+  --color-slate-900: oklch(0.208 0.042 265.755);
+  --color-slate-950: oklch(0.129 0.042 264.695);
+}
+
+:root {
   --global-gap: clamp(1rem, 2vw, 2rem);
+}
+
+/* 다크 모드 */
+:root {
+  --bg: var(--color-slate-50);
+  --card: #ffffff;
+  --card-inner: var(--color-slate-50);
+  --border: var(--color-slate-200);
+  --text: var(--color-slate-800);
+  --muted: var(--color-slate-100);
+}
+
+:root.dark-mode {
+  --bg: var(--color-slate-950);
+  --card: var(--color-slate-900);
+  --card-inner: var(--color-slate-800);
+  --border: var(--color-slate-800);
+  --text: var(--color-slate-200);
+  --muted: var(--color-slate-800);
+}
+
+button,
+input,
+select,
+textarea,
+option {
+  color: var(--text);
+  background-color: var(--card-inner);
+  border: 1px solid var(--border);
+}
+dialog {
+  color: var(--text);
+  background-color: var(--card);
 }
 
 html {
   font-size: 16px;
   min-width: 360px;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) var(--bg);
 }
 
 body {
@@ -75,24 +132,23 @@ button {
   padding: 0.5rem 0.75rem;
   border-radius: 0.4rem;
   border: 1px solid var(--border);
-  background: #f8fafc;
   font-weight: 500;
   word-break: keep-all;
   overflow-wrap: break-word;
 }
 
 button:hover {
-  background-color: #f1f5f9;
-  border-color: #cbd5e1;
+  background-color: var(--card);
 }
 
 button:disabled {
   /* 금지 표시 커서 */
   cursor: not-allowed;
   /* 흐리게 표시 */
-  opacity: 0.8;
+  opacity: 0.6;
   /* hover, click 등 모든 마우스 이벤트 차단 */
   pointer-events: none;
+  background: var(--muted);
 }
 
 .panel > .title {

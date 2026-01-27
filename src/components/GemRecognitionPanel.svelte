@@ -978,7 +978,7 @@
     border: 1px solid var(--border);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     border-radius: 0.4rem;
-    background-color: #fafafa;
+    background-color: var(--card-inner);
     padding: 1rem;
     width: 100%;
     box-sizing: border-box;

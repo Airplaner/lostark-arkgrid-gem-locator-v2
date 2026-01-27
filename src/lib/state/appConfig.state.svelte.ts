@@ -13,12 +13,14 @@ interface UIConfig {
   showGemRecognitionGuide: boolean;
   showCoreCoeff: boolean;
   debugMode: boolean;
+  darkMode: boolean;
 }
 const defaultUIConfig: UIConfig = {
   showGemRecognitionPanel: true,
   showGemRecognitionGuide: true,
   showCoreCoeff: false,
   debugMode: false,
+  darkMode: false,
 };
 export type AppLocale = 'ko_kr' | 'en_us';
 export const supportedLocales: AppLocale[] = ['en_us', 'ko_kr'];
@@ -51,6 +53,10 @@ export function migrateAppConfig(appConfig: Partial<AppConfig>) {
   // locale 없으면 ko_kr로 추가
   if (appConfig.locale === undefined) {
     appConfig.locale = 'ko_kr';
+  }
+  // uiConfig.darkMode 추가
+  if (appConfig.uiConfig && appConfig.uiConfig.darkMode === undefined) {
+    appConfig.uiConfig.darkMode = false;
   }
 }
 
@@ -130,4 +136,11 @@ export function toggleLocale() {
   } else {
     appConfig.current.locale = 'ko_kr';
   }
+}
+
+export function toggleDarkMode() {
+  appConfig.current.uiConfig.darkMode = !appConfig.current.uiConfig.darkMode;
+}
+export function enableDarkMode() {
+  appConfig.current.uiConfig.darkMode = true;
 }

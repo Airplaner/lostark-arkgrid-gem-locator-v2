@@ -157,7 +157,7 @@
   }
 
   .tab.active {
-    background: #fff;
+    background-color: var(--card);
     font-weight: bold;
   }
   .gem-count {

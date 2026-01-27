@@ -18,7 +18,12 @@
   import { type ArkGridGem } from '../../lib/models/arkGridGems';
   import { LostArkOpenAPI } from '../../lib/openapi/Api';
   import { apiClient } from '../../lib/openapi/openapi';
-  import { appConfig, toggleUI, updateOpenApiJWT } from '../../lib/state/appConfig.state.svelte';
+  import {
+    appConfig,
+    toggleDarkMode,
+    toggleUI,
+    updateOpenApiJWT,
+  } from '../../lib/state/appConfig.state.svelte';
   import {
     type WeaponInfo,
     addGem,
@@ -316,6 +321,14 @@
   <button hidden={!appConfig.current.uiConfig.debugMode} onclick={() => toggleUI('debugMode')}
     >개발자 모드 {appConfig.current.uiConfig.debugMode ? '끄기' : '켜기'}</button
   >
+  <button onclick={toggleDarkMode} style="">
+    다크 모드
+    <i
+      class="fa-solid"
+      class:fa-toggle-on={appConfig.current.uiConfig.darkMode}
+      class:fa-toggle-off={!appConfig.current.uiConfig.darkMode}
+    ></i>
+  </button>
 </div>
 
 <style>
@@ -324,5 +337,11 @@
     flex-direction: row;
     gap: 10px;
     justify-content: right;
+  }
+  button {
+    background-color: var(--card);
+  }
+  button:hover {
+    background-color: var(--card-innner);
   }
 </style>
