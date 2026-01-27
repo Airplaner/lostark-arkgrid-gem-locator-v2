@@ -311,14 +311,16 @@
 
   function createCaptureController() {
     // type 선언
-    type MatNumeric = Record<'1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9', CvMat>;
+    type MatWillPower = Record<'3' | '4' | '5' | '6' | '7' | '8' | '9', CvMat>;
+    type MatCorePoint = Record<'1' | '2' | '3' | '4' | '5', CvMat>;
     type MatOptionString = Record<ArkGridGemOptionType, CvMat>;
     type MatOptionValue = Record<'1' | '2' | '3' | '4' | '5', CvMat>;
     type MatGemAttr = Record<ArkGridAttr, CvMat>;
     type MatGemImage = Record<string, CvMat>;
     interface LoadedAsset {
       matAnchor: CvMat;
-      matNumeric: MatNumeric;
+      matWillPower: MatWillPower;
+      matCorePoint: MatCorePoint;
       matOptionString: MatOptionString;
       matOptionValue: MatOptionValue;
       matGemAttr: MatGemAttr;
@@ -351,9 +353,7 @@
         const mats = gt[targetLocale];
 
         const matAnchor = mats['anchor.png'];
-        const matNumeric = {
-          1: mats['1.png'],
-          2: mats['2.png'],
+        const matWillPower = {
           3: mats['3.png'],
           4: mats['4.png'],
           5: mats['5.png'],
@@ -361,6 +361,13 @@
           7: mats['7.png'],
           8: mats['8.png'],
           9: mats['9.png'],
+        };
+        const matCorePoint = {
+          1: mats['1.png'],
+          2: mats['2.png'],
+          3: mats['3.png'],
+          4: mats['4.png'],
+          5: mats['5.png'],
         };
         const matOptionString = {
           [ArkGridGemOptionTypes.ATTACK]: mats['공격력.png'],
@@ -393,7 +400,8 @@
         isLoading = false;
         globalLoadedAsset[targetLocale] = {
           matAnchor,
-          matNumeric,
+          matWillPower,
+          matCorePoint,
           matOptionString,
           matOptionValue,
           matGemAttr,
@@ -574,7 +582,7 @@
               findBestMatch(
                 frame,
                 willPowerRect,
-                globalLoadedAsset[currentLocale].matNumeric,
+                globalLoadedAsset[currentLocale].matWillPower,
                 detectionThreshold
               )?.bestKey ?? null;
 
@@ -589,7 +597,7 @@
               findBestMatch(
                 frame,
                 corePointRect,
-                globalLoadedAsset[currentLocale].matNumeric,
+                globalLoadedAsset[currentLocale].matCorePoint,
                 detectionThreshold
               )?.bestKey ?? null;
 
