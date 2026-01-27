@@ -187,7 +187,9 @@
         rect.x < 0 ||
         rect.x + rect.w > frame.cols ||
         rect.y < 0 ||
-        rect.y + rect.h > frame.rows
+        rect.y + rect.h > frame.rows ||
+        rect.w < 0 ||
+        rect.h < 0
       ) {
         return null;
       }
@@ -202,10 +204,12 @@
 
     for (const [key, templateMat] of Object.entries(templates) as [T, CvMat][]) {
       // template이 roi보다 크면 matchTemplate 실행하지 않음
-      if (templateMat.rows > roi.rows || templateMat.cols > roi.cols) {
-        console.warn('Template size is larger than ROI. matchTemplate skipped.');
-        continue;
-      }
+      // if (templateMat.rows > roi.rows || templateMat.cols > roi.cols) {
+      //   console.warn(
+      //     `Template size ${templateMat.cols}x${templateMat.rows} is larger than ROI ${roi.cols}x${roi.rows}. matchTemplate skipped.`
+      //   );
+      //   continue;
+      // }
       const result = new cv.Mat();
       cv.matchTemplate(roi, templateMat, result, cv.TM_CCOEFF_NORMED);
       const mm = cv.minMaxLoc(result);
@@ -609,7 +613,6 @@
                 globalLoadedAsset[currentLocale].matOptionValue,
                 detectionThreshold
               )?.bestKey ?? null;
-            console.log('');
 
             // 제대로 인식이 됐는지 확인
             if (
