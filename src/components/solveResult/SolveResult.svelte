@@ -22,9 +22,7 @@
       {/if}
     </div>
     {#if solveAfter.answerCores && solveAfter.solveAnswer}
-      <CoreGemEquippedList
-        answerCores={solveAfter.answerCores}
-        solveAnswer={solveAfter.solveAnswer}
+      <CoreGemEquippedList answerCores={solveAfter.answerCores} solveAnswer={solveAfter.solveAnswer}
       ></CoreGemEquippedList>
     {/if}
   </div>

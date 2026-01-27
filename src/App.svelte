@@ -10,10 +10,7 @@
   import AppConfiguration from './components/header/AppConfiguration.svelte';
   import ProfileEdit from './components/header/ProfileEditor.svelte';
   import { DISCORD_URL, KAKAOTALK_URL } from './lib/constants/enums';
-  import {
-    type CharacterProfile,
-    getCurrentProfile,
-  } from './lib/state/profile.state.svelte';
+  import { type CharacterProfile, getCurrentProfile } from './lib/state/profile.state.svelte';
 
   let currentProfile = $state<CharacterProfile>(getCurrentProfile());
   $effect(() => {
@@ -57,38 +54,21 @@
     <AppConfiguration></AppConfiguration>
     <ProfileEdit></ProfileEdit>
     <GemRecognitionPanel></GemRecognitionPanel>
-    <CharacterProfileEditor bind:profile={currentProfile}
-    ></CharacterProfileEditor>
+    <CharacterProfileEditor bind:profile={currentProfile}></CharacterProfileEditor>
   </div>
 </main>
 
 <footer>
-  <a class="footer-link" href="#credits" onclick={() => openDialong('credit')}
-    >Credits</a
-  >
+  <a class="footer-link" href="#credits" onclick={() => openDialong('credit')}>Credits</a>
 
-  <a class="footer-link" href="#privacy" onclick={() => openDialong('policy')}
-    >Privacy Policy</a
-  >
+  <a class="footer-link" href="#privacy" onclick={() => openDialong('policy')}>Privacy Policy</a>
 
-  <a class="footer-link" href="#terms" onclick={() => openDialong('terms')}
-    >Terms</a
-  >
-  <a
-    href={DISCORD_URL}
-    target="_blank"
-    rel="noopener noreferrer"
-    class="footer-link"
-  >
+  <a class="footer-link" href="#terms" onclick={() => openDialong('terms')}>Terms</a>
+  <a href={DISCORD_URL} target="_blank" rel="noopener noreferrer" class="footer-link">
     <i class="fa-brands fa-discord"></i>
     Discord
   </a>
-  <a
-    href={KAKAOTALK_URL}
-    target="_blank"
-    rel="noopener noreferrer"
-    class="footer-link"
-  >
+  <a href={KAKAOTALK_URL} target="_blank" rel="noopener noreferrer" class="footer-link">
     <i class="fa-brands fa-kakao-talk"></i>
     Kakaotalk
   </a>

@@ -30,19 +30,14 @@
       >
         {profile.characterName}
         {#if profile.characterName !== DEFAULT_PROFILE_NAME}
-          <img
-            src={profile.isSupporter ? imgRoleSupporter : imgRoleCombat}
-            alt="role"
-          />
+          <img src={profile.isSupporter ? imgRoleSupporter : imgRoleCombat} alt="role" />
         {/if}
       </button>
     {/each}
     <button
       title="새 프로필"
       onclick={() => {
-        const profileName = window.prompt(
-          '새 프로필에 사용할 캐릭터명을 입력해주세요.'
-        );
+        const profileName = window.prompt('새 프로필에 사용할 캐릭터명을 입력해주세요.');
         if (profileName === null || profileName.length == 0) return;
         addNewProfile(initNewProfile(profileName));
         setCurrentProfileName(profileName);
@@ -52,11 +47,7 @@
     <button
       title="현재 프로필 삭제"
       onclick={() => {
-        if (
-          window.confirm(
-            `"${currentProfileName.current}" 프로필을 삭제하시겠습니까?`
-          )
-        ) {
+        if (window.confirm(`"${currentProfileName.current}" 프로필을 삭제하시겠습니까?`)) {
           deleteProfile(currentProfileName.current);
         }
       }}
@@ -66,9 +57,7 @@
       title="현재 프로필 내보내기"
       hidden={!appConfig.current.uiConfig.debugMode}
       onclick={() => {
-        const jsonStr = bigIntSerializer.stringify(
-          getProfile(currentProfileName.current)
-        );
+        const jsonStr = bigIntSerializer.stringify(getProfile(currentProfileName.current));
 
         // 2. Blob 생성
         const blob = new Blob([jsonStr], { type: 'application/json' });
@@ -103,9 +92,7 @@
           const reader = new FileReader();
           reader.onload = (e) => {
             try {
-              const data: CharacterProfile = bigIntSerializer.parse(
-                e.target?.result as string
-              );
+              const data: CharacterProfile = bigIntSerializer.parse(e.target?.result as string);
               migrateProfile(data);
               if (addNewProfile(data)) {
                 alert('✅ 프로필 추가 성공!');

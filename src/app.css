@@ -95,7 +95,7 @@ button:disabled {
   pointer-events: none;
 }
 
-.panel>.title {
+.panel > .title {
   font-weight: 700;
   font-size: 1.4rem;
 }
@@ -127,6 +127,6 @@ button:disabled {
   }
 }
 
-input[type="radio"]:disabled {
+input[type='radio']:disabled {
   filter: brightness(65%);
 }

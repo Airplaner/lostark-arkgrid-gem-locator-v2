@@ -1,17 +1,9 @@
 import { persistedState } from 'svelte-persisted-state';
 
-import {
-  type ArkGridAttr,
-  ArkGridAttrs,
-  DEFAULT_PROFILE_NAME,
-} from '../constants/enums';
-import {
-  type ArkGridCore,
-  type ArkGridCoreType,
-  ArkGridCoreTypes,
-} from '../models/arkGridCores';
-import { type CharacterProfile, initNewProfile, migrateProfile } from './profile.state.svelte';
+import { type ArkGridAttr, ArkGridAttrs, DEFAULT_PROFILE_NAME } from '../constants/enums';
+import { type ArkGridCore, type ArkGridCoreType, ArkGridCoreTypes } from '../models/arkGridCores';
 import { apiClient } from '../openapi/openapi';
+import { type CharacterProfile, initNewProfile, migrateProfile } from './profile.state.svelte';
 
 export interface OpenApiConfig {
   jwt?: string;
@@ -42,9 +34,7 @@ interface AppConfig {
 export const bigIntSerializer = {
   // bigInt의 경우 string으로 바꾼 뒤 가장 끝에 n을 붙여서 직렬화
   stringify: (value: any) => {
-    return JSON.stringify(value, (_, v) =>
-      typeof v === 'bigint' ? v.toString() + 'n' : v
-    );
+    return JSON.stringify(value, (_, v) => (typeof v === 'bigint' ? v.toString() + 'n' : v));
   },
 
   // string이고 n으로 끝나는 정수라면, BigInt화
@@ -80,19 +70,16 @@ export const appConfig = persistedState<AppConfig>(
       for (const profile of value.characterProfiles) {
         migrateProfile(profile);
       }
-      return value
-    }
-  },
+      return value;
+    },
+  }
 );
 
 export function initArkGridCores(): Record<
   ArkGridAttr,
   Record<ArkGridCoreType, ArkGridCore | null>
 > {
-  const cores = {} as Record<
-    ArkGridAttr,
-    Record<ArkGridCoreType, ArkGridCore | null>
-  >;
+  const cores = {} as Record<ArkGridAttr, Record<ArkGridCoreType, ArkGridCore | null>>;
 
   for (const attr of Object.values(ArkGridAttrs)) {
     cores[attr] = {} as Record<ArkGridCoreType, ArkGridCore | null>;
@@ -105,9 +92,7 @@ export function initArkGridCores(): Record<
 }
 export function getProfile(name: string) {
   // 현재 appConfig에서 주어진 이름의 프로필을 조회합니다.
-  return appConfig.current.characterProfiles.find(
-    (p) => p.characterName === name
-  );
+  return appConfig.current.characterProfiles.find((p) => p.characterName === name);
 }
 export function addNewProfile(profile: CharacterProfile) {
   // 새 CharacterProfile을 appConfig에 등록합니다.
@@ -122,18 +107,19 @@ export function addNewProfile(profile: CharacterProfile) {
   return true;
 }
 export function toggleUI(optionName: keyof UIConfig) {
-  appConfig.current.uiConfig[optionName] =
-    !appConfig.current.uiConfig[optionName];
+  appConfig.current.uiConfig[optionName] = !appConfig.current.uiConfig[optionName];
 }
 
-(window as any).debug = (() => { toggleUI('debugMode'); });
+(window as any).debug = () => {
+  toggleUI('debugMode');
+};
 
 export function updateOpenApiJWT(jwtInput: string) {
   if (jwtInput.length > 0) {
     const jwtTrimed = jwtInput.trim();
     appConfig.current.openApiConfig.jwt = jwtTrimed;
     apiClient.setSecurityData({
-      jwt: jwtTrimed
+      jwt: jwtTrimed,
     });
   }
 }

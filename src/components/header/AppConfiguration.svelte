@@ -2,11 +2,7 @@
   import { toast } from '@zerodevx/svelte-toast';
   import { onMount } from 'svelte';
 
-  import {
-    ArkGridAttrs,
-    DEFAULT_PROFILE_NAME,
-    LostArkGrades,
-  } from '../../lib/constants/enums';
+  import { ArkGridAttrs, DEFAULT_PROFILE_NAME, LostArkGrades } from '../../lib/constants/enums';
   import { reverseLookup } from '../../lib/constants/enums';
   import {
     ArkGridCoreNameTierMap,
@@ -22,11 +18,7 @@
   import { type ArkGridGem } from '../../lib/models/arkGridGems';
   import { LostArkOpenAPI } from '../../lib/openapi/Api';
   import { apiClient } from '../../lib/openapi/openapi';
-  import {
-    appConfig,
-    toggleUI,
-    updateOpenApiJWT,
-  } from '../../lib/state/appConfig.state.svelte';
+  import { appConfig, toggleUI, updateOpenApiJWT } from '../../lib/state/appConfig.state.svelte';
   import {
     type WeaponInfo,
     addGem,
@@ -166,9 +158,7 @@
     }
     let characterName = null;
     if (currentProfileName.current == DEFAULT_PROFILE_NAME) {
-      characterName = window.prompt(
-        '정보를 가져올 캐릭터 이름을 입력해주세요.'
-      );
+      characterName = window.prompt('정보를 가져올 캐릭터 이름을 입력해주세요.');
       if (characterName === null || characterName.length == 0) return;
     } else {
       characterName = currentProfileName.current;
@@ -180,23 +170,19 @@
 
     try {
       // fetch
-      const res = await apiClient.armories.armoriesGetProfileAll(
-        characterName,
-        { filters: 'arkpassive+arkgrid+equipment' }
-      );
+      const res = await apiClient.armories.armoriesGetProfileAll(characterName, {
+        filters: 'arkpassive+arkgrid+equipment',
+      });
       // apiClient가 ok가 아니라면 알아서 error로 던져줌
       // 하지만 데이터가 없는 경우 null로 오는 걸 캐치
       if (!res.data) {
-        window.alert(
-          `${currentProfileName.current}의 정보를 가져올 수 없습니다.`
-        );
+        window.alert(`${currentProfileName.current}의 정보를 가져올 수 없습니다.`);
         return;
       }
       (window as any).gtag('event', 'import-from-open-api', {
         event_label: 'success',
       });
-      const arkpassive: LostArkOpenAPI.ArkPassive | undefined =
-        res.data.ArkPassive;
+      const arkpassive: LostArkOpenAPI.ArkPassive | undefined = res.data.ArkPassive;
       const arkgrid: LostArkOpenAPI.ArkGrid | undefined = res.data.ArkGrid;
       const armoryEquipment: LostArkOpenAPI.ArmoryEquipment[] | undefined =
         res.data.ArmoryEquipment;
@@ -207,9 +193,7 @@
       if (armoryEquipment) {
         for (const equipment of armoryEquipment) {
           if (equipment.Tooltip) {
-            const { fixedValues, percentValues } = parseArmoryEquipmentTooltip(
-              equipment.Tooltip
-            );
+            const { fixedValues, percentValues } = parseArmoryEquipmentTooltip(equipment.Tooltip);
             for (const v of fixedValues) weapon.fixed += v;
             for (const v of percentValues) weapon.percent += v;
           }
@@ -252,9 +236,7 @@
         // 모든 slot에 대해서
         for (const coreSlot of arkgrid.Slots) {
           if (!coreSlot.Name || !coreSlot.Grade) {
-            window.alert(
-              `OpenAPI 응답이 이상합니다. 콘솔 로그를 확인해주세요.`
-            );
+            window.alert(`OpenAPI 응답이 이상합니다. 콘솔 로그를 확인해주세요.`);
             console.log(coreSlot);
             continue;
           }
@@ -282,11 +264,7 @@
           }
 
           // 성공적으로 변환한 코어 저장
-          updateCore(
-            attr,
-            ctype,
-            createCore(attr, ctype, grade, isSupporter, weapon, tier)
-          );
+          updateCore(attr, ctype, createCore(attr, ctype, grade, isSupporter, weapon, tier));
 
           // 장착 중인 젬 추가
           // TODO 젬 목록 API
@@ -334,15 +312,9 @@
 
 <div class="buttons">
   <button onclick={updateOpenApiConfig}>OpenAPI 설정</button>
-  <button onclick={importFromOpenAPI} data-track="import-from-openapi"
-    >OpenAPI 데이터 반영</button
-  >
-  <button
-    hidden={!appConfig.current.uiConfig.debugMode}
-    onclick={() => toggleUI('debugMode')}
-    >개발자 모드 {appConfig.current.uiConfig.debugMode
-      ? '끄기'
-      : '켜기'}</button
+  <button onclick={importFromOpenAPI} data-track="import-from-openapi">OpenAPI 데이터 반영</button>
+  <button hidden={!appConfig.current.uiConfig.debugMode} onclick={() => toggleUI('debugMode')}
+    >개발자 모드 {appConfig.current.uiConfig.debugMode ? '끄기' : '켜기'}</button
   >
 </div>
 

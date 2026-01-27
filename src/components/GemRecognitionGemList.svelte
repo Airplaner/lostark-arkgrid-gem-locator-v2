@@ -79,10 +79,7 @@
   <div class="title">인식된 젬 목록</div>
   <div class="tab-container">
     {#each tabs as tab, i}
-      <button
-        class="tab {activeTab === i ? 'active' : ''}"
-        onclick={() => selectTab(i)}
-      >
+      <button class="tab {activeTab === i ? 'active' : ''}" onclick={() => selectTab(i)}>
         {#if activeTab === i}
           &gt
         {/if}
@@ -97,8 +94,8 @@
     bind:this={container}
   ></ArkGridGemList>
   <div class="gem-count">
-    젬 보유 수량 {orderGems.length + chaosGems.length} / 100<br />(질서 {orderGems.length}개,
-    혼돈 {chaosGems.length}개 보유 중)
+    젬 보유 수량 {orderGems.length + chaosGems.length} / 100<br />(질서 {orderGems.length}개, 혼돈 {chaosGems.length}개
+    보유 중)
   </div>
   <div class="buttons">
     <div>
@@ -119,10 +116,7 @@
           const profile = getCurrentProfile();
           let overrideGem = true;
 
-          if (
-            profile.gems.orderGems.length > 0 ||
-            profile.gems.chaosGems.length > 0
-          ) {
+          if (profile.gems.orderGems.length > 0 || profile.gems.chaosGems.length > 0) {
             overrideGem = window.confirm(
               '⚠️현재 프로필에 젬이 존재합니다.\n' +
                 '해당 젬을 모두 삭제하고 덮어 씌우시겠습니까?\n' +

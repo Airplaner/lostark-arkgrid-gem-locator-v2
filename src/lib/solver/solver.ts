@@ -26,8 +26,7 @@ export function getPossibleGemSets(core: Core, gems: Gem[]): GemSet[] {
     for (let j = i + 1; j < n; j++) {
       const ej = ei - g[j].req;
       const pj = pi + g[j].point;
-      if (pj >= point && ej >= 0)
-        result.push(new GemSet((gems = [g[i], g[j]]), core));
+      if (pj >= point && ej >= 0) result.push(new GemSet((gems = [g[i], g[j]]), core));
       if (ej < 3) continue;
       if (ej < 0) break;
       if (pj + 10 < point) continue;
@@ -35,8 +34,7 @@ export function getPossibleGemSets(core: Core, gems: Gem[]): GemSet[] {
       for (let k = j + 1; k < n; k++) {
         const ek = ej - g[k].req;
         const pk = pj + g[k].point;
-        if (pk >= point && ek >= 0)
-          result.push(new GemSet((gems = [g[i], g[j], g[k]]), core));
+        if (pk >= point && ek >= 0) result.push(new GemSet((gems = [g[i], g[j], g[k]]), core));
         if (ek < 3) continue;
         if (ek < 0) break;
         if (pk + 5 < point) continue;
@@ -58,8 +56,7 @@ export function getBestGemSetPacks(
   scoreMaps: [number, number][][],
   ignoreDuplication = false
 ): GemSetPack[] {
-  if (gssList.length > 3)
-    throw Error('length of gsss should be one of 1, 2, 3');
+  if (gssList.length > 3) throw Error('length of gsss should be one of 1, 2, 3');
   const [gss1, gss2, gss3] = gssList;
 
   let answer = [];
@@ -112,12 +109,7 @@ export function getBestGemSetPacks(
     for (const gs1 of gss1) {
       if (gs1.maxScore * gm2 < targetMin) break;
 
-      for (const gs2 of getCandidates(
-        gs1.bitmask,
-        1,
-        gs1.maxScore,
-        targetMin
-      )) {
+      for (const gs2 of getCandidates(gs1.bitmask, 1, gs1.maxScore, targetMin)) {
         const gsp = new GemSetPack(gs1, gs2, null, scoreMaps);
         if (gsp.maxScore > targetMin) {
           answer.push(gsp);
@@ -137,12 +129,7 @@ export function getBestGemSetPacks(
 
     for (const gs1 of gss1) {
       if (gs1.maxScore * gm2 * gm3 < targetMin) break;
-      for (const gs2 of getCandidates(
-        gs1.bitmask,
-        1,
-        gs1.maxScore * gm3,
-        targetMin
-      )) {
+      for (const gs2 of getCandidates(gs1.bitmask, 1, gs1.maxScore * gm3, targetMin)) {
         if (gs1.maxScore * gs2.maxScore * gm3 < targetMin) break;
         for (const gs3 of getCandidates(
           gs1.bitmask | gs2.bitmask,

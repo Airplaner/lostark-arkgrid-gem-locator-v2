@@ -1,8 +1,4 @@
-import {
-  type ArkGridAttr,
-  type LostArkGrade,
-  LostArkGrades,
-} from '../constants/enums';
+import { type ArkGridAttr, type LostArkGrade, LostArkGrades } from '../constants/enums';
 
 export const ArkGridGemOptionTypes = {
   ATTACK: '공격력',
@@ -16,31 +12,31 @@ export type ArkGridGemOptionType =
   (typeof ArkGridGemOptionTypes)[keyof typeof ArkGridGemOptionTypes];
 
 export const ARKGRID_GEM_NAME = {
-  'order_1': {
+  order_1: {
     ko: '질서의 젬 : 안정',
-    en: 'Order Astrogem: Stability'
+    en: 'Order Astrogem: Stability',
   },
-  'order_2': {
+  order_2: {
     ko: '질서의 젬 : 견고',
-    en: 'Order Astrogem: Solidity'
+    en: 'Order Astrogem: Solidity',
   },
-  'order_3': {
+  order_3: {
     ko: '질서의 젬 : 불변',
-    en: 'Order Astrogem: Immutability'
+    en: 'Order Astrogem: Immutability',
   },
-  'chaos_1': {
+  chaos_1: {
     ko: '혼돈의 젬 : 침식',
-    en: 'Chaos Astrogem: Corrosion'
+    en: 'Chaos Astrogem: Corrosion',
   },
-  'chaos_2': {
+  chaos_2: {
     ko: '혼돈의 젬 : 왜곡',
-    en: 'Chaos Astrogem: Distortion'
+    en: 'Chaos Astrogem: Distortion',
   },
-  'chaos_3': {
+  chaos_3: {
     ko: '혼돈의 젬 : 붕괴',
-    en: 'Chaos Astrogem: Destruction'
+    en: 'Chaos Astrogem: Destruction',
   },
-}
+};
 export type ArkGridGemName = keyof typeof ARKGRID_GEM_NAME;
 export const ArkGridGemNames = [
   '질서의 젬 : 안정',
@@ -88,10 +84,7 @@ export function determineGemGrade(
       : LostArkGrades.ANCIENT;
 }
 
-export function isSameArkGridGem(
-  a: ArkGridGem | undefined,
-  b: ArkGridGem | undefined
-): boolean {
+export function isSameArkGridGem(a: ArkGridGem | undefined, b: ArkGridGem | undefined): boolean {
   if (a === undefined || b === undefined) return false;
   return (
     a.gemAttr === b.gemAttr &&

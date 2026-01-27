@@ -23,9 +23,7 @@
         ? gemImages['../assets/gems/order_0.png']
         : gemImages['../assets/gems/chaos_0.png'];
     }
-    return gemImages[
-      `../assets/gems/${MapGemNameImage[gem.name] ?? 'order_0'}.png`
-    ];
+    return gemImages[`../assets/gems/${MapGemNameImage[gem.name] ?? 'order_0'}.png`];
   }
 
   interface Props {

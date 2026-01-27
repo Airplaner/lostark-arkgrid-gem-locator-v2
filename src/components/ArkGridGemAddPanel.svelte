@@ -2,10 +2,7 @@
   import { toast } from '@zerodevx/svelte-toast';
 
   import type { ArkGridAttr } from '../lib/constants/enums';
-  import {
-    type ArkGridGemOption,
-    ArkGridGemOptionTypes,
-  } from '../lib/models/arkGridGems';
+  import { type ArkGridGemOption, ArkGridGemOptionTypes } from '../lib/models/arkGridGems';
   import { addGem } from '../lib/state/profile.state.svelte';
 
   type Props = {
@@ -80,9 +77,7 @@
             젬 옵션
             <select bind:value={gemOption.optionType}>
               {#each Object.values(ArkGridGemOptionTypes) as option}
-                <option
-                  value={option}
-                  disabled={option === otherOption.optionType}>{option}</option
+                <option value={option} disabled={option === otherOption.optionType}>{option}</option
                 >
               {/each}
             </select>

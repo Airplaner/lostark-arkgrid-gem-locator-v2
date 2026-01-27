@@ -407,9 +407,9 @@ export namespace LostArkOpenAPI {
   }
 
   export type QueryParamsType = Record<string | number, any>;
-  export type ResponseFormat = keyof Omit<Body, "body" | "bodyUsed">;
+  export type ResponseFormat = keyof Omit<Body, 'body' | 'bodyUsed'>;
 
-  export interface FullRequestParams extends Omit<RequestInit, "body"> {
+  export interface FullRequestParams extends Omit<RequestInit, 'body'> {
     /** set parameter to `true` for call `securityWorker` for this request */
     secure?: boolean;
     /** request path */
@@ -428,22 +428,18 @@ export namespace LostArkOpenAPI {
     cancelToken?: CancelToken;
   }
 
-  export type RequestParams = Omit<
-    FullRequestParams,
-    "body" | "method" | "query" | "path"
-  >;
+  export type RequestParams = Omit<FullRequestParams, 'body' | 'method' | 'query' | 'path'>;
 
   export interface ApiConfig<SecurityDataType = unknown> {
     baseUrl?: string;
-    baseApiParams?: Omit<RequestParams, "baseUrl" | "cancelToken" | "signal">;
+    baseApiParams?: Omit<RequestParams, 'baseUrl' | 'cancelToken' | 'signal'>;
     securityWorker?: (
-      securityData: SecurityDataType | null,
+      securityData: SecurityDataType | null
     ) => Promise<RequestParams | void> | RequestParams | void;
     customFetch?: typeof fetch;
   }
 
-  export interface HttpResponse<D extends unknown, E extends unknown = unknown>
-    extends Response {
+  export interface HttpResponse<D extends unknown, E extends unknown = unknown> extends Response {
     data: D;
     error: E;
   }
@@ -451,26 +447,25 @@ export namespace LostArkOpenAPI {
   type CancelToken = Symbol | string | number;
 
   export enum ContentType {
-    Json = "application/json",
-    JsonApi = "application/vnd.api+json",
-    FormData = "multipart/form-data",
-    UrlEncoded = "application/x-www-form-urlencoded",
-    Text = "text/plain",
+    Json = 'application/json',
+    JsonApi = 'application/vnd.api+json',
+    FormData = 'multipart/form-data',
+    UrlEncoded = 'application/x-www-form-urlencoded',
+    Text = 'text/plain',
   }
 
   export class HttpClient<SecurityDataType = unknown> {
-    public baseUrl: string = "https://developer-lostark.game.onstove.com";
+    public baseUrl: string = 'https://developer-lostark.game.onstove.com';
     private securityData: SecurityDataType | null = null;
-    private securityWorker?: ApiConfig<SecurityDataType>["securityWorker"];
+    private securityWorker?: ApiConfig<SecurityDataType>['securityWorker'];
     private abortControllers = new Map<CancelToken, AbortController>();
-    private customFetch = (...fetchParams: Parameters<typeof fetch>) =>
-      fetch(...fetchParams);
+    private customFetch = (...fetchParams: Parameters<typeof fetch>) => fetch(...fetchParams);
 
     private baseApiParams: RequestParams = {
-      credentials: "same-origin",
+      credentials: 'same-origin',
       headers: {},
-      redirect: "follow",
-      referrerPolicy: "no-referrer",
+      redirect: 'follow',
+      referrerPolicy: 'no-referrer',
     };
 
     constructor(apiConfig: ApiConfig<SecurityDataType> = {}) {
@@ -483,7 +478,7 @@ export namespace LostArkOpenAPI {
 
     protected encodeQueryParam(key: string, value: any) {
       const encodedKey = encodeURIComponent(key);
-      return `${encodedKey}=${encodeURIComponent(typeof value === "number" ? value : `${value}`)}`;
+      return `${encodedKey}=${encodeURIComponent(typeof value === 'number' ? value : `${value}`)}`;
     }
 
     protected addQueryParam(query: QueryParamsType, key: string) {
@@ -492,41 +487,37 @@ export namespace LostArkOpenAPI {
 
     protected addArrayQueryParam(query: QueryParamsType, key: string) {
       const value = query[key];
-      return value.map((v: any) => this.encodeQueryParam(key, v)).join("&");
+      return value.map((v: any) => this.encodeQueryParam(key, v)).join('&');
     }
 
     protected toQueryString(rawQuery?: QueryParamsType): string {
       const query = rawQuery || {};
-      const keys = Object.keys(query).filter(
-        (key) => "undefined" !== typeof query[key],
-      );
+      const keys = Object.keys(query).filter((key) => 'undefined' !== typeof query[key]);
       return keys
         .map((key) =>
           Array.isArray(query[key])
             ? this.addArrayQueryParam(query, key)
-            : this.addQueryParam(query, key),
+            : this.addQueryParam(query, key)
         )
-        .join("&");
+        .join('&');
     }
 
     protected addQueryParams(rawQuery?: QueryParamsType): string {
       const queryString = this.toQueryString(rawQuery);
-      return queryString ? `?${queryString}` : "";
+      return queryString ? `?${queryString}` : '';
     }
 
     private contentFormatters: Record<ContentType, (input: any) => any> = {
       [ContentType.Json]: (input: any) =>
-        input !== null && (typeof input === "object" || typeof input === "string")
+        input !== null && (typeof input === 'object' || typeof input === 'string')
           ? JSON.stringify(input)
           : input,
       [ContentType.JsonApi]: (input: any) =>
-        input !== null && (typeof input === "object" || typeof input === "string")
+        input !== null && (typeof input === 'object' || typeof input === 'string')
           ? JSON.stringify(input)
           : input,
       [ContentType.Text]: (input: any) =>
-        input !== null && typeof input !== "string"
-          ? JSON.stringify(input)
-          : input,
+        input !== null && typeof input !== 'string' ? JSON.stringify(input) : input,
       [ContentType.FormData]: (input: any) => {
         if (input instanceof FormData) {
           return input;
@@ -538,9 +529,9 @@ export namespace LostArkOpenAPI {
             key,
             property instanceof Blob
               ? property
-              : typeof property === "object" && property !== null
+              : typeof property === 'object' && property !== null
                 ? JSON.stringify(property)
-                : `${property}`,
+                : `${property}`
           );
           return formData;
         }, new FormData());
@@ -548,10 +539,7 @@ export namespace LostArkOpenAPI {
       [ContentType.UrlEncoded]: (input: any) => this.toQueryString(input),
     };
 
-    protected mergeRequestParams(
-      params1: RequestParams,
-      params2?: RequestParams,
-    ): RequestParams {
+    protected mergeRequestParams(params1: RequestParams, params2?: RequestParams): RequestParams {
       return {
         ...this.baseApiParams,
         ...params1,
@@ -564,9 +552,7 @@ export namespace LostArkOpenAPI {
       };
     }
 
-    protected createAbortSignal = (
-      cancelToken: CancelToken,
-    ): AbortSignal | undefined => {
+    protected createAbortSignal = (cancelToken: CancelToken): AbortSignal | undefined => {
       if (this.abortControllers.has(cancelToken)) {
         const abortController = this.abortControllers.get(cancelToken);
         if (abortController) {
@@ -601,7 +587,7 @@ export namespace LostArkOpenAPI {
       ...params
     }: FullRequestParams): Promise<HttpResponse<T, E>> => {
       const secureParams =
-        ((typeof secure === "boolean" ? secure : this.baseApiParams.secure) &&
+        ((typeof secure === 'boolean' ? secure : this.baseApiParams.secure) &&
           this.securityWorker &&
           (await this.securityWorker(this.securityData))) ||
         {};
@@ -611,24 +597,17 @@ export namespace LostArkOpenAPI {
       const responseFormat = format || requestParams.format;
 
       return this.customFetch(
-        `${baseUrl || this.baseUrl || ""}${path}${queryString ? `?${queryString}` : ""}`,
+        `${baseUrl || this.baseUrl || ''}${path}${queryString ? `?${queryString}` : ''}`,
         {
           ...requestParams,
           headers: {
             ...(requestParams.headers || {}),
-            ...(type && type !== ContentType.FormData
-              ? { "Content-Type": type }
-              : {}),
+            ...(type && type !== ContentType.FormData ? { 'Content-Type': type } : {}),
           },
           signal:
-            (cancelToken
-              ? this.createAbortSignal(cancelToken)
-              : requestParams.signal) || null,
-          body:
-            typeof body === "undefined" || body === null
-              ? null
-              : payloadFormatter(body),
-        },
+            (cancelToken ? this.createAbortSignal(cancelToken) : requestParams.signal) || null,
+          body: typeof body === 'undefined' || body === null ? null : payloadFormatter(body),
+        }
       ).then(async (response) => {
         const r = response as HttpResponse<T, E>;
         r.data = null as unknown as T;
@@ -638,18 +617,18 @@ export namespace LostArkOpenAPI {
         const data = !responseFormat
           ? r
           : await responseToParse[responseFormat]()
-            .then((data) => {
-              if (r.ok) {
-                r.data = data;
-              } else {
-                r.error = data;
-              }
-              return r;
-            })
-            .catch((e) => {
-              r.error = e;
-              return r;
-            });
+              .then((data) => {
+                if (r.ok) {
+                  r.data = data;
+                } else {
+                  r.error = data;
+                }
+                return r;
+              })
+              .catch((e) => {
+                r.error = e;
+                return r;
+              });
 
         if (cancelToken) {
           this.abortControllers.delete(cancelToken);
@@ -666,9 +645,7 @@ export namespace LostArkOpenAPI {
    * @version v1
    * @baseUrl https://developer-lostark.game.onstove.com
    */
-  export class Api<
-    SecurityDataType extends unknown,
-  > extends HttpClient<SecurityDataType> {
+  export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
     armories = {
       /**
        * No description
@@ -685,14 +662,14 @@ export namespace LostArkOpenAPI {
           /** Filtering the Data e.g., profiles+equipment+avatars+combat-skills+engravings+cards+gems+colosseums+collectibles+arkpassive+arkgrid */
           filters?: string;
         },
-        params: RequestParams = {},
+        params: RequestParams = {}
       ) =>
         this.request<object, void>({
           path: `/armories/characters/${characterName}`,
-          method: "GET",
+          method: 'GET',
           query: query,
           secure: true,
-          format: "json",
+          format: 'json',
           ...params,
         }),
 
@@ -705,15 +682,12 @@ export namespace LostArkOpenAPI {
        * @request GET:/armories/characters/{characterName}/profiles
        * @secure
        */
-      armoriesGetProfileInfo: (
-        characterName: string,
-        params: RequestParams = {},
-      ) =>
+      armoriesGetProfileInfo: (characterName: string, params: RequestParams = {}) =>
         this.request<ArmoryProfile, void>({
           path: `/armories/characters/${characterName}/profiles`,
-          method: "GET",
+          method: 'GET',
           secure: true,
-          format: "json",
+          format: 'json',
           ...params,
         }),
 
@@ -729,9 +703,9 @@ export namespace LostArkOpenAPI {
       armoriesGetEquipment: (characterName: string, params: RequestParams = {}) =>
         this.request<ArmoryEquipment[], void>({
           path: `/armories/characters/${characterName}/equipment`,
-          method: "GET",
+          method: 'GET',
           secure: true,
-          format: "json",
+          format: 'json',
           ...params,
         }),
 
@@ -747,9 +721,9 @@ export namespace LostArkOpenAPI {
       armoriesGetAvatars: (characterName: string, params: RequestParams = {}) =>
         this.request<ArmoryAvatar[], void>({
           path: `/armories/characters/${characterName}/avatars`,
-          method: "GET",
+          method: 'GET',
           secure: true,
-          format: "json",
+          format: 'json',
           ...params,
         }),
 
@@ -765,9 +739,9 @@ export namespace LostArkOpenAPI {
       armoriesGetSkills: (characterName: string, params: RequestParams = {}) =>
         this.request<ArmorySkill[], void>({
           path: `/armories/characters/${characterName}/combat-skills`,
-          method: "GET",
+          method: 'GET',
           secure: true,
-          format: "json",
+          format: 'json',
           ...params,
         }),
 
@@ -783,9 +757,9 @@ export namespace LostArkOpenAPI {
       armoriesGetEngrave: (characterName: string, params: RequestParams = {}) =>
         this.request<ArmoryEngraving, void>({
           path: `/armories/characters/${characterName}/engravings`,
-          method: "GET",
+          method: 'GET',
           secure: true,
-          format: "json",
+          format: 'json',
           ...params,
         }),
 
@@ -801,9 +775,9 @@ export namespace LostArkOpenAPI {
       armoriesGetCard: (characterName: string, params: RequestParams = {}) =>
         this.request<ArmoryCard, void>({
           path: `/armories/characters/${characterName}/cards`,
-          method: "GET",
+          method: 'GET',
           secure: true,
-          format: "json",
+          format: 'json',
           ...params,
         }),
 
@@ -819,9 +793,9 @@ export namespace LostArkOpenAPI {
       armoriesGetGem: (characterName: string, params: RequestParams = {}) =>
         this.request<ArmoryGem, void>({
           path: `/armories/characters/${characterName}/gems`,
-          method: "GET",
+          method: 'GET',
           secure: true,
-          format: "json",
+          format: 'json',
           ...params,
         }),
 
@@ -834,15 +808,12 @@ export namespace LostArkOpenAPI {
        * @request GET:/armories/characters/{characterName}/colosseums
        * @secure
        */
-      armoriesGetColosseumInfo: (
-        characterName: string,
-        params: RequestParams = {},
-      ) =>
+      armoriesGetColosseumInfo: (characterName: string, params: RequestParams = {}) =>
         this.request<ColosseumInfo, void>({
           path: `/armories/characters/${characterName}/colosseums`,
-          method: "GET",
+          method: 'GET',
           secure: true,
-          format: "json",
+          format: 'json',
           ...params,
         }),
 
@@ -855,15 +826,12 @@ export namespace LostArkOpenAPI {
        * @request GET:/armories/characters/{characterName}/collectibles
        * @secure
        */
-      armoriesGetCollections: (
-        characterName: string,
-        params: RequestParams = {},
-      ) =>
+      armoriesGetCollections: (characterName: string, params: RequestParams = {}) =>
         this.request<Collectible[], void>({
           path: `/armories/characters/${characterName}/collectibles`,
-          method: "GET",
+          method: 'GET',
           secure: true,
-          format: "json",
+          format: 'json',
           ...params,
         }),
 
@@ -876,15 +844,12 @@ export namespace LostArkOpenAPI {
        * @request GET:/armories/characters/{characterName}/arkpassive
        * @secure
        */
-      armoriesGetArkPassive: (
-        characterName: string,
-        params: RequestParams = {},
-      ) =>
+      armoriesGetArkPassive: (characterName: string, params: RequestParams = {}) =>
         this.request<ArkPassive, void>({
           path: `/armories/characters/${characterName}/arkpassive`,
-          method: "GET",
+          method: 'GET',
           secure: true,
-          format: "json",
+          format: 'json',
           ...params,
         }),
 
@@ -900,9 +865,9 @@ export namespace LostArkOpenAPI {
       armoriesGetArkGrid: (characterName: string, params: RequestParams = {}) =>
         this.request<ArkGrid, void>({
           path: `/armories/characters/${characterName}/arkgrid`,
-          method: "GET",
+          method: 'GET',
           secure: true,
-          format: "json",
+          format: 'json',
           ...params,
         }),
     };

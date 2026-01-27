@@ -5,10 +5,7 @@
     type ArkGridCoreType,
     ArkGridCoreTypes,
   } from '../lib/models/arkGridCores';
-  import {
-    type ArkGridGem,
-    ArkGridGemOptionTypes,
-  } from '../lib/models/arkGridGems';
+  import { type ArkGridGem, ArkGridGemOptionTypes } from '../lib/models/arkGridGems';
   import {
     Core,
     Gem,
@@ -36,16 +33,11 @@
   };
   let { profile = $bindable() }: Props = $props();
 
-  const coreComponents: Record<
-    ArkGridAttr,
-    Record<ArkGridCoreType, SolveCoreEdit | null>
-  > = $state(
+  const coreComponents: Record<ArkGridAttr, Record<ArkGridCoreType, SolveCoreEdit | null>> = $state(
     Object.fromEntries(
       Object.values(ArkGridAttrs).map((attr) => [
         attr,
-        Object.fromEntries(
-          Object.values(ArkGridCoreTypes).map((type) => [type, null])
-        ),
+        Object.fromEntries(Object.values(ArkGridCoreTypes).map((type) => [type, null])),
       ])
     )
   ) as Record<ArkGridAttr, Record<ArkGridCoreType, SolveCoreEdit | null>>;
@@ -124,11 +116,9 @@
 
       // 코어가 애초에 없으면 실패를 안 함
       const allOrderCoresNull =
-        !answerCores ||
-        Object.values(answerCores[ArkGridAttrs.Order]).every((v) => v == null);
+        !answerCores || Object.values(answerCores[ArkGridAttrs.Order]).every((v) => v == null);
       const allChaosCoresNull =
-        !answerCores ||
-        Object.values(answerCores[ArkGridAttrs.Chaos]).every((v) => v == null);
+        !answerCores || Object.values(answerCores[ArkGridAttrs.Chaos]).every((v) => v == null);
 
       return {
         order: solveAnswer?.gemSetPackTuple.gsp1 === null && !allOrderCoresNull,
@@ -175,14 +165,7 @@
         coeff[index] += option.value;
       }
       reverseMap[index] = g;
-      return new Gem(
-        BigInt(index),
-        g.req,
-        g.point,
-        coeff[0],
-        coeff[1],
-        coeff[2]
-      );
+      return new Gem(BigInt(index), g.req, g.point, coeff[0], coeff[1], coeff[2]);
     });
     return {
       gems,
@@ -237,8 +220,7 @@
       for (const ctype of Object.values(ArkGridCoreTypes)) {
         const core = coreComponents[attr][ctype];
         if (!core) continue;
-        const targetCores =
-          attr === ArkGridAttrs.Order ? orderCores : chaosCores;
+        const targetCores = attr === ArkGridAttrs.Order ? orderCores : chaosCores;
         if (!profile.cores[attr][ctype]) {
           targetCores.push(new Core(0, 0, [0]));
         } else {
@@ -250,10 +232,14 @@
       }
     }
     /* sovler.Gem으로 변경 */
-    const { gems: orderGems, reverseMap: orderGemReverseMap } =
-      convertToSolverGems(inOrderGems, isSupporter);
-    const { gems: chaosGems, reverseMap: chaosGemReverseMap } =
-      convertToSolverGems(inChaosGems, isSupporter);
+    const { gems: orderGems, reverseMap: orderGemReverseMap } = convertToSolverGems(
+      inOrderGems,
+      isSupporter
+    );
+    const { gems: chaosGems, reverseMap: chaosGemReverseMap } = convertToSolverGems(
+      inChaosGems,
+      isSupporter
+    );
 
     /* 각 코어별 장착 가능한 조합 (GemSet) 수집 */
     const orderGssList = orderCores.map((c) => {
@@ -316,27 +302,15 @@
 
     // 질서와 혼돈 코어에 대해서 중복을 고려한, 장착 가능한 GemSet들이 3개 모인 GemSetPack 계산
     let start = performance.now();
-    const orderGspList = getBestGemSetPacks(
-      orderGssList,
-      scoreMaps,
-      perfectSolve
-    );
+    const orderGspList = getBestGemSetPacks(orderGssList, scoreMaps, perfectSolve);
     console.log(`질서 배치 실행 시간: ${performance.now() - start} ms`);
     start = performance.now();
-    const chaosGspList = getBestGemSetPacks(
-      chaosGssList,
-      scoreMaps,
-      perfectSolve
-    );
+    const chaosGspList = getBestGemSetPacks(chaosGssList, scoreMaps, perfectSolve);
     console.log(`혼돈 배치 실행 시간: ${performance.now() - start} ms`);
 
     // gspList는 maxScore 기준으로 내림차순 정렬되어 있음
     // 서로의 영향력이 적을 수록 실제 전투력은 maxScore와 가까우니, 우선 각 첫 번째 원소를 대상으로 시작 설정
-    let answer = new GemSetPackTuple(
-      orderGspList[0] ?? null,
-      chaosGspList[0] ?? null,
-      isSupporter
-    );
+    let answer = new GemSetPackTuple(orderGspList[0] ?? null, chaosGspList[0] ?? null, isSupporter);
 
     start = performance.now();
     // GemSetPack은 정말 많지만, 실제로 그들의 값 (공, 추, 보, 코어)만 보면 몇 종류 되지 않음
@@ -401,11 +375,9 @@
         perfectChaosGems.push({ gemAttr: ArkGridAttrs.Chaos, ...gem });
       }
     }
-    const score =
-      (solve(orderGems, chaosGems, isSupporter, false).score - 1) * 100; // 내 최고 점수
+    const score = (solve(orderGems, chaosGems, isSupporter, false).score - 1) * 100; // 내 최고 점수
     const bestScore =
-      (solve(perfectOrderGems, perfectChaosGems, isSupporter, true).score - 1) *
-      100; // 내 코어로 가능한 점수
+      (solve(perfectOrderGems, perfectChaosGems, isSupporter, true).score - 1) * 100; // 내 코어로 가능한 점수
 
     const perfectScore = // 이론상 최고 점수
       !isSupporter // 딜러
@@ -475,10 +447,8 @@
         <div class="small">목표 포인트를 조절해보세요.</div>
       </div>
     {/if}
-    <button
-      class="solve-button"
-      onclick={() => runSolve(isSupporter)}
-      data-track="run-solve">최적화 실행</button
+    <button class="solve-button" onclick={() => runSolve(isSupporter)} data-track="run-solve"
+      >최적화 실행</button
     >
     {#if profile.solveInfo.after}
       <SolveResult solveAfter={profile.solveInfo.after}></SolveResult>

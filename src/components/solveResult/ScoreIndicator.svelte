@@ -9,26 +9,16 @@
 
   let { scoreSet } = $props<{ scoreSet: ScoreSet }>();
 
-  let scoreRatio = $derived(
-    Math.min(scoreSet.score / scoreSet.perfectScore, 1)
-  );
-  let bestRatio = $derived(
-    Math.min(scoreSet.bestScore / scoreSet.perfectScore, 1)
-  );
+  let scoreRatio = $derived(Math.min(scoreSet.score / scoreSet.perfectScore, 1));
+  let bestRatio = $derived(Math.min(scoreSet.bestScore / scoreSet.perfectScore, 1));
 </script>
 
 <div class="root">
   <div class="title">코어력</div>
   <div class="score-wrapper">
     <div class="score-bar">
-      <div
-        class="indicator dot moving"
-        style="--target-left:{scoreRatio * 100}%"
-      ></div>
-      <div
-        class="indicator bar moving"
-        style="--target-left:{bestRatio * 100}%"
-      ></div>
+      <div class="indicator dot moving" style="--target-left:{scoreRatio * 100}%"></div>
+      <div class="indicator bar moving" style="--target-left:{bestRatio * 100}%"></div>
       <div class="label top moving" style="--target-left:{scoreRatio * 100}%">
         {scoreSet.score.toFixed(2)}%
       </div>

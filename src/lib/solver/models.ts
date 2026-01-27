@@ -120,9 +120,7 @@ export class GemSetPack {
     this.boss = (gs1?.boss ?? 0) + (gs2?.boss ?? 0) + (gs3?.boss ?? 0);
 
     this.coreScore =
-      ((((((gs1?.coreCoeff ?? 0) + 10000) / 10000) *
-        ((gs2?.coreCoeff ?? 0) + 10000)) /
-        10000) *
+      ((((((gs1?.coreCoeff ?? 0) + 10000) / 10000) * ((gs2?.coreCoeff ?? 0) + 10000)) / 10000) *
         ((gs3?.coreCoeff ?? 0) + 10000)) /
       10000;
 
@@ -164,9 +162,7 @@ export class GemSetPackTuple {
     this.att = (gsp1?.att ?? 0) + (gsp2?.att ?? 0);
     this.skill = (gsp1?.skill ?? 0) + (gsp2?.skill ?? 0);
     this.boss = (gsp1?.boss ?? 0) + (gsp2?.boss ?? 0);
-    const coeffs = isSupporter
-      ? gemOptionLevelCoeffsSupporter
-      : gemOptionLevelCoeffs;
+    const coeffs = isSupporter ? gemOptionLevelCoeffsSupporter : gemOptionLevelCoeffs;
     this.score =
       ((((((gsp1?.coreScore ?? 1) *
         (gsp2?.coreScore ?? 1) *

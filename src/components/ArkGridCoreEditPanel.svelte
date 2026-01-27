@@ -40,22 +40,13 @@
   <div class="title-and-button">
     <div class="title">
       코어 설정 - {isSupporter ? '서포터' : '딜러'}
-      <img
-        src={profile.isSupporter ? imgRoleSupporter : imgRoleCombat}
-        alt="role"
-      />
+      <img src={profile.isSupporter ? imgRoleSupporter : imgRoleCombat} alt="role" />
     </div>
-    <button onclick={toggleIsSupporter}
-      >{isSupporter ? '딜러' : '서포터'}로 전환</button
-    >
+    <button onclick={toggleIsSupporter}>{isSupporter ? '딜러' : '서포터'}로 전환</button>
   </div>
   {#each attrs as attr}
     {#each ctypes as ctype}
-      <ArkGridCoreEditElement
-        {attr}
-        {ctype}
-        {isSupporter}
-        weapon={profile.weapon}
+      <ArkGridCoreEditElement {attr} {ctype} {isSupporter} weapon={profile.weapon}
       ></ArkGridCoreEditElement>
     {/each}
   {/each}

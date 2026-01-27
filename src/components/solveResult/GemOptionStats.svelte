@@ -1,34 +1,29 @@
 <script lang="ts">
-  import {
-    type ArkGridGemOptionType,
-    ArkGridGemOptionTypes,
-  } from '../../lib/models/arkGridGems';
+  import { type ArkGridGemOptionType, ArkGridGemOptionTypes } from '../../lib/models/arkGridGems';
   import type { SolveAnswer } from '../../lib/state/profile.state.svelte';
 
   type Props = {
     solveAnswer: SolveAnswer;
   };
   let { solveAnswer }: Props = $props();
-  let answerStatistics: Record<ArkGridGemOptionType, number> = $derived.by(
-    () => {
-      let statistics = {
-        [ArkGridGemOptionTypes.ATTACK]: 0,
-        [ArkGridGemOptionTypes.BOSS_DAMAGE]: 0,
-        [ArkGridGemOptionTypes.SKILL_DAMAGE]: 0,
-        [ArkGridGemOptionTypes.STIGMA]: 0,
-        [ArkGridGemOptionTypes.PARTY_ATTACK]: 0,
-        [ArkGridGemOptionTypes.PARTY_DAMAGE]: 0,
-      };
-      if (!solveAnswer) return statistics;
-      for (const gems of solveAnswer.assignedGems) {
-        for (const gem of gems) {
-          statistics[gem.option1.optionType] += gem.option1.value;
-          statistics[gem.option2.optionType] += gem.option2.value;
-        }
+  let answerStatistics: Record<ArkGridGemOptionType, number> = $derived.by(() => {
+    let statistics = {
+      [ArkGridGemOptionTypes.ATTACK]: 0,
+      [ArkGridGemOptionTypes.BOSS_DAMAGE]: 0,
+      [ArkGridGemOptionTypes.SKILL_DAMAGE]: 0,
+      [ArkGridGemOptionTypes.STIGMA]: 0,
+      [ArkGridGemOptionTypes.PARTY_ATTACK]: 0,
+      [ArkGridGemOptionTypes.PARTY_DAMAGE]: 0,
+    };
+    if (!solveAnswer) return statistics;
+    for (const gems of solveAnswer.assignedGems) {
+      for (const gem of gems) {
+        statistics[gem.option1.optionType] += gem.option1.value;
+        statistics[gem.option2.optionType] += gem.option2.value;
       }
-      return statistics;
     }
-  );
+    return statistics;
+  });
 </script>
 
 <div class="root">

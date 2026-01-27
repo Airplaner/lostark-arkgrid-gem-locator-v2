@@ -13,18 +13,10 @@ import {
   createCore,
 } from '../models/arkGridCores';
 import { type ArkGridGem, determineGemGrade } from '../models/arkGridGems';
-import {
-  addNewProfile,
-  appConfig,
-  getProfile,
-  initArkGridCores,
-} from './appConfig.state.svelte';
 import type { GemSetPackTuple } from '../solver/models';
+import { addNewProfile, appConfig, getProfile, initArkGridCores } from './appConfig.state.svelte';
 
-export let currentProfileName = persistedState<string>(
-  'currentProfileName',
-  DEFAULT_PROFILE_NAME
-);
+export let currentProfileName = persistedState<string>('currentProfileName', DEFAULT_PROFILE_NAME);
 export interface AllGems {
   orderGems: ArkGridGem[];
   chaosGems: ArkGridGem[];
@@ -46,8 +38,8 @@ export interface CharacterProfile {
 
 // 준비물
 export type SolveBefore = {
-  coreGoalPoint: number[] // not used
-}
+  coreGoalPoint: number[]; // not used
+};
 
 // 최적화 결과
 export type SolveAnswerScoreSet = {
@@ -62,21 +54,19 @@ export type SolveAnswer = {
 export type SolveAfter = {
   solveAnswer?: SolveAnswer;
   scoreSet?: SolveAnswerScoreSet;
-  answerCores?: Record<
-    ArkGridAttr,
-    Record<ArkGridCoreType, ArkGridCore | null>>
-}
+  answerCores?: Record<ArkGridAttr, Record<ArkGridCoreType, ArkGridCore | null>>;
+};
 export type SolveInfo = {
-  before: SolveBefore
-  after?: SolveAfter
-}
+  before: SolveBefore;
+  after?: SolveAfter;
+};
 export function updateSolveAnswer(solveAnswer: SolveAnswer) {
   // 현재 프로필의 solve after에 solve answer 설정
-  const profile = getCurrentProfile()
+  const profile = getCurrentProfile();
   if (!profile.solveInfo.after) {
     profile.solveInfo.after = {
-      solveAnswer: solveAnswer
-    }
+      solveAnswer: solveAnswer,
+    };
   } else {
     profile.solveInfo.after.solveAnswer = solveAnswer;
   }
@@ -84,25 +74,25 @@ export function updateSolveAnswer(solveAnswer: SolveAnswer) {
 
 export function updateScoreSet(scoreSet: SolveAnswerScoreSet) {
   // 현재 프로필의 solve after에 score set 설정
-  const profile = getCurrentProfile()
+  const profile = getCurrentProfile();
   if (!profile.solveInfo.after) {
     profile.solveInfo.after = {
-      scoreSet: scoreSet
-    }
+      scoreSet: scoreSet,
+    };
   } else {
     profile.solveInfo.after.scoreSet = scoreSet;
   }
 }
 
-export function updateAnswerCores(cores: Record<
-  ArkGridAttr,
-  Record<ArkGridCoreType, ArkGridCore | null>>) {
+export function updateAnswerCores(
+  cores: Record<ArkGridAttr, Record<ArkGridCoreType, ArkGridCore | null>>
+) {
   // 현재 프로필의 solve after에 answer core 설정
-  const profile = getCurrentProfile()
+  const profile = getCurrentProfile();
   if (!profile.solveInfo.after) {
     profile.solveInfo.after = {
-      answerCores: cores
-    }
+      answerCores: cores,
+    };
   } else {
     profile.solveInfo.after.answerCores = cores;
   }
@@ -118,15 +108,13 @@ export function initNewProfile(name: string): CharacterProfile {
     isSupporter: false,
     solveInfo: {
       before: {
-        coreGoalPoint: [0, 0, 0, 0, 0, 0]
-      }
-    }
+        coreGoalPoint: [0, 0, 0, 0, 0, 0],
+      },
+    },
   };
 }
 
-export function migrateProfile(
-  profile: Partial<CharacterProfile>
-) {
+export function migrateProfile(profile: Partial<CharacterProfile>) {
   // 업데이트로 추가되는 required 필드를 추가
 
   // 1. profile.isSupporter
@@ -138,14 +126,15 @@ export function migrateProfile(
   if (profile.solveInfo === undefined) {
     // console.log(profile, "solveInfo추가!")
     profile.solveInfo = {
-      before: { coreGoalPoint: [0, 0, 0, 0, 0, 0] }
-    }
+      before: { coreGoalPoint: [0, 0, 0, 0, 0, 0] },
+    };
   }
 
   // 3. core.goalPoint
   for (const attr of Object.values(ArkGridAttrs)) {
     for (const ctype of Object.values(ArkGridCoreTypes)) {
-      if (profile.cores) { // 당연히 있겠지만...
+      if (profile.cores) {
+        // 당연히 있겠지만...
         const core = profile.cores[attr][ctype];
         if (core && core.goalPoint === undefined) {
           // console.log(core, "에 goalpoint 추가!")
@@ -156,7 +145,6 @@ export function migrateProfile(
   }
 }
 
-
 export function getCurrentProfile() {
   // 현재 프로필을 반드시 반환합니다.
   // 프로필을 찾았다면 반환
@@ -164,7 +152,7 @@ export function getCurrentProfile() {
   if (profile) return profile;
   else {
     // 기본 프로필을 찾고 있으면 변경하고 반환
-    const defaultProfile = getProfile(DEFAULT_PROFILE_NAME)
+    const defaultProfile = getProfile(DEFAULT_PROFILE_NAME);
     setCurrentProfileName(DEFAULT_PROFILE_NAME);
     if (defaultProfile) return defaultProfile;
 
@@ -196,15 +184,8 @@ export function deleteProfile(name: string) {
 
 export function addGem(gem: ArkGridGem) {
   const gems = getCurrentProfile().gems;
-  const targetGems =
-    gem.gemAttr == ArkGridAttrs.Order ? gems.orderGems : gems.chaosGems;
-  gem.grade = determineGemGrade(
-    gem.req,
-    gem.point,
-    gem.option1,
-    gem.option2,
-    gem.name
-  );
+  const targetGems = gem.gemAttr == ArkGridAttrs.Order ? gems.orderGems : gems.chaosGems;
+  gem.grade = determineGemGrade(gem.req, gem.point, gem.option1, gem.option2, gem.name);
   // validate gem (안정인데 옵션 등)
   targetGems.push(gem);
 }
@@ -226,8 +207,7 @@ export function clearGems(gemAttr?: ArkGridAttr) {
 
 export function deleteGem(gem: ArkGridGem) {
   const gems = getCurrentProfile().gems;
-  const targetGems =
-    gem.gemAttr === ArkGridAttrs.Order ? gems.orderGems : gems.chaosGems;
+  const targetGems = gem.gemAttr === ArkGridAttrs.Order ? gems.orderGems : gems.chaosGems;
 
   // 배열에서 gem 제거
   const index = targetGems.indexOf(gem);
@@ -249,20 +229,10 @@ export function getCore(attr: ArkGridAttr, ctype: ArkGridCoreType) {
   const cores = getCurrentProfile().cores;
   return cores[attr][ctype];
 }
-export function addCore(
-  attr: ArkGridAttr,
-  ctype: ArkGridCoreType,
-  isSupporter: boolean
-) {
+export function addCore(attr: ArkGridAttr, ctype: ArkGridCoreType, isSupporter: boolean) {
   const profile = getCurrentProfile();
   const cores = profile.cores;
-  cores[attr][ctype] = createCore(
-    attr,
-    ctype,
-    LostArkGrades.EPIC,
-    isSupporter,
-    profile.weapon
-  );
+  cores[attr][ctype] = createCore(attr, ctype, LostArkGrades.EPIC, isSupporter, profile.weapon);
 }
 export function resetCore(attr: ArkGridAttr, ctype: ArkGridCoreType) {
   const cores = getCurrentProfile().cores;
@@ -276,11 +246,7 @@ export function clearCores() {
     }
   }
 }
-export function updateCore(
-  attr: ArkGridAttr,
-  ctype: ArkGridCoreType,
-  core: ArkGridCore
-) {
+export function updateCore(attr: ArkGridAttr, ctype: ArkGridCoreType, core: ArkGridCore) {
   const cores = getCurrentProfile().cores;
   cores[attr][ctype] = JSON.parse(JSON.stringify(core));
 }

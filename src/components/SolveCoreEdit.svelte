@@ -38,11 +38,7 @@
   }
   export function convertToSolverCore(): Core | null {
     if (!core) return null;
-    return new Core(
-      getDefaultCoreEnergy(core),
-      core.goalPoint,
-      buildCoreArray(core.coeffs)
-    );
+    return new Core(getDefaultCoreEnergy(core), core.goalPoint, buildCoreArray(core.coeffs));
   }
 </script>
 

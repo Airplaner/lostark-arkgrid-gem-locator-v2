@@ -4,11 +4,7 @@
 
   import { type ArkGridAttr, ArkGridAttrs } from '../lib/constants/enums';
   import { appConfig } from '../lib/state/appConfig.state.svelte';
-  import {
-    type AllGems,
-    addGem,
-    clearGems,
-  } from '../lib/state/profile.state.svelte';
+  import { type AllGems, addGem, clearGems } from '../lib/state/profile.state.svelte';
   import ArkGridGemAddPanel from './ArkGridGemAddPanel.svelte';
   import ArkGridGemList from './ArkGridGemList.svelte';
 
@@ -50,15 +46,10 @@
         return [];
     }
   });
-  let currentAttr: ArkGridAttr = $derived(
-    activeTab == 0 ? ArkGridAttrs.Order : ArkGridAttrs.Chaos
-  );
+  let currentAttr: ArkGridAttr = $derived(activeTab == 0 ? ArkGridAttrs.Order : ArkGridAttrs.Chaos);
 
   function clearGemWithConfirm() {
-    if (
-      !window.confirm(`현재 프로필의 모든 젬을 삭제합니다. 진행하시겠습니까?`)
-    )
-      return;
+    if (!window.confirm(`현재 프로필의 모든 젬을 삭제합니다. 진행하시겠습니까?`)) return;
     clearGems();
     toast.push(`젬 삭제 완료`);
   }
@@ -68,10 +59,7 @@
   <div class="title">젬 목록</div>
   <div class="tab-container">
     {#each tabs as tab, i}
-      <button
-        class="tab {activeTab === i ? 'active' : ''}"
-        onclick={() => selectTab(i)}
-      >
+      <button class="tab {activeTab === i ? 'active' : ''}" onclick={() => selectTab(i)}>
         {#if activeTab === i}
           &gt
         {/if}

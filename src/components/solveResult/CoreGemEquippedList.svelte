@@ -9,10 +9,7 @@
   import CoreGemEquipped from '../solveResult/CoreGemEquipped.svelte';
 
   type Props = {
-    answerCores: Record<
-      ArkGridAttr,
-      Record<ArkGridCoreType, ArkGridCore | null>
-    >;
+    answerCores: Record<ArkGridAttr, Record<ArkGridCoreType, ArkGridCore | null>>;
     solveAnswer: SolveAnswer;
   };
   let { answerCores, solveAnswer }: Props = $props();

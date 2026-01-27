@@ -11,8 +11,7 @@ export const ArkGridCoreTypes = {
   MOON: '달',
   STAR: '별',
 } as const;
-export type ArkGridCoreType =
-  (typeof ArkGridCoreTypes)[keyof typeof ArkGridCoreTypes];
+export type ArkGridCoreType = (typeof ArkGridCoreTypes)[keyof typeof ArkGridCoreTypes];
 
 export const ArkGridCoreNameTierMap: Record<string, number> = {
   '현란한 공격': 0,
@@ -92,19 +91,23 @@ function adjustCoeff(core: ArkGridCore, isSupporter: boolean) {
   // 고대 코어 추가 계수 부여
 
   // getDefaultCoreCoeff에서 이미 처리를 하는 경우 생략
-  if (!isSupporter
-    && core.grade == LostArkGrades.ANCIENT
-    && core.attr == ArkGridAttrs.Chaos
-    && core.type == ArkGridCoreTypes.STAR
-    && core.tier == 1)
+  if (
+    !isSupporter &&
+    core.grade == LostArkGrades.ANCIENT &&
+    core.attr == ArkGridAttrs.Chaos &&
+    core.type == ArkGridCoreTypes.STAR &&
+    core.tier == 1
+  )
     // 딜러 - 고대 혼돈의 별 무기의 경우 고대 적용x
     return;
 
-  if (isSupporter
-    && core.grade == LostArkGrades.ANCIENT
-    && core.attr == ArkGridAttrs.Order
-    && core.type == ArkGridCoreTypes.STAR
-    && core.tier == 0)
+  if (
+    isSupporter &&
+    core.grade == LostArkGrades.ANCIENT &&
+    core.attr == ArkGridAttrs.Order &&
+    core.type == ArkGridCoreTypes.STAR &&
+    core.tier == 0
+  )
     // 서폿 - 고대 혼돈의 별 무기의 경우 고대 적용x
     return;
 
@@ -159,8 +162,7 @@ function adjustCoeff(core: ArkGridCore, isSupporter: boolean) {
 function getWeaponCoeff(base: WeaponInfo, income: WeaponInfo) {
   // 현재 무공과 추가 무공 정보가 주어졌을 때, 전투력 계수
   const v1 = base.fixed * ((base.percent + 100) / 100);
-  const v2 =
-    (base.fixed + income.fixed) * ((base.percent + income.percent + 100) / 100);
+  const v2 = (base.fixed + income.fixed) * ((base.percent + income.percent + 100) / 100);
   const diff = Math.sqrt(v2 / v1);
   return Math.floor((diff - 1) * 10000);
 }
@@ -253,13 +255,11 @@ export function getDefaultCoreCoeff(
             }), // 무공 +0.23%
             p19: getWeaponCoeff(weapon, {
               fixed: core.grade == LostArkGrades.ANCIENT ? 5200 : 3900,
-              percent:
-                (core.grade == LostArkGrades.ANCIENT ? 3 : 2.25) + 0.23 * 2,
+              percent: (core.grade == LostArkGrades.ANCIENT ? 3 : 2.25) + 0.23 * 2,
             }), // 무공 +0.23%
             p20: getWeaponCoeff(weapon, {
               fixed: core.grade == LostArkGrades.ANCIENT ? 5200 : 3900,
-              percent:
-                (core.grade == LostArkGrades.ANCIENT ? 3 : 2.25) + 0.23 * 3,
+              percent: (core.grade == LostArkGrades.ANCIENT ? 3 : 2.25) + 0.23 * 3,
             }), // 무공 +0.23%
           };
         }
@@ -344,13 +344,11 @@ export function getDefaultCoreCoeff(
             }), // 무공 +0.23%
             p19: getWeaponCoeff(weapon, {
               fixed: core.grade == LostArkGrades.ANCIENT ? 5200 : 3900,
-              percent:
-                (core.grade == LostArkGrades.ANCIENT ? 3 : 2.25) + 0.23 * 2,
+              percent: (core.grade == LostArkGrades.ANCIENT ? 3 : 2.25) + 0.23 * 2,
             }), // 무공 +0.23%
             p20: getWeaponCoeff(weapon, {
               fixed: core.grade == LostArkGrades.ANCIENT ? 5200 : 3900,
-              percent:
-                (core.grade == LostArkGrades.ANCIENT ? 3 : 2.25) + 0.23 * 3,
+              percent: (core.grade == LostArkGrades.ANCIENT ? 3 : 2.25) + 0.23 * 3,
             }), // 무공 +0.23%
           };
         } // TODO 생명
@@ -367,9 +365,7 @@ export function getDefaultCoreCoeff(
   };
 }
 
-export function getDefaultCoreEnergy(
-  core: ArkGridCore | undefined | null
-): number {
+export function getDefaultCoreEnergy(core: ArkGridCore | undefined | null): number {
   if (!core) return 0;
   switch (core.grade) {
     case LostArkGrades.EPIC:
@@ -384,9 +380,7 @@ export function getDefaultCoreEnergy(
       return 0;
   }
 }
-export function getDefaultCoreGoalPoint(
-  core: ArkGridCore | undefined | null
-): number {
+export function getDefaultCoreGoalPoint(core: ArkGridCore | undefined | null): number {
   if (!core) return 0;
   switch (core.grade) {
     case LostArkGrades.EPIC:

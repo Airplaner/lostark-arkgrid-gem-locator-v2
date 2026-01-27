@@ -1,9 +1,5 @@
 <script lang="ts">
-  import {
-    type ArkGridAttr,
-    ArkGridAttrs,
-    LostArkGrades,
-  } from '../lib/constants/enums';
+  import { type ArkGridAttr, ArkGridAttrs, LostArkGrades } from '../lib/constants/enums';
   import {
     type ArkGridCoreType,
     ArkGridCoreTypes,
@@ -12,12 +8,7 @@
     resetCoreCoeff,
   } from '../lib/models/arkGridCores';
   import { appConfig } from '../lib/state/appConfig.state.svelte';
-  import {
-    type WeaponInfo,
-    addCore,
-    getCore,
-    resetCore,
-  } from '../lib/state/profile.state.svelte';
+  import { type WeaponInfo, addCore, getCore, resetCore } from '../lib/state/profile.state.svelte';
 
   type Props = {
     attr: ArkGridAttr;
@@ -30,56 +21,30 @@
 
   const coeffKeys = ['p10', 'p14', 'p17', 'p18', 'p19', 'p20'] as const;
   let core = $derived(getCore(attr, ctype));
-  let arkGridCoreTierName: Record<ArkGridCoreType, Array<string>> = $derived.by(
-    () => {
-      return !isSupporter
-        ? {
-            [ArkGridCoreTypes.SUN]: [
-              '현란한 공격',
-              '안정적인/재빠른 공격',
-              '그 외',
-            ],
-            [ArkGridCoreTypes.MOON]: [
-              '불타는 일격',
-              '흡수의/부수는 일격',
-              '그 외',
-            ],
-            [ArkGridCoreTypes.STAR]: ['공격', '무기', '그 외'],
-          }
-        : {
-            [ArkGridCoreTypes.SUN]: [
-              '신념의 강화',
-              '흐르는 마나/불굴의 강화',
-              '그 외',
-            ],
-            [ArkGridCoreTypes.MOON]: [
-              '낙인의 흔적',
-              '강철의/치명적인 흔적',
-              '그 외',
-            ],
-            [ArkGridCoreTypes.STAR]: ['무기', '생명', '그 외'],
-          };
-    }
-  );
+  let arkGridCoreTierName: Record<ArkGridCoreType, Array<string>> = $derived.by(() => {
+    return !isSupporter
+      ? {
+          [ArkGridCoreTypes.SUN]: ['현란한 공격', '안정적인/재빠른 공격', '그 외'],
+          [ArkGridCoreTypes.MOON]: ['불타는 일격', '흡수의/부수는 일격', '그 외'],
+          [ArkGridCoreTypes.STAR]: ['공격', '무기', '그 외'],
+        }
+      : {
+          [ArkGridCoreTypes.SUN]: ['신념의 강화', '흐르는 마나/불굴의 강화', '그 외'],
+          [ArkGridCoreTypes.MOON]: ['낙인의 흔적', '강철의/치명적인 흔적', '그 외'],
+          [ArkGridCoreTypes.STAR]: ['무기', '생명', '그 외'],
+        };
+  });
   let maxCorePoint = $derived(getMaxCorePoint(core));
 </script>
 
 <fieldset class="core-slot">
   <legend class="core-title">
     <div class="core-img-name-tuple">
-      <img
-        src={getCoreImage(attr, ctype)}
-        alt="{attr} {ctype}"
-        data-grade={core?.grade}
-      />
+      <img src={getCoreImage(attr, ctype)} alt="{attr} {ctype}" data-grade={core?.grade} />
       {attr}의 {ctype}
     </div>
     {#if core}
-      <button
-        class="close"
-        aria-label="닫기"
-        onclick={() => resetCore(attr, ctype)}>x</button
-      >
+      <button class="close" aria-label="닫기" onclick={() => resetCore(attr, ctype)}>x</button>
     {/if}
   </legend>
   {#if core}
@@ -151,12 +116,7 @@
     {/if}
   {:else}
     <div class="row">
-      <button
-        class="add-button"
-        onclick={() => addCore(attr, ctype, isSupporter)}
-      >
-        +
-      </button>
+      <button class="add-button" onclick={() => addCore(attr, ctype, isSupporter)}> + </button>
     </div>
   {/if}
 </fieldset>

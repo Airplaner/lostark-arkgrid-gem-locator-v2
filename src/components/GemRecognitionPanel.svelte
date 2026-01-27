@@ -9,14 +9,8 @@
     determineGemGrade,
     isSameArkGridGem,
   } from '../lib/models/arkGridGems';
-  import {
-    type EnUsTemplateName,
-    enUsCoords,
-  } from '../lib/opencv-template-coords/en_us';
-  import {
-    type KoKrTemplateName,
-    koKrCoords,
-  } from '../lib/opencv-template-coords/ko_kr';
+  import { type EnUsTemplateName, enUsCoords } from '../lib/opencv-template-coords/en_us';
+  import { type KoKrTemplateName, koKrCoords } from '../lib/opencv-template-coords/ko_kr';
   import {
     type AppLocale,
     appConfig,
@@ -101,10 +95,7 @@
   /**
    * ROI로 CvMat 복사
    */
-  function createRoi(
-    mat: CvMat,
-    rect: { x: number; y: number; w: number; h: number }
-  ): CvMat {
+  function createRoi(mat: CvMat, rect: { x: number; y: number; w: number; h: number }): CvMat {
     const roi = mat.roi(new cv.Rect(rect.x, rect.y, rect.w, rect.h));
     return roi;
   }
@@ -123,9 +114,7 @@
     };
 
     // 1️⃣ ko_kr 스프라이트 한 번만 fetch
-    const koSprite = await fetchSpriteMat(
-      `${import.meta.env.BASE_URL}/opencv_template_ko_kr.png`
-    );
+    const koSprite = await fetchSpriteMat(`${import.meta.env.BASE_URL}/opencv_template_ko_kr.png`);
     for (const [name, rect] of Object.entries(koKrCoords)) {
       result.ko_kr[name] = createRoi(koSprite, rect);
     }
@@ -133,9 +122,7 @@
     koSprite.delete();
 
     // 2️⃣ en_us 스프라이트 한 번만 fetch
-    const enSprite = await fetchSpriteMat(
-      `${import.meta.env.BASE_URL}/opencv_template_en_us.png`
-    );
+    const enSprite = await fetchSpriteMat(`${import.meta.env.BASE_URL}/opencv_template_en_us.png`);
     for (const [name, rect] of Object.entries(enUsCoords)) {
       result.en_us[name] = createRoi(enSprite, rect);
     }
@@ -166,11 +153,7 @@
       debugCtx.fillText(key, rect.x + lineWidth, rect.y + lineWidth); // 조금 위로 올려 표시
 
       debugCtx.font = `${fontSize}px Arial`; // 폰트 설정
-      debugCtx.fillText(
-        score.toFixed(2),
-        rect.x + lineWidth,
-        rect.y + lineWidth + fontSize
-      ); // 조금 위로 올려 표시
+      debugCtx.fillText(score.toFixed(2), rect.x + lineWidth, rect.y + lineWidth + fontSize); // 조금 위로 올려 표시
     }
   }
   type CvMat = any;
@@ -183,21 +166,13 @@
   ): T | null {
     // 주어진 templates map에서 가장 유사한 걸 찾아서 key를 반환합니다.
     // threshold를 넘지 못했을 경우 null을 반환합니다.
-    if (
-      rect.x < 0 ||
-      rect.x + rect.w > frame.cols ||
-      rect.y < 0 ||
-      rect.y + rect.h > frame.rows
-    )
+    if (rect.x < 0 || rect.x + rect.w > frame.cols || rect.y < 0 || rect.y + rect.h > frame.rows)
       return null;
     const roi = frame.roi(new cv.Rect(rect.x, rect.y, rect.w, rect.h));
     let bestKey: T | null = null;
     let bestScore = 0;
 
-    for (const [key, templateMat] of Object.entries(templates) as [
-      T,
-      CvMat,
-    ][]) {
+    for (const [key, templateMat] of Object.entries(templates) as [T, CvMat][]) {
       const result = new cv.Mat();
       cv.matchTemplate(roi, templateMat, result, cv.TM_CCOEFF_NORMED);
       const { maxVal } = cv.minMaxLoc(result);
@@ -230,10 +205,7 @@
 
   function createCaptureController() {
     // type 선언
-    type MatNumeric = Record<
-      '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9',
-      CvMat
-    >;
+    type MatNumeric = Record<'1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9', CvMat>;
     type MatOptionString = Record<ArkGridGemOptionType, CvMat>;
     type MatOptionValue = Record<'1' | '2' | '3' | '4' | '5', CvMat>;
     type MatGemAttr = Record<ArkGridAttr, CvMat>;
@@ -373,13 +345,7 @@
             debugCanvas.height = canvas.height;
           }
           if (isDebugging) {
-            debugCtx.drawImage(
-              rawFrame,
-              0,
-              0,
-              debugCanvas.width,
-              debugCanvas.height
-            );
+            debugCtx.drawImage(rawFrame, 0, 0, debugCanvas.width, debugCanvas.height);
           }
           if (!ctx) break;
           ctx.drawImage(rawFrame, 0, 0, canvas.width, canvas.height);
@@ -464,8 +430,7 @@
               detectionThreshold
             );
             if (gemAttr === null) continue;
-            let totalGems =
-              gemAttr == ArkGridAttrs.Order ? totalOrderGems : totalChaosGems;
+            let totalGems = gemAttr == ArkGridAttrs.Order ? totalOrderGems : totalChaosGems;
 
             // 9개의 젬을 찾아서 이미지 매칭
             for (let i = 0; i < 9; i++) {
@@ -638,12 +603,7 @@
                   let sameCount = 1;
                   for (let i = 1; i < currentGems.length; i++) {
                     if (foundIndex + i >= totalGems.length) break;
-                    if (
-                      isSameArkGridGem(
-                        totalGems[foundIndex + i],
-                        currentGems[i]
-                      )
-                    ) {
+                    if (isSameArkGridGem(totalGems[foundIndex + i], currentGems[i])) {
                       sameCount += 1;
                     } else {
                       break;
@@ -661,9 +621,7 @@
                       totalGems.push(currentGems[i]);
                       // console.log('추가:', currentGems[i]);
                     }
-                    gemListElem?.selectTab(
-                      gemAttr == ArkGridAttrs.Order ? 0 : 1
-                    );
+                    gemListElem?.selectTab(gemAttr == ArkGridAttrs.Order ? 0 : 1);
                     gemListElem?.scroll('bottom');
                     // console.log($state.snapshot(totalGems));
                   }
@@ -683,12 +641,7 @@
                     let sameCount = 1;
                     for (let i = 1; i < currentGems.length; i++) {
                       if (foundIndex - i < 0) break;
-                      if (
-                        isSameArkGridGem(
-                          totalGems[foundIndex - i],
-                          currentGems[8 - i]
-                        )
-                      ) {
+                      if (isSameArkGridGem(totalGems[foundIndex - i], currentGems[8 - i])) {
                         sameCount += 1;
                       } else {
                         break;
@@ -701,9 +654,7 @@
                         totalGems.unshift(currentGems[i]);
                         // console.log('추가:', currentGems[i]);
                       }
-                      gemListElem?.selectTab(
-                        gemAttr == ArkGridAttrs.Order ? 0 : 1
-                      );
+                      gemListElem?.selectTab(gemAttr == ArkGridAttrs.Order ? 0 : 1);
                       gemListElem?.scroll('top');
                       // console.log($state.snapshot(totalGems));
                     }
@@ -747,13 +698,8 @@
         return;
       }
       for (const targetLocale of supportedLocales) {
-        const {
-          matAnchor,
-          matNumeric,
-          matOptionString,
-          matOptionValue,
-          matGemAttr,
-        } = globalLoadedAsset[targetLocale];
+        const { matAnchor, matNumeric, matOptionString, matOptionValue, matGemAttr } =
+          globalLoadedAsset[targetLocale];
 
         try {
           matAnchor.delete();
@@ -798,11 +744,7 @@
   <div class="title">
     <div class="title-with-dot">
       <span>젬 화면 인식</span>
-      <div
-        class="status-dot"
-        class:online={isRecording}
-        class:offline={!isRecording}
-      ></div>
+      <div class="status-dot" class:online={isRecording} class:offline={!isRecording}></div>
     </div>
     <button
       class="fold-button"
@@ -813,21 +755,16 @@
   </div>
   <div
     class="content"
-    style:display={!appConfig.current.uiConfig.showGemRecognitionPanel
-      ? 'none'
-      : 'flex'}
+    style:display={!appConfig.current.uiConfig.showGemRecognitionPanel ? 'none' : 'flex'}
   >
     <div class="buttons">
       <div class="left">
         {#if !isRecording}
-          <button
-            onclick={captureController.startCapture}
-            data-track="start-capture">🖥️ 화면 공유 시작</button
+          <button onclick={captureController.startCapture} data-track="start-capture"
+            >🖥️ 화면 공유 시작</button
           >
         {:else}
-          <button onclick={captureController.stopCapture}
-            >🖥️ 화면 공유 종료</button
-          >
+          <button onclick={captureController.stopCapture}>🖥️ 화면 공유 종료</button>
         {/if}
         <button
           class:active={isDebugging}
@@ -838,9 +775,8 @@
         </button>
       </div>
       <div class="right">
-        <button
-          hidden={!appConfig.current.uiConfig.debugMode}
-          onclick={captureController.dispose}>자원 정리</button
+        <button hidden={!appConfig.current.uiConfig.debugMode} onclick={captureController.dispose}
+          >자원 정리</button
         >
         <button
           hidden={!appConfig.current.uiConfig.debugMode}
@@ -877,20 +813,15 @@
             bind:value={detectionThreshold}
           />
         </div>
-        <canvas bind:this={debugCanvas} style="border: 1px black solid;"
-        ></canvas>
+        <canvas bind:this={debugCanvas} style="border: 1px black solid;"></canvas>
       </div>
     </div>
     <div class="dual-panel">
       <div class="guide">
         <div class="title">
           <span>🎓️ 가이드</span>
-          <button
-            class="fold-button"
-            onclick={() => toggleUI('showGemRecognitionGuide')}
-            >{appConfig.current.uiConfig.showGemRecognitionGuide
-              ? '▲'
-              : '▼'}</button
+          <button class="fold-button" onclick={() => toggleUI('showGemRecognitionGuide')}
+            >{appConfig.current.uiConfig.showGemRecognitionGuide ? '▲' : '▼'}</button
           >
         </div>
         {#if appConfig.current.uiConfig.showGemRecognitionGuide}
@@ -898,27 +829,24 @@
             <p>
               1. 모니터의 해상도가 <b>FHD (1920x1080)</b>이거나
               <b>WFHD (2560x1980)</b>인 경우 그대로 진행해주세요.<br />
-              모니터의 해상도가 그 이상인 경우, 화면 인식을 위해 반드시 로스트아크
-              해상도를 <b>"1920x1080 (16:9)"</b>으로 설정한 뒤 화면을 "창
-              모드"로 설정해주세요.
+              모니터의 해상도가 그 이상인 경우, 화면 인식을 위해 반드시 로스트아크 해상도를
+              <b>"1920x1080 (16:9)"</b>으로 설정한 뒤 화면을 "창 모드"로 설정해주세요.
             </p>
 
             <img src={guideImages['../assets/guide/1.png']} alt="guide-img1" />
             <p>
-              3. 게임에서 젬 목록 화면을 연 뒤 모든 젬을 장착 해제하고, [🖥️ 화면
-              공유 시작] 버튼을 통해 화면을 공유해주세요<br /> (안쓰는 아크 그리드
-              프리셋으로 전환하는 것으로 손쉽게 젬을 해제할 수 있습니다.)
+              3. 게임에서 젬 목록 화면을 연 뒤 모든 젬을 장착 해제하고, [🖥️ 화면 공유 시작] 버튼을
+              통해 화면을 공유해주세요<br /> (안쓰는 아크 그리드 프리셋으로 전환하는 것으로 손쉽게 젬을
+              해제할 수 있습니다.)
             </p>
             <img src={guideImages['../assets/guide/2.png']} alt="guide-img2" />
             <p>
-              4. 마우스가 젬을 건드리지 않도록 스크롤바 위에 위치시키는 것을
-              추천드립니다. 스크롤을 내리면서 인식된 젬이 목록에 추가되는 것을
-              확인해주세요.
+              4. 마우스가 젬을 건드리지 않도록 스크롤바 위에 위치시키는 것을 추천드립니다. 스크롤을
+              내리면서 인식된 젬이 목록에 추가되는 것을 확인해주세요.
             </p>
             <p>
-              5. 수집된 젬의 개수를 확인하고, <b>질서와 혼돈 모든 젬</b>이
-              수집되었으면 [✅ 현재 프로필에 반영] 버튼을 눌러 프로필에
-              저장해주세요.
+              5. 수집된 젬의 개수를 확인하고, <b>질서와 혼돈 모든 젬</b>이 수집되었으면 [✅ 현재
+              프로필에 반영] 버튼을 눌러 프로필에 저장해주세요.
             </p>
           </div>
         {/if}
