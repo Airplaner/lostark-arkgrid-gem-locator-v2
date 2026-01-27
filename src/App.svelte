@@ -81,7 +81,7 @@
   </a>
   <a href={KAKAOTALK_URL} target="_blank" rel="noopener noreferrer" class="footer-link">
     <i class="fa-brands fa-kakao-talk"></i>
-    Kakaotalk
+    KakaoTalk
   </a>
 </footer>
 
