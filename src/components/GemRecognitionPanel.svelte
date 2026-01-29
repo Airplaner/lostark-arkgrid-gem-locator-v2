@@ -4,6 +4,7 @@
 
   import { type ArkGridAttr, ArkGridAttrs } from '../lib/constants/enums';
   import { loadOpenCV } from '../lib/cv/cvLoader';
+  import { loadGemTemplates } from '../lib/cv/matStore';
   import {
     type ArkGridGem,
     type ArkGridGemOptionType,
@@ -11,8 +12,6 @@
     determineGemGrade,
     isSameArkGridGem,
   } from '../lib/models/arkGridGems';
-  import { type EnUsTemplateName, enUsCoords } from '../lib/opencv-template-coords/en_us';
-  import { type KoKrTemplateName, koKrCoords } from '../lib/opencv-template-coords/ko_kr';
   import {
     type AppLocale,
     appConfig,
@@ -53,63 +52,6 @@
     w: number;
     h: number;
   };
-
-  /**
-   * 스프라이트 이미지를 한 번 fetch → cv.Mat 생성
-   */
-  async function fetchSpriteMat(url: string): Promise<CvMat> {
-    const img = await createImageBitmap(await fetch(url).then((r) => r.blob()));
-    const off = document.createElement('canvas');
-    off.width = img.width;
-    off.height = img.height;
-    const ctx = off.getContext('2d');
-    if (!ctx) throw new Error('Canvas context creation failed');
-    ctx.drawImage(img, 0, 0);
-    const data = ctx.getImageData(0, 0, img.width, img.height);
-    const mat = cv.matFromImageData(data);
-    cv.cvtColor(mat, mat, cv.COLOR_RGBA2GRAY);
-    img.close();
-    return mat;
-  }
-
-  /**
-   * ROI로 CvMat 복사
-   */
-  function createRoi(mat: CvMat, rect: { x: number; y: number; w: number; h: number }): CvMat {
-    const roi = mat.roi(new cv.Rect(rect.x, rect.y, rect.w, rect.h));
-    return roi;
-  }
-
-  /**
-   * 모든 언어별 템플릿 CvMat 로드
-   */
-  type GemTemplates = {
-    ko_kr: Record<KoKrTemplateName, CvMat>;
-    en_us: Record<EnUsTemplateName, CvMat>;
-  };
-  export async function loadGemTemplates(): Promise<GemTemplates> {
-    const result = {
-      ko_kr: {} as any,
-      en_us: {} as any,
-    };
-
-    // 1️⃣ ko_kr 스프라이트 한 번만 fetch
-    const koSprite = await fetchSpriteMat(`${import.meta.env.BASE_URL}/opencv_template_ko_kr.png`);
-    for (const [name, rect] of Object.entries(koKrCoords)) {
-      result.ko_kr[name] = createRoi(koSprite, rect);
-    }
-    // koSprite는 더 이상 필요 없으면 삭제 가능
-    koSprite.delete();
-
-    // 2️⃣ en_us 스프라이트 한 번만 fetch
-    const enSprite = await fetchSpriteMat(`${import.meta.env.BASE_URL}/opencv_template_en_us.png`);
-    for (const [name, rect] of Object.entries(enUsCoords)) {
-      result.en_us[name] = createRoi(enSprite, rect);
-    }
-    enSprite.delete();
-
-    return result;
-  }
 
   function debugRectJS(
     rect: Rect,
