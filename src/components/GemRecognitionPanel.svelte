@@ -2,18 +2,12 @@
   import type { OpenCV } from '@opencvjs/types';
   import { onDestroy, onMount } from 'svelte';
 
-  import { type ArkGridAttr, ArkGridAttrs } from '../lib/constants/enums';
+  import { ArkGridAttrs } from '../lib/constants/enums';
   import { loadOpenCV } from '../lib/cv/cvLoader';
-  import { loadGemTemplates } from '../lib/cv/matStore';
+  import { type GlobalLoadedAsset, loadGemAsset } from '../lib/cv/matStore';
+  import { getBestMatch } from '../lib/cv/matcher';
+  import { type ArkGridGem, determineGemGrade, isSameArkGridGem } from '../lib/models/arkGridGems';
   import {
-    type ArkGridGem,
-    type ArkGridGemOptionType,
-    ArkGridGemOptionTypes,
-    determineGemGrade,
-    isSameArkGridGem,
-  } from '../lib/models/arkGridGems';
-  import {
-    type AppLocale,
     appConfig,
     supportedLocales,
     toggleLocale,
@@ -232,23 +226,6 @@
   const captureController: CaptureController = createCaptureController();
 
   function createCaptureController() {
-    // type 선언
-    type MatWillPower = Record<'3' | '4' | '5' | '6' | '7' | '8' | '9', CvMat>;
-    type MatCorePoint = Record<'1' | '2' | '3' | '4' | '5', CvMat>;
-    type MatOptionString = Record<ArkGridGemOptionType, CvMat>;
-    type MatOptionValue = Record<'1' | '2' | '3' | '4' | '5', CvMat>;
-    type MatGemAttr = Record<ArkGridAttr, CvMat>;
-    type MatGemImage = Record<string, CvMat>;
-    interface LoadedAsset {
-      matAnchor: CvMat;
-      matWillPower: MatWillPower;
-      matCorePoint: MatCorePoint;
-      matOptionString: MatOptionString;
-      matOptionValue: MatOptionValue;
-      matGemAttr: MatGemAttr;
-      matGemImage: MatGemImage;
-    }
-    type GlobalLoadedAsset = Record<AppLocale, LoadedAsset>;
     // TODO 현재 component의 isLoading, isRecording state와 강하게 결합되어 있음
     let reader: ReadableStreamDefaultReader<VideoFrame> | null = null;
     let track: MediaStreamTrack | null = null;
@@ -261,77 +238,11 @@
     canvas.height = 0;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
-    async function preloadAsset() {
-      if (globalLoadedAsset !== null) {
-        return globalLoadedAsset;
-      }
-
-      globalLoadedAsset = {} as GlobalLoadedAsset;
-      isLoading = true;
+    async function prepareAsset() {
       await loadOpenCV();
-
-      const gt = await loadGemTemplates();
-      for (const targetLocale of supportedLocales) {
-        const mats = gt[targetLocale];
-
-        const matAnchor = mats['anchor.png'];
-        const matWillPower = {
-          3: mats['3.png'],
-          4: mats['4.png'],
-          5: mats['5.png'],
-          6: mats['6.png'],
-          7: mats['7.png'],
-          8: mats['8.png'],
-          9: mats['9.png'],
-        };
-        const matCorePoint = {
-          1: mats['1.png'],
-          2: mats['2.png'],
-          3: mats['3.png'],
-          4: mats['4.png'],
-          5: mats['5.png'],
-        };
-        const matOptionString = {
-          [ArkGridGemOptionTypes.ATTACK]: mats['공격력.png'],
-          [ArkGridGemOptionTypes.SKILL_DAMAGE]: mats['추가피해.png'],
-          [ArkGridGemOptionTypes.BOSS_DAMAGE]: mats['보스피해.png'],
-          [ArkGridGemOptionTypes.STIGMA]: mats['낙인력.png'],
-          [ArkGridGemOptionTypes.PARTY_ATTACK]: mats['아군공격강화.png'],
-          [ArkGridGemOptionTypes.PARTY_DAMAGE]: mats['아군피해강화.png'],
-        };
-        const matOptionValue = {
-          1: mats['lv1.png'],
-          2: mats['lv2.png'],
-          3: mats['lv3.png'],
-          4: mats['lv4.png'],
-          5: mats['lv5.png'],
-        };
-        const matGemAttr = {
-          [ArkGridAttrs.Order]: mats['질서.png'],
-          [ArkGridAttrs.Chaos]: mats['혼돈.png'],
-        };
-        const matGemImage = {
-          '질서의 젬 : 안정': mats['안정.png'],
-          '질서의 젬 : 견고': mats['견고.png'],
-          '질서의 젬 : 불변': mats['불변.png'],
-          '혼돈의 젬 : 침식': mats['침식.png'],
-          '혼돈의 젬 : 왜곡': mats['왜곡.png'],
-          '혼돈의 젬 : 붕괴': mats['붕괴.png'],
-        };
-
-        isLoading = false;
-        globalLoadedAsset[targetLocale] = {
-          matAnchor,
-          matWillPower,
-          matCorePoint,
-          matOptionString,
-          matOptionValue,
-          matGemAttr,
-          matGemImage,
-        };
-      }
-      return globalLoadedAsset;
+      return await loadGemAsset();
     }
+
     async function startCapture() {
       // OpenCV와 어셋 로딩 promise 생성
       // TODO openCV는 중복해서 로드되지 않으나, 나머지 asset들은 공유 시작할 때마다 로드됨
@@ -339,7 +250,7 @@
         // console.log('녹화 혹은 데이터 로딩 중');
         return;
       }
-      const preloadPromise = preloadAsset();
+      const promiseAsset = prepareAsset();
       let stream: MediaStream | null = null;
       try {
         stream = await navigator.mediaDevices.getDisplayMedia({
@@ -355,8 +266,8 @@
         window.alert('화면 공유에 실패하였습니다.');
         return;
       }
-      await preloadPromise;
-      if (!globalLoadedAsset) {
+      const loadedAsset = await promiseAsset;
+      if (!loadedAsset) {
         window.alert('화면 인식에 필요한 데이터가 준비되지 않았습니다.');
         return;
       }
@@ -371,10 +282,6 @@
       totalChaosGems.length = 0;
       const currentGems: ArkGridGem[] = [];
 
-      const allAnchorMats = {
-        ko_kr: globalLoadedAsset['ko_kr'].matAnchor,
-        en_us: globalLoadedAsset['en_us'].matAnchor,
-      };
       if (!reader) return;
 
       // reader.read()로부터 데이터가 늦게 들어오는 동안 로딩 보여줌
@@ -390,16 +297,16 @@
       isRecording = true;
       isLoading = false;
 
+      if (!window.cv) {
+        window.alert('no cv');
+        return;
+      }
+      const cv = window.cv;
+
       async function loop() {
         while (isRecording) {
           if (!reader) {
             window.alert('Reader를 찾을 수 없습니다. 새고 로침이 필요합니다.');
-            break;
-          }
-          if (!globalLoadedAsset) {
-            window.alert(
-              '화면 인식에 필요한 데이터가 로드되지 않았습니다. 새로 고침이 필요합니다.'
-            );
             break;
           }
           if (!ctx) {
@@ -467,6 +374,14 @@
           const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           const frame = cv.matFromImageData(imgData);
           cv.cvtColor(frame, frame, cv.COLOR_RGBA2GRAY);
+          const anchor = getBestMatch(frame, loadedAsset.atlasAnchor, 0.1);
+          if (isDebugging && anchor) {
+            debugCtx.beginPath();
+            debugCtx.rect(anchor.loc.x, anchor.loc.y, anchor.loc.width, anchor.loc.height);
+            debugCtx.stroke();
+          }
+
+          continue;
 
           // 3. anchor 찾기
           const findAnchor = findBestMatch(frame, null, allAnchorMats, detectionThreshold);
