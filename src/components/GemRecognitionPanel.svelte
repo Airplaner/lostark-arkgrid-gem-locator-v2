@@ -1,7 +1,9 @@
 <script lang="ts">
+  import type { OpenCV } from '@opencvjs/types';
   import { onDestroy, onMount } from 'svelte';
 
   import { type ArkGridAttr, ArkGridAttrs } from '../lib/constants/enums';
+  import { loadOpenCV } from '../lib/cv/cvLoader';
   import {
     type ArkGridGem,
     type ArkGridGemOptionType,
@@ -20,13 +22,11 @@
   } from '../lib/state/appConfig.state.svelte';
   import GemRecognitionGemList from './GemRecognitionGemList.svelte';
 
-  const OPENCV_URL =
-    'https://cdn.jsdelivr.net/npm/@techstark/opencv-js@4.12.0-release.1/dist/opencv.min.js';
   const guideImages = import.meta.glob<string>('../assets/guide/*.png', {
     eager: true,
     import: 'default',
   });
-  let cv: any;
+  let cv = window.cv;
   let debugCanvas: HTMLCanvasElement | null;
   let debugCtx: CanvasRenderingContext2D;
   let totalOrderGems = $state<ArkGridGem[]>([]);
@@ -53,30 +53,6 @@
     w: number;
     h: number;
   };
-  async function loadOpenCV() {
-    if ((window as any).cv) {
-      cv = (window as any).cv;
-      return;
-    }
-
-    await new Promise<void>((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = OPENCV_URL;
-      script.async = true;
-
-      script.onload = async () => {
-        await (window as any).cv.ready;
-        cv = (window as any).cv;
-        cv.onRuntimeInitialized = () => {
-          // https://stackoverflow.com/questions/56671436/cv-mat-is-not-a-constructor-opencv
-          resolve();
-        };
-      };
-
-      script.onerror = reject;
-      document.body.appendChild(script);
-    });
-  }
 
   /**
    * 스프라이트 이미지를 한 번 fetch → cv.Mat 생성
@@ -168,7 +144,7 @@
         );
     }
   }
-  type CvMat = any;
+  type CvMat = OpenCV.Mat;
   type TemplateMap<T extends string> = Record<T, CvMat>;
   function findBestMatch<T extends string>(
     frame: CvMat,
