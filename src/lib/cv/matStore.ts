@@ -2,7 +2,7 @@
  * 스프라이트 이미지를 한 번 fetch → cv.Mat 생성
  */
 import { type ArkGridAttr, ArkGridAttrs } from '../constants/enums';
-import { type ArkGridGemOptionType, ArkGridGemOptionTypes } from '../models/arkGridGems';
+import { type ArkGridGemName, type ArkGridGemOptionType } from '../models/arkGridGems';
 import { type EnUsTemplateName, enUsCoords } from '../opencv-template-coords/en_us';
 import { type KoKrTemplateName, koKrCoords } from '../opencv-template-coords/ko_kr';
 import { type AppLocale, supportedLocales } from '../state/appConfig.state.svelte';
@@ -12,23 +12,10 @@ import type { CvMat } from './types';
 
 type KeyWillPower = '3' | '4' | '5' | '6' | '7' | '8' | '9';
 type KeyCorePoint = '1' | '2' | '3' | '4' | '5';
-
-type MatWillPower = Record<'3' | '4' | '5' | '6' | '7' | '8' | '9', CvMat>;
-type MatCorePoint = Record<'1' | '2' | '3' | '4' | '5', CvMat>;
-type MatOptionString = Record<ArkGridGemOptionType, CvMat>;
-type MatOptionValue = Record<'1' | '2' | '3' | '4' | '5', CvMat>;
-type MatGemAttr = Record<ArkGridAttr, CvMat>;
-type MatGemImage = Record<string, CvMat>;
-type ArkGridGemAsset = {
-  matAnchor: CvMat;
-  matWillPower: MatWillPower;
-  matCorePoint: MatCorePoint;
-  matOptionString: MatOptionString;
-  matOptionValue: MatOptionValue;
-  matGemAttr: MatGemAttr;
-  matGemImage: MatGemImage;
-};
-export type GlobalLoadedAsset = Record<AppLocale, ArkGridGemAsset>;
+type KeyOptionString = ArkGridGemOptionType;
+type KeyOptionValue = '1' | '2' | '3' | '4' | '5';
+type KeyGemAttr = ArkGridAttr;
+type KeyGemName = ArkGridGemName;
 
 async function fetchSpriteMat(url: string): Promise<CvMat> {
   // url 이미지를 읽어온 뒤 Mat으로 변환
@@ -94,6 +81,19 @@ export async function loadGemAsset() {
   const atlasAnchor = generateMatchingAtlas(matAnchors);
   appendMatToDebug(atlasAnchor.atlas, 'anchors');
 
+  const atlasGemAttr = supportedLocales.reduce(
+    (acc, locale) => {
+      const mats = gt[locale];
+      acc[locale] = generateMatchingAtlas({
+        [ArkGridAttrs.Order]: mats['질서.png'],
+        [ArkGridAttrs.Chaos]: mats['혼돈.png'],
+      });
+      return acc;
+    },
+    {} as Record<AppLocale, MatchingAtlas<ArkGridAttr>>
+  );
+  appendMatToDebug(atlasGemAttr.ko_kr.atlas, 'GemAttr');
+
   const atlasWillPower = supportedLocales.reduce(
     (acc, locale) => {
       const mats = gt[locale];
@@ -110,6 +110,7 @@ export async function loadGemAsset() {
     },
     {} as Record<AppLocale, MatchingAtlas<KeyWillPower>>
   );
+  appendMatToDebug(atlasWillPower.ko_kr.atlas, 'will power');
 
   const atlasCorePoint = supportedLocales.reduce(
     (acc, locale) => {
@@ -125,8 +126,9 @@ export async function loadGemAsset() {
     },
     {} as Record<AppLocale, MatchingAtlas<KeyCorePoint>>
   );
+  appendMatToDebug(atlasCorePoint.ko_kr.atlas, 'core point');
 
-  return { atlasAnchor, atlasWillPower, atlasCorePoint };
+  return { atlasAnchor, atlasGemAttr, atlasWillPower, atlasCorePoint };
 }
 
 // for (const targetLocale of supportedLocales) {

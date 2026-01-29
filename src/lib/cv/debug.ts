@@ -1,4 +1,5 @@
-import type { CvMat } from './types';
+import type { MatchingResult } from './matcher';
+import type { CvMat, CvRect } from './types';
 
 export function saveMatToFile(mat: CvMat, filename: string = 'debug.png') {
   const cv = window.cv;
@@ -88,4 +89,45 @@ export function appendMatToDebug(mat: CvMat, label?: string) {
 
   wrapper.appendChild(canvas);
   container.appendChild(wrapper);
+}
+
+export function showMatch(
+  debugCtx: CanvasRenderingContext2D,
+  roi: CvRect,
+  matchingResult: MatchingResult<string>,
+  option?: {
+    rectColor?: string;
+    rectLineWidth?: number;
+    fontColor?: string;
+    fontSize?: number;
+  }
+) {
+  // 디버깅용
+  const rectLineWidth = option?.rectLineWidth ?? 1;
+  debugCtx.lineWidth = rectLineWidth;
+
+  // 1. roi 표시
+  debugCtx.strokeStyle = 'white';
+  debugCtx.strokeRect(roi.x, roi.y, roi.width, roi.height);
+
+  // 탐지된 영역 표시
+  const rect = {
+    x: matchingResult.loc.x,
+    y: matchingResult.loc.y,
+    w: matchingResult.template.cols,
+    h: matchingResult.template.rows,
+  };
+  debugCtx.strokeStyle = option?.rectColor ?? 'white';
+  debugCtx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+
+  const fontSize = option?.fontSize ?? 12;
+  debugCtx.font = `${fontSize}px Arial`; // 폰트 설정
+  debugCtx.fillStyle = option?.fontColor ?? 'white';
+  debugCtx.textBaseline = 'top'; // y 기준을 rect.y로 맞춤
+  debugCtx.fillText(matchingResult.key, roi.x + rectLineWidth, roi.y + rectLineWidth);
+  debugCtx.fillText(
+    matchingResult.score.toFixed(2),
+    roi.x + rectLineWidth,
+    roi.y + rectLineWidth + fontSize
+  );
 }

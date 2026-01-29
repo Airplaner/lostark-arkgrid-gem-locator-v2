@@ -4,10 +4,12 @@
 
   import { ArkGridAttrs } from '../lib/constants/enums';
   import { loadOpenCV } from '../lib/cv/cvLoader';
+  import { showMatch } from '../lib/cv/debug';
   import { type GlobalLoadedAsset, loadGemAsset } from '../lib/cv/matStore';
-  import { getBestMatch } from '../lib/cv/matcher';
+  import { findLocation, getBestMatch } from '../lib/cv/matcher';
   import { type ArkGridGem, determineGemGrade, isSameArkGridGem } from '../lib/models/arkGridGems';
   import {
+    type AppLocale,
     appConfig,
     supportedLocales,
     toggleLocale,
@@ -25,7 +27,7 @@
   let totalOrderGems = $state<ArkGridGem[]>([]);
   let totalChaosGems = $state<ArkGridGem[]>([]);
   let isRecording = $state<boolean>(false);
-  let isDebugging = $state<boolean>(false);
+  let isDebugging = $state<boolean>(true);
   let isLoading = $state<boolean>(false);
   let detectionThreshold = $state<number>(0.75);
   let gemListElem: GemRecognitionGemList | null = null;
@@ -302,7 +304,7 @@
         return;
       }
       const cv = window.cv;
-
+      let currentLocale: AppLocale | null = null;
       async function loop() {
         while (isRecording) {
           if (!reader) {
@@ -374,11 +376,51 @@
           const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           const frame = cv.matFromImageData(imgData);
           cv.cvtColor(frame, frame, cv.COLOR_RGBA2GRAY);
-          const anchor = getBestMatch(frame, loadedAsset.atlasAnchor, 0.1);
-          if (isDebugging && anchor) {
-            debugCtx.beginPath();
-            debugCtx.rect(anchor.loc.x, anchor.loc.y, anchor.loc.width, anchor.loc.height);
-            debugCtx.stroke();
+
+          const roiAnchor = new cv.Rect(canvas.width / 2, 0, canvas.width / 2, canvas.height / 2);
+
+          if (!currentLocale) {
+            let start = performance.now();
+            const anchor = getBestMatch(frame, loadedAsset.atlasAnchor, roiAnchor);
+            console.log('Anchor', performance.now() - start);
+
+            if (isDebugging) {
+              showMatch(debugCtx, roiAnchor, anchor, {
+                rectColor: anchor.score > detectionThreshold ? 'green' : 'red',
+              });
+            }
+            if (anchor.score < detectionThreshold) continue;
+
+            currentLocale = anchor.key;
+            console.log('CURRENT LOCAL SET!!!!', currentLocale); // 이때 threshold는 꽤나 높아야햠.. 돌이킬 수 없기 때문
+            continue;
+          }
+          let start = performance.now();
+          const anchor = findLocation(
+            frame,
+            loadedAsset.atlasAnchor.entries[currentLocale].template,
+            roiAnchor
+          );
+          console.log('Anchor', performance.now() - start);
+
+          if (isDebugging) {
+            showMatch(debugCtx, roiAnchor, anchor, {
+              rectColor: anchor.score > detectionThreshold ? 'green' : 'red',
+            });
+          }
+          if (anchor.score < detectionThreshold) continue;
+
+          const anchorX = anchor.loc.x;
+          const anchorY = anchor.loc.y;
+
+          const rectGemAttr = new cv.Rect(anchorX + 111, anchorY + 91, 224, 24);
+          start = performance.now();
+          const gemAttr = getBestMatch(frame, loadedAsset.atlasGemAttr[currentLocale], rectGemAttr);
+          console.log('gemAttr', performance.now() - start);
+          if (isDebugging) {
+            showMatch(debugCtx, rectGemAttr, gemAttr, {
+              rectColor: anchor.score > detectionThreshold ? 'green' : 'red',
+            });
           }
 
           continue;
@@ -386,9 +428,7 @@
           // 3. anchor 찾기
           const findAnchor = findBestMatch(frame, null, allAnchorMats, detectionThreshold);
           if (!findAnchor) continue; // 못 찾으면 프레임 생략
-          const anchorX = findAnchor.bestLoc.x;
-          const anchorY = findAnchor.bestLoc.y;
-          const currentLocale = findAnchor.bestKey;
+
           // 현재 화면에 인식된 젬 목록 reset
           currentGems.length = 0;
 
@@ -399,13 +439,6 @@
             w: 1613 - 1166,
             h: 233 - 210,
           };
-          const gemAttr =
-            findBestMatch(
-              frame,
-              gemAttrRect,
-              globalLoadedAsset[currentLocale].matGemAttr,
-              detectionThreshold
-            )?.bestKey ?? null;
           if (!gemAttr) continue; // 구분이 안 가면 프레임 생략
 
           // 추가 대상 젬 목록 가져옴

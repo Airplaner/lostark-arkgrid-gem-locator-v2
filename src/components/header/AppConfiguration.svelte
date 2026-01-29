@@ -285,8 +285,8 @@
       updateIsSupporter(isSupporter);
       updateWeapon(weapon.fixed, weapon.percent);
       toast.push(`OpenAPI 데이터 반영 완료.`);
-    } catch (e) {
-      window.alert(`OpenAPI 요청 실패!\n${e.error.Message}`);
+    } catch (e: any) {
+      window.alert(`OpenAPI 요청 실패!\n${e.status} ${e.statusText}`);
       console.error(e);
       return;
     } finally {

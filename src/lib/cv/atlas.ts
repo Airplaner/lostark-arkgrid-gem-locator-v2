@@ -1,9 +1,10 @@
 import type { CvMat } from './types';
 
 export interface AtlasEntry {
-  x: number;
-  width: number;
-  height: number;
+  x: number; // atlas에서 x좌표
+  width: number; // 너비
+  height: number; // 높이
+  template: CvMat; // 원본
 }
 
 export interface MatchingAtlas<K extends string> {
@@ -55,6 +56,7 @@ export function generateMatchingAtlas<const M extends Record<string, CvMat>>(mat
       x: xOffset,
       width: mat.cols,
       height: mat.rows,
+      template: mat,
     };
 
     xOffset += padded.cols;
