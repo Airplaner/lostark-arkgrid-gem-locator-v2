@@ -767,16 +767,14 @@
     return { startCapture, stopCapture, dispose };
   }
 
-  if (import.meta.hot) {
-    import.meta.hot.dispose(() => {
-      // HMR로 모듈 교체 전 cleanup
-      captureController.dispose();
-    });
-  }
+  onDestroy(async () => {});
+  let _captureController: CaptureController | null = null;
 
-  onDestroy(async () => {
-    await captureController.dispose();
-  });
+  async function getCaptureController() {
+    if (_captureController) return _captureController;
+    _captureController = new CaptureController(debugCanvas);
+    return _captureController;
+  }
 </script>
 
 <div class="panel">
@@ -806,13 +804,18 @@
         {#if !isRecording}
           <button
             onclick={async () => {
-              const captureController = new CaptureController(debugCanvas?.getContext('2d'));
-              await captureController.startCapture();
+              const controller = await getCaptureController();
+              controller.startCapture(true);
             }}
             data-track="start-capture">🖥️ 화면 공유 시작</button
           >
         {:else}
-          <button onclick={captureController.stopCapture}>🖥️ 화면 공유 종료</button>
+          <button
+            onclick={async () => {
+              const controller = await getCaptureController();
+              controller.stopCapture();
+            }}>🖥️ 화면 공유 종료</button
+          >
         {/if}
         <button
           class:active={isDebugging}

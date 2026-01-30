@@ -16,7 +16,7 @@ export type CaptureWorkerResponse =
   | { type: 'init:done' }
   | { type: 'frame:done'; result: any }
   | { type: 'error'; error: WorkerError }
-  | { type: 'debug'; image: ImageBitmap };
+  | { type: 'debug'; image?: ImageBitmap; message?: string };
 
 export type WorkerError = {
   message: string;

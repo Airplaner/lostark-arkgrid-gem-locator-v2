@@ -12,25 +12,25 @@ export type MatchingResult<K extends string> = {
 };
 
 export function getBestMatchAtlas<K extends string>(
-  roiMat: CvMat,
+  frame: CvMat,
   matchingAtlas: MatchingAtlas<K>,
-  threshold: number
-): MatchingResult<K> | null {
+  roi?: CvRect
+): MatchingResult<K> {
   const cv = getCv();
-  if (roiMat.cols > matchingAtlas.atlas.cols || roiMat.rows > matchingAtlas.atlas.rows) {
+  const targetFrame = roi ? frame.roi(roi) : frame;
+  if (targetFrame.cols > matchingAtlas.atlas.cols || targetFrame.rows > matchingAtlas.atlas.rows) {
     throw Error(
-      `Input matrix(${roiMat.cols}x${roiMat.rows}) is larger than atlas(${matchingAtlas.atlas.cols}x${matchingAtlas.atlas.rows})`
+      `Input matrix(${targetFrame.cols}x${targetFrame.rows}) is larger than atlas(${matchingAtlas.atlas.cols}x${matchingAtlas.atlas.rows})`
     );
   }
-  if (!cv) throw Error('cv is not ready');
   const { atlas, entries } = matchingAtlas;
   const result = new cv.Mat();
-  cv.matchTemplate(roiMat, atlas, result, cv.TM_CCOEFF_NORMED);
+  cv.matchTemplate(frame, atlas, result, cv.TM_CCOEFF_NORMED);
   const mm = cv.minMaxLoc(result);
-  if (mm.maxVal < threshold) return null;
-  for (const key of Object.keys(matchingAtlas.entries) as K[]) {
-    const e = matchingAtlas.entries[key];
+  for (const key of Object.keys(entries) as K[]) {
+    const e = entries[key];
     if (mm.maxLoc.x > e.x && mm.maxLoc.x < e.x + e.width) {
+      if (roi) targetFrame.delete();
       return {
         key,
         score: mm.maxVal,
@@ -39,7 +39,8 @@ export function getBestMatchAtlas<K extends string>(
       };
     }
   }
-  return null;
+  if (roi) targetFrame.delete();
+  throw Error('never reached');
 }
 
 export function getBestMatch<K extends string>(
@@ -56,11 +57,12 @@ export function getBestMatch<K extends string>(
   for (const key of Object.keys(matchingAtlas.entries) as K[]) {
     const template = matchingAtlas.entries[key].template;
     const result = new cv.Mat();
-    if (template.cols > targetFrame.cols || template.rows > targetFrame.rows) {
-      throw Error(
-        `Template size ${template.cols}x${template.rows} is larger than ROI ${targetFrame.cols}x${targetFrame.rows}. matchTemplate skipped.`
-      );
-    }
+    // if (template.cols > targetFrame.cols && template.rows > targetFrame.rows) {
+    //   // 지금은 둘 다 만족하는 경우, image와 templ을 서로 바꿔서 계산한다.
+    //   throw Error(
+    //     `Template size ${template.cols}x${template.rows} is larger than ROI ${targetFrame.cols}x${targetFrame.rows}. matchTemplate skipped.`
+    //   );
+    // }
     cv.matchTemplate(targetFrame, template, result, cv.TM_CCOEFF_NORMED);
     const mm = cv.minMaxLoc(result);
     if (!bestMm || mm.maxVal > bestMm.maxVal) {

@@ -115,7 +115,23 @@ export async function loadGemAsset() {
     {} as Record<AppLocale, MatchingAtlas<KeyCorePoint>>
   );
 
-  return { atlasAnchor, atlasGemAttr, atlasWillPower, atlasCorePoint };
+  const altasGemImage = supportedLocales.reduce(
+    (acc, locale) => {
+      const mats = gt[locale];
+      acc[locale] = generateMatchingAtlas({
+        order_1: mats['안정.png'],
+        order_2: mats['견고.png'],
+        order_3: mats['불변.png'],
+        chaos_1: mats['침식.png'],
+        chaos_2: mats['왜곡.png'],
+        chaos_3: mats['붕괴.png'],
+      });
+      return acc;
+    },
+    {} as Record<AppLocale, MatchingAtlas<ArkGridGemName>>
+  );
+
+  return { atlasAnchor, atlasGemAttr, altasGemImage, atlasWillPower, atlasCorePoint };
 }
 
 // for (const targetLocale of supportedLocales) {

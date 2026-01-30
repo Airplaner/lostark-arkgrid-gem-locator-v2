@@ -2,7 +2,7 @@ import type { MatchingResult } from './matcher';
 import type { CvRect } from './types';
 
 export function showMatch(
-  debugCtx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+  debugCtx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null | undefined,
   roi: CvRect,
   matchingResult: MatchingResult<string>,
   option?: {
@@ -10,8 +10,10 @@ export function showMatch(
     rectLineWidth?: number;
     fontColor?: string;
     fontSize?: number;
+    scoreThreshold?: number;
   }
 ) {
+  if (!debugCtx) return;
   // 디버깅용
   const rectLineWidth = option?.rectLineWidth ?? 1;
   debugCtx.lineWidth = rectLineWidth;
@@ -27,7 +29,11 @@ export function showMatch(
     w: matchingResult.template.cols,
     h: matchingResult.template.rows,
   };
-  debugCtx.strokeStyle = option?.rectColor ?? 'white';
+  if (option?.scoreThreshold) {
+    debugCtx.strokeStyle = matchingResult.score > option.scoreThreshold ? 'green' : 'red';
+  } else {
+    debugCtx.strokeStyle = option?.rectColor ?? 'white';
+  }
   debugCtx.strokeRect(rect.x, rect.y, rect.w, rect.h);
 
   const fontSize = option?.fontSize ?? 12;
