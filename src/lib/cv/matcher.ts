@@ -1,6 +1,7 @@
-import type { MinMaxLoc } from '@opencvjs/types/lib/opencv/_hacks';
+import type { MinMaxLoc } from '@techstark/opencv-js';
 
 import type { MatchingAtlas } from './atlas';
+import { getCv } from './cvRuntime';
 import type { CvMat, CvPoint, CvRect } from './types';
 
 export type MatchingResult<K extends string> = {
@@ -15,12 +16,12 @@ export function getBestMatchAtlas<K extends string>(
   matchingAtlas: MatchingAtlas<K>,
   threshold: number
 ): MatchingResult<K> | null {
+  const cv = getCv();
   if (roiMat.cols > matchingAtlas.atlas.cols || roiMat.rows > matchingAtlas.atlas.rows) {
     throw Error(
       `Input matrix(${roiMat.cols}x${roiMat.rows}) is larger than atlas(${matchingAtlas.atlas.cols}x${matchingAtlas.atlas.rows})`
     );
   }
-  const cv = window.cv;
   if (!cv) throw Error('cv is not ready');
   const { atlas, entries } = matchingAtlas;
   const result = new cv.Mat();
@@ -46,9 +47,7 @@ export function getBestMatch<K extends string>(
   matchingAtlas: MatchingAtlas<K>,
   roi?: CvRect
 ): MatchingResult<K> {
-  const cv = window.cv;
-  if (!cv) throw Error('cv is not ready');
-
+  const cv = getCv();
   const targetFrame = roi ? frame.roi(roi) : frame;
 
   let bestMm: MinMaxLoc | null = null;
@@ -57,6 +56,11 @@ export function getBestMatch<K extends string>(
   for (const key of Object.keys(matchingAtlas.entries) as K[]) {
     const template = matchingAtlas.entries[key].template;
     const result = new cv.Mat();
+    if (template.cols > targetFrame.cols || template.rows > targetFrame.rows) {
+      throw Error(
+        `Template size ${template.cols}x${template.rows} is larger than ROI ${targetFrame.cols}x${targetFrame.rows}. matchTemplate skipped.`
+      );
+    }
     cv.matchTemplate(targetFrame, template, result, cv.TM_CCOEFF_NORMED);
     const mm = cv.minMaxLoc(result);
     if (!bestMm || mm.maxVal > bestMm.maxVal) {
@@ -82,9 +86,7 @@ export function getBestMatch<K extends string>(
 }
 
 export function findLocation(frame: CvMat, template: CvMat, roi?: CvRect) {
-  const cv = window.cv;
-  if (!cv) throw Error('cv is not ready');
-
+  const cv = getCv();
   const targetFrame = roi ? frame.roi(roi) : frame;
 
   const result = new cv.Mat();

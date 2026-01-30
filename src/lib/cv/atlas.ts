@@ -1,3 +1,4 @@
+import { getCv } from './cvRuntime';
 import type { CvMat } from './types';
 
 export interface AtlasEntry {
@@ -14,9 +15,8 @@ export interface MatchingAtlas<K extends string> {
 
 export function generateMatchingAtlas<const M extends Record<string, CvMat>>(mats: M) {
   // 주어진 입력이 Record<string, CvMat>인데 이걸 M이라고 제너릭화함
-  const cv = window.cv;
-  if (!cv) throw Error('cv is not ready');
   // 응답 entries은 Record인데, key값은 입력의 키라고 타입에게 확신을 줌
+  const cv = getCv();
 
   const entries = {} as Record<keyof M, AtlasEntry>;
 

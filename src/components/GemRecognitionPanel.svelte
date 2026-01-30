@@ -1,8 +1,8 @@
 <script lang="ts">
-  import type { OpenCV } from '@opencvjs/types';
   import { onDestroy, onMount } from 'svelte';
 
   import { ArkGridAttrs } from '../lib/constants/enums';
+  import { CaptureController } from '../lib/cv/captureController';
   import { loadOpenCV } from '../lib/cv/cvLoader';
   import { showMatch } from '../lib/cv/debug';
   import { type GlobalLoadedAsset, loadGemAsset } from '../lib/cv/matStore';
@@ -220,12 +220,7 @@
   /* ===============================
         5️⃣ 화면 공유 시작
     =============================== */
-  interface CaptureController {
-    startCapture(): Promise<void>;
-    stopCapture(): Promise<void>;
-    dispose(): Promise<void>;
-  }
-  const captureController: CaptureController = createCaptureController();
+  // const captureController: CaptureController = createCaptureController();
 
   function createCaptureController() {
     // TODO 현재 component의 isLoading, isRecording state와 강하게 결합되어 있음
@@ -809,8 +804,12 @@
     <div class="buttons">
       <div class="left">
         {#if !isRecording}
-          <button onclick={captureController.startCapture} data-track="start-capture"
-            >🖥️ 화면 공유 시작</button
+          <button
+            onclick={async () => {
+              const captureController = new CaptureController(debugCanvas?.getContext('2d'));
+              await captureController.startCapture();
+            }}
+            data-track="start-capture">🖥️ 화면 공유 시작</button
           >
         {:else}
           <button onclick={captureController.stopCapture}>🖥️ 화면 공유 종료</button>

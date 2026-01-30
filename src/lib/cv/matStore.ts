@@ -7,7 +7,7 @@ import { type EnUsTemplateName, enUsCoords } from '../opencv-template-coords/en_
 import { type KoKrTemplateName, koKrCoords } from '../opencv-template-coords/ko_kr';
 import { type AppLocale, supportedLocales } from '../state/appConfig.state.svelte';
 import { type MatchingAtlas, generateMatchingAtlas } from './atlas';
-import { appendMatToDebug, saveMatToFile } from './debug';
+import { getCv } from './cvRuntime';
 import type { CvMat } from './types';
 
 type KeyWillPower = '3' | '4' | '5' | '6' | '7' | '8' | '9';
@@ -19,13 +19,9 @@ type KeyGemName = ArkGridGemName;
 
 async function fetchSpriteMat(url: string): Promise<CvMat> {
   // url 이미지를 읽어온 뒤 Mat으로 변환
-  const cv = window.cv;
-  if (!cv) throw Error('cv is not ready');
-
+  const cv = getCv();
   const img = await createImageBitmap(await fetch(url).then((r) => r.blob()));
-  const off = document.createElement('canvas');
-  off.width = img.width;
-  off.height = img.height;
+  const off = new OffscreenCanvas(img.width, img.height);
   const ctx = off.getContext('2d');
   if (!ctx) throw new Error('Canvas context creation failed');
   ctx.drawImage(img, 0, 0);
@@ -41,10 +37,8 @@ type GemTemplates = {
   en_us: Record<EnUsTemplateName, CvMat>;
 };
 async function loadGemTemplates(): Promise<GemTemplates> {
+  const cv = getCv();
   // 각 언어별 sprite에서 이미지를 잘라온다.
-  const cv = window.cv;
-  if (!cv) throw Error('cv is not ready');
-
   const result = {
     ko_kr: {} as any,
     en_us: {} as any,
@@ -66,9 +60,6 @@ async function loadGemTemplates(): Promise<GemTemplates> {
 }
 
 export async function loadGemAsset() {
-  const cv = window.cv;
-  if (!cv) throw Error('cv is not ready');
-
   const gt = await loadGemTemplates();
 
   const matAnchors = supportedLocales.reduce(
@@ -79,7 +70,6 @@ export async function loadGemAsset() {
     {} as Record<AppLocale, CvMat>
   );
   const atlasAnchor = generateMatchingAtlas(matAnchors);
-  appendMatToDebug(atlasAnchor.atlas, 'anchors');
 
   const atlasGemAttr = supportedLocales.reduce(
     (acc, locale) => {
@@ -92,7 +82,6 @@ export async function loadGemAsset() {
     },
     {} as Record<AppLocale, MatchingAtlas<ArkGridAttr>>
   );
-  appendMatToDebug(atlasGemAttr.ko_kr.atlas, 'GemAttr');
 
   const atlasWillPower = supportedLocales.reduce(
     (acc, locale) => {
@@ -110,7 +99,6 @@ export async function loadGemAsset() {
     },
     {} as Record<AppLocale, MatchingAtlas<KeyWillPower>>
   );
-  appendMatToDebug(atlasWillPower.ko_kr.atlas, 'will power');
 
   const atlasCorePoint = supportedLocales.reduce(
     (acc, locale) => {
@@ -126,7 +114,6 @@ export async function loadGemAsset() {
     },
     {} as Record<AppLocale, MatchingAtlas<KeyCorePoint>>
   );
-  appendMatToDebug(atlasCorePoint.ko_kr.atlas, 'core point');
 
   return { atlasAnchor, atlasGemAttr, atlasWillPower, atlasCorePoint };
 }
