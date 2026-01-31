@@ -19,6 +19,7 @@ export function showMatch(
   debugCtx.lineWidth = rectLineWidth;
 
   // 1. roi 표시
+  debugCtx.lineWidth = 1;
   debugCtx.strokeStyle = 'white';
   debugCtx.strokeRect(roi.x, roi.y, roi.width, roi.height);
 

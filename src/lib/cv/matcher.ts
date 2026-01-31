@@ -47,7 +47,19 @@ export function getBestMatch<K extends string>(
   frame: CvMat,
   matchingAtlas: MatchingAtlas<K>,
   roi?: CvRect
-): MatchingResult<K> {
+): MatchingResult<K> | null {
+  if (roi) {
+    if (
+      roi.x < 0 ||
+      roi.x + roi.width > frame.cols ||
+      roi.y < 0 ||
+      roi.y + roi.height > frame.rows ||
+      roi.width <= 0 ||
+      roi.height <= 0
+    ) {
+      return null;
+    }
+  }
   const cv = getCv();
   const targetFrame = roi ? frame.roi(roi) : frame;
 

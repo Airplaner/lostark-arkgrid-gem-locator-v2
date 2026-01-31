@@ -1,3 +1,5 @@
+import type { ArkGridAttr } from '../constants/enums';
+import { type ArkGridGem, isSameArkGridGem } from '../models/arkGridGems';
 import type { CaptureWorkerRequest, CaptureWorkerResponse } from './types';
 
 export class CaptureController {
@@ -7,8 +9,12 @@ export class CaptureController {
   debugCanvas: HTMLCanvasElement | null = null;
 
   // 👇 기다리는 Promise들의 resolver
-  private initResolver: (() => void) | null = null;
-  private frameResolver: (() => void) | null = null;
+  private awaitWorkerInitialization: (() => void) | null = null;
+  private awaitFrameCompletion: (() => void) | null = null;
+  private frameTimes: number[] = [];
+  private imageTimes: number[][] = Array.from({ length: 9 }, () => []);
+  private static readonly MAX_SAMPLES = 100;
+  onFrameDone: ((gemAttr: ArkGridAttr, gems: ArkGridGem[]) => void) | null = null; // 외부에서 등록해주면 분석 완료됐을 때 불러줌
 
   constructor(debugCanvas?: HTMLCanvasElement | null) {
     if (debugCanvas) this.debugCanvas = debugCanvas;
@@ -20,27 +26,75 @@ export class CaptureController {
     console.log('send message', msg);
     this.worker.postMessage(msg);
   }
+  getFrameStats() {
+    if (this.frameTimes.length === 0) return null;
 
+    const t = this.frameTimes;
+
+    return {
+      avg: t.reduce((a, b) => a + b, 0) / t.length,
+      min: Math.min(...t),
+      max: Math.max(...t),
+      count: t.length,
+    };
+  }
+  getImageStats() {
+    return this.imageTimes.map((times, index) => {
+      if (times.length === 0) return null;
+
+      const avg = times.reduce((a, b) => a + b, 0) / times.length;
+
+      return {
+        index,
+        avg,
+        min: Math.min(...times),
+        max: Math.max(...times),
+        count: times.length,
+      };
+    });
+  }
   private handleWorkerMessage(e: MessageEvent<CaptureWorkerResponse>) {
     const data = e.data;
     console.log('message come', e.data);
 
     switch (data.type) {
       case 'init:done':
-        this.initResolver?.();
-        this.initResolver = null;
+        this.awaitWorkerInitialization?.();
+        this.awaitWorkerInitialization = null;
         break;
 
       case 'frame:done':
-        this.frameResolver?.();
-        this.frameResolver = null;
-        console.log('분석 완료!', data.result);
+        // release lock
+        this.awaitFrameCompletion?.();
+        this.awaitFrameCompletion = null;
+
+        // 외부에서 등록된 콜백 불러줌
+
+        /* 
+        queueMicrotask(() => { ... }) 안의 코드는:
+
+        지금 실행 ❌
+        현재 call stack 끝난 뒤 실행 ⭕
+
+        TypeScript는 이렇게 생각해:
+
+        “이 콜백이 실행될 때까지
+        this.onFrameDone이나 data.result가
+        바뀌지 않는다는 보장이 없다.”
+        */
+        const result = data.result;
+        const onFrameDone = this.onFrameDone;
+        if (onFrameDone && result) {
+          queueMicrotask(() => {
+            onFrameDone(result.gemAttr, result.gems);
+          });
+        }
         break;
 
       case 'error':
         console.error('Worker error:', data.error);
-        this.initResolver?.();
-        this.initResolver = null;
+        this.awaitWorkerInitialization?.();
+        this.awaitWorkerInitialization = null;
         break;
 
       case 'debug':
@@ -60,7 +114,7 @@ export class CaptureController {
   private async requestDisplayMedia() {
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { frameRate: 5 },
+        video: { frameRate: 30 },
         audio: false,
       });
       if (!stream) {
@@ -99,7 +153,7 @@ export class CaptureController {
       }
       // worker의 init을 기다리는 promise 만든 후 init 요청 보냄
       const waitForInit = new Promise<void>((resolve) => {
-        this.initResolver = resolve;
+        this.awaitWorkerInitialization = resolve;
       });
       this.postMessage({ type: 'init' });
 
@@ -150,7 +204,7 @@ export class CaptureController {
 
       // 분석이 끝나면 resolve되는 promise 생성
       const waitForAnalysis = new Promise<void>((resolve) => {
-        this.frameResolver = resolve;
+        this.awaitFrameCompletion = resolve;
       });
       // 현재 frame을 postMessage
       this.worker.postMessage({ type: 'frame', frame: value } satisfies CaptureWorkerRequest, [

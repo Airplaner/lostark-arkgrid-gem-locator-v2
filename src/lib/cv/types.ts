@@ -1,5 +1,9 @@
 import CV from '@techstark/opencv-js';
 
+import type { ArkGridAttr } from '../constants/enums';
+import type { ArkGridGem } from '../models/arkGridGems';
+import type { AppLocale } from '../state/appConfig.state.svelte';
+
 export type CvMat = CV.Mat;
 export type CvRect = CV.Rect;
 export type CvPoint = CV.Point;
@@ -14,7 +18,14 @@ export type CaptureWorkerRequest =
 // worker → main
 export type CaptureWorkerResponse =
   | { type: 'init:done' }
-  | { type: 'frame:done'; result: any }
+  | {
+      type: 'frame:done';
+      result: {
+        locale: AppLocale;
+        gemAttr: ArkGridAttr;
+        gems: ArkGridGem[];
+      } | null;
+    }
   | { type: 'error'; error: WorkerError }
   | { type: 'debug'; image?: ImageBitmap; message?: string };
 

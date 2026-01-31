@@ -23,7 +23,7 @@ const defaultUIConfig: UIConfig = {
   darkMode: false,
 };
 export type AppLocale = 'ko_kr' | 'en_us';
-export const supportedLocales: AppLocale[] = ['en_us', 'ko_kr'];
+export const supportedLocales: AppLocale[] = ['ko_kr', 'en_us'];
 
 interface AppConfig {
   characterProfiles: CharacterProfile[];

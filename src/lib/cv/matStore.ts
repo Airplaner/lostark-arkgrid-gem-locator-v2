@@ -2,7 +2,11 @@
  * 스프라이트 이미지를 한 번 fetch → cv.Mat 생성
  */
 import { type ArkGridAttr, ArkGridAttrs } from '../constants/enums';
-import { type ArkGridGemName, type ArkGridGemOptionType } from '../models/arkGridGems';
+import {
+  type ArkGridGemName,
+  type ArkGridGemOptionType,
+  ArkGridGemOptionTypes,
+} from '../models/arkGridGems';
 import { type EnUsTemplateName, enUsCoords } from '../opencv-template-coords/en_us';
 import { type KoKrTemplateName, koKrCoords } from '../opencv-template-coords/ko_kr';
 import { type AppLocale, supportedLocales } from '../state/appConfig.state.svelte';
@@ -10,12 +14,12 @@ import { type MatchingAtlas, generateMatchingAtlas } from './atlas';
 import { getCv } from './cvRuntime';
 import type { CvMat } from './types';
 
-type KeyWillPower = '3' | '4' | '5' | '6' | '7' | '8' | '9';
-type KeyCorePoint = '1' | '2' | '3' | '4' | '5';
-type KeyOptionString = ArkGridGemOptionType;
-type KeyOptionValue = '1' | '2' | '3' | '4' | '5';
-type KeyGemAttr = ArkGridAttr;
-type KeyGemName = ArkGridGemName;
+export type KeyWillPower = '3' | '4' | '5' | '6' | '7' | '8' | '9';
+export type KeyCorePoint = '1' | '2' | '3' | '4' | '5';
+export type KeyOptionString = ArkGridGemOptionType;
+export type KeyOptionLevel = '1' | '2' | '3' | '4' | '5';
+export type KeyGemAttr = ArkGridAttr;
+export type KeyGemName = ArkGridGemName;
 
 async function fetchSpriteMat(url: string): Promise<CvMat> {
   // url 이미지를 읽어온 뒤 Mat으로 변환
@@ -128,10 +132,49 @@ export async function loadGemAsset() {
       });
       return acc;
     },
-    {} as Record<AppLocale, MatchingAtlas<ArkGridGemName>>
+    {} as Record<AppLocale, MatchingAtlas<KeyGemName>>
   );
 
-  return { atlasAnchor, atlasGemAttr, altasGemImage, atlasWillPower, atlasCorePoint };
+  const atalsOptionString = supportedLocales.reduce(
+    (acc, locale) => {
+      const mats = gt[locale];
+      acc[locale] = generateMatchingAtlas({
+        [ArkGridGemOptionTypes.ATTACK]: mats['공격력.png'],
+        [ArkGridGemOptionTypes.SKILL_DAMAGE]: mats['추가피해.png'],
+        [ArkGridGemOptionTypes.BOSS_DAMAGE]: mats['보스피해.png'],
+        [ArkGridGemOptionTypes.STIGMA]: mats['낙인력.png'],
+        [ArkGridGemOptionTypes.PARTY_ATTACK]: mats['아군공격강화.png'],
+        [ArkGridGemOptionTypes.PARTY_DAMAGE]: mats['아군피해강화.png'],
+      });
+      return acc;
+    },
+    {} as Record<AppLocale, MatchingAtlas<KeyOptionString>>
+  );
+
+  const atalsOptionLevel = supportedLocales.reduce(
+    (acc, locale) => {
+      const mats = gt[locale];
+      acc[locale] = generateMatchingAtlas({
+        1: mats['lv1.png'],
+        2: mats['lv2.png'],
+        3: mats['lv3.png'],
+        4: mats['lv4.png'],
+        5: mats['lv5.png'],
+      });
+      return acc;
+    },
+    {} as Record<AppLocale, MatchingAtlas<KeyOptionLevel>>
+  );
+
+  return {
+    atlasAnchor,
+    atlasGemAttr,
+    altasGemImage,
+    atlasWillPower,
+    atlasCorePoint,
+    atalsOptionString,
+    atalsOptionLevel,
+  };
 }
 
 // for (const targetLocale of supportedLocales) {
