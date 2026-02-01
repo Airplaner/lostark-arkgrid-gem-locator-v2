@@ -13,6 +13,7 @@ export class CaptureController {
   private worker: Worker | null = null;
 
   // debug
+  private drawDebug: boolean = false;
   private debugCanvas: HTMLCanvasElement | null = null;
 
   // 👇 기다리는 Promise들의 resolver
@@ -122,7 +123,7 @@ export class CaptureController {
     return;
   }
 
-  async startCapture(debugMode: boolean = false) {
+  async startCapture() {
     // idle 상태에서만 가능
     // 녹화를 시작합니다.
     // worker를 생성하고 어셋 로드를 시킨 뒤, 사용자에게 화면 공유를 요청합니다.
@@ -149,11 +150,6 @@ export class CaptureController {
         this.awaitWorkerInitialization = resolve;
       });
       this.postMessage({ type: 'init' });
-
-      // debug 모드라면 debugCanvas도 만들도록 시킴
-      if (debugMode) {
-        this.postMessage({ type: 'debug' });
-      }
 
       // 초기화되는 동안 사용자에게 화면 공유 요청
       await this.requestDisplayMedia();
@@ -213,9 +209,10 @@ export class CaptureController {
         });
         // 현재 frame을 postMessage
         const start = performance.now();
-        this.worker.postMessage({ type: 'frame', frame: value } satisfies CaptureWorkerRequest, [
-          value,
-        ]);
+        this.worker.postMessage(
+          { type: 'frame', frame: value, drawDebug: this.drawDebug } satisfies CaptureWorkerRequest,
+          [value]
+        );
         value = undefined;
         // 주의: value 소유권은 worker에게 넘어갔으니 더 이상 건드리면 안 되기에 undefined
         await waitForAnalysis;
@@ -260,5 +257,9 @@ export class CaptureController {
   }
   isRecording() {
     return this.state == 'recording';
+  }
+  toggleDrawDebug() {
+    this.drawDebug = !this.drawDebug;
+    return this.drawDebug;
   }
 }

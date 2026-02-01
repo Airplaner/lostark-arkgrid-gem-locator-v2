@@ -11,8 +11,7 @@ export type CvPoint = CV.Point;
 // main → worker
 export type CaptureWorkerRequest =
   | { type: 'init' } // init worker
-  | { type: 'debug' } // turn on debug
-  | { type: 'frame'; frame: VideoFrame } // send frame
+  | { type: 'frame'; frame: VideoFrame; drawDebug: boolean } // send frame
   | { type: 'stop' };
 
 // worker → main
@@ -20,11 +19,13 @@ export type CaptureWorkerResponse =
   | { type: 'init:done' }
   | {
       type: 'frame:done';
-      result: {
-        locale: AppLocale;
-        gemAttr: ArkGridAttr;
-        gems: ArkGridGem[];
-      } | null;
+      result:
+        | {
+            locale: AppLocale;
+            gemAttr: ArkGridAttr;
+            gems: ArkGridGem[];
+          }
+        | undefined;
     }
   | { type: 'error'; error: WorkerError }
   | { type: 'debug'; image?: ImageBitmap; message?: string };

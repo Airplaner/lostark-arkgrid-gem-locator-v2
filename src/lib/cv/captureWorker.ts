@@ -31,14 +31,19 @@ type RecgonitionTarget<K extends string> = {
 };
 
 class FrameProcessor {
-  loadedAsset: Awaited<ReturnType<typeof loadGemAsset>> | null = null;
-  debugCanvas: OffscreenCanvas | null = null;
-  private canvas: OffscreenCanvas = new OffscreenCanvas(1, 1);
-  private ctx = this.canvas.getContext('2d', { willReadFrequently: true })!;
+  // init
+  private loadedAsset: Awaited<ReturnType<typeof loadGemAsset>> | null = null;
   private initPromise: Promise<void> | null = null;
+
+  // debug
+  private debugCanvas: OffscreenCanvas = new OffscreenCanvas(0, 0);
+
+  // frame
+  private canvas: OffscreenCanvas = new OffscreenCanvas(0, 0);
+  private ctx = this.canvas.getContext('2d', { willReadFrequently: true })!;
   private cv: CV | null = null;
   private previousInfo: { locale: AppLocale; anchorLoc: { x: number; y: number } } | null = null;
-  thresholdSet = {
+  private thresholdSet = {
     anchor: 0.95,
     gemAttr: 0.9,
     gemImage: 0.8,
@@ -117,7 +122,7 @@ class FrameProcessor {
     return null;
   }
 
-  processFrame(frame: VideoFrame) {
+  processFrame(frame: VideoFrame, drawDebug: boolean = false) {
     const canvas = this.canvas;
     const ctx = this.ctx;
     let resizedFrame: CvMat | null = null;
@@ -134,7 +139,7 @@ class FrameProcessor {
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       resizedFrame = cv.matFromImageData(imageData);
       cv.cvtColor(resizedFrame, resizedFrame, cv.COLOR_RGBA2GRAY);
-      if (this.debugCanvas) {
+      if (drawDebug) {
         this.debugCanvas.width = frame.displayWidth * resolutionScale;
         this.debugCanvas.height = frame.displayHeight * resolutionScale;
 
@@ -206,7 +211,7 @@ class FrameProcessor {
         {
           roi: { x: anchorX - 186, y: anchorY + 91, width: 224, height: 24 },
           atlas: this.loadedAsset.atlasGemAttr[currentLocale],
-          threshold: this.thresholdSet.anchor,
+          threshold: this.thresholdSet.gemAttr,
         },
         resizedFrame,
         debugCtx
@@ -367,27 +372,24 @@ self.onmessage = async (e: MessageEvent<CaptureWorkerRequest>) => {
   const data = e.data;
   switch (data.type) {
     case 'init':
+      // 초기화 요청
       await processor.init();
       postToMain({ type: 'init:done' });
       break;
 
-    case 'debug':
-      processor.debugCanvas = new OffscreenCanvas(0, 0);
-      break;
-
     case 'frame':
-      const result = processor.processFrame(data.frame);
-      if (processor.debugCanvas) {
+      // 프레임 분석 요청
+      const result = processor.processFrame(data.frame, data.drawDebug);
+      postToMain({
+        type: 'frame:done',
+        result,
+      });
+      if (data.drawDebug) {
         postToMain({
           type: 'debug',
           image: processor.debugCanvas.transferToImageBitmap(),
         });
       }
-      postToMain({
-        type: 'frame:done',
-        result,
-        gems: result,
-      });
       break;
   }
 };

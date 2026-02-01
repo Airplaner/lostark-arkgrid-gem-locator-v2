@@ -144,7 +144,7 @@
       // 분석 이후 현재 임시 젬 저장소에 반영
       applyCurrentGems(gemAttr, gems);
     };
-    controller.startCapture(true);
+    controller.startCapture();
   }
 
   async function stopGemCapture() {
@@ -158,6 +158,10 @@
         debugCanvas.height = 0;
       }
     }
+  }
+  async function toggleDrawDebug() {
+    const controller = await getCaptureController();
+    isDebugging = controller.toggleDrawDebug();
   }
 </script>
 
@@ -190,36 +194,11 @@
         {:else}
           <button onclick={stopGemCapture}>🖥️ 화면 공유 종료</button>
         {/if}
-        <button
-          class:active={isDebugging}
-          onclick={() => (isDebugging = !isDebugging)}
-          disabled={!isRecording}
-        >
+        <button class:active={isDebugging} onclick={toggleDrawDebug} disabled={!isRecording}>
           공유 중인 화면 {isDebugging ? '끄기' : '보기'}
         </button>
       </div>
-      <div class="right">
-        <button
-          hidden={!appConfig.current.uiConfig.debugMode}
-          onclick={() => {
-            if (appConfig.current.locale == 'ko_kr') {
-              if (
-                !window.confirm(
-                  'Would you like to switch the screen recognition to the English client? ' +
-                    'Even you enabled the feature, this site has not been translated into English. ' +
-                    'Please use your browser’s translation feature.\n\n' +
-                    '영문 클라이언트를 사용자를 위한 기능입니다. 화면 인식 기준을 영문 클라이언트로 전환하시겠습니까?'
-                )
-              ) {
-                return;
-              }
-            }
-            captureController.dispose();
-            toggleLocale();
-          }}
-          disabled={isRecording}>Locale: {appConfig.current.locale}</button
-        >
-      </div>
+      <div class="right"></div>
     </div>
     <div hidden={!isDebugging}>
       <div class="debug-screen">
