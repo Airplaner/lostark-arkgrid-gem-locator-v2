@@ -4,7 +4,7 @@
   import { type ArkGridAttr, ArkGridAttrs } from '../lib/constants/enums';
   import { CaptureController } from '../lib/cv/captureController';
   import { type ArkGridGem, isSameArkGridGem } from '../lib/models/arkGridGems';
-  import { appConfig, toggleLocale, toggleUI } from '../lib/state/appConfig.state.svelte';
+  import { appConfig, toggleUI } from '../lib/state/appConfig.state.svelte';
   import GemRecognitionGemList from './GemRecognitionGemList.svelte';
 
   const guideImages = import.meta.glob<string>('../assets/guide/*.png', {
@@ -21,7 +21,6 @@
   const StringDetectionMargin = ['일반', '여유', '최대'];
   let gemListElem: GemRecognitionGemList | null = null;
 
-  onDestroy(async () => {});
   let _captureController: CaptureController | null = null;
 
   async function getCaptureController() {
@@ -171,10 +170,7 @@
       // controller 중단 요청 및 완료 이후 중단
       await controller.stopCapture();
       isRecording = false;
-      if (debugCanvas) {
-        debugCanvas.width = 0;
-        debugCanvas.height = 0;
-      }
+      debugCanvas?.getContext('2d')?.reset();
     }
   }
   async function toggleDrawDebug() {
@@ -220,7 +216,7 @@
         {:else}
           <button onclick={stopGemCapture}>🖥️ 화면 공유 종료</button>
         {/if}
-        <button class:active={isDebugging} onclick={toggleDrawDebug} disabled={!isRecording}>
+        <button class:active={isDebugging} onclick={toggleDrawDebug}>
           🔨 공유 중인 화면 {isDebugging ? '끄기' : '보기'}
         </button>
       </div>
