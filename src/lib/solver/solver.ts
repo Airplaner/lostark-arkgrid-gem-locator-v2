@@ -1,6 +1,15 @@
-import { Core } from './models';
-import { Gem } from './models';
-import { GemSet, GemSetPack } from './models';
+import { Core, Gem, GemSet, GemSetPack } from './models';
+
+export function getMaxStat(gss: GemSet[], statType: 'att' | 'skill' | 'boss') {
+  // 주어진 GemSet[]에서 가장 높은 statType의 값을 가져옵니다.
+  let result = 0;
+  for (const gs of gss) {
+    if (gs[statType] > result) {
+      result = gs[statType];
+    }
+  }
+  return result;
+}
 
 export function getPossibleGemSets(core: Core, gems: Gem[]): GemSet[] {
   // 주어진 gems을 사용해서 요구하는 energy와 point를 모두 충족하는 집합을 반환합니다.
@@ -18,7 +27,7 @@ export function getPossibleGemSets(core: Core, gems: Gem[]): GemSet[] {
     const ei = energy - g[i].req;
     const pi = g[i].point;
 
-    if (pi >= point && ei >= 0) result.push(new GemSet((gems = [g[i]]), core));
+    if (pi >= point && ei >= 0) result.push(new GemSet([g[i]], core));
 
     if (ei < 3) break;
     if (pi + 15 < point) continue;
@@ -26,24 +35,23 @@ export function getPossibleGemSets(core: Core, gems: Gem[]): GemSet[] {
     for (let j = i + 1; j < n; j++) {
       const ej = ei - g[j].req;
       const pj = pi + g[j].point;
-      if (pj >= point && ej >= 0) result.push(new GemSet((gems = [g[i], g[j]]), core));
-      if (ej < 3) continue;
+      if (pj >= point && ej >= 0) result.push(new GemSet([g[i], g[j]], core));
       if (ej < 0) break;
+      if (ej < 3) continue;
       if (pj + 10 < point) continue;
 
       for (let k = j + 1; k < n; k++) {
         const ek = ej - g[k].req;
         const pk = pj + g[k].point;
-        if (pk >= point && ek >= 0) result.push(new GemSet((gems = [g[i], g[j], g[k]]), core));
-        if (ek < 3) continue;
+        if (pk >= point && ek >= 0) result.push(new GemSet([g[i], g[j], g[k]], core));
         if (ek < 0) break;
+        if (ek < 3) continue;
         if (pk + 5 < point) continue;
         for (let m = k + 1; m < n; m++) {
           const el = ek - g[m].req;
           const pl = pk + g[m].point;
           if (el < 0) break;
-          if (pl >= point && el >= 0)
-            result.push(new GemSet((gems = [g[i], g[j], g[k], g[m]]), core));
+          if (pl >= point && el >= 0) result.push(new GemSet([g[i], g[j], g[k], g[m]], core));
         }
       }
     }
