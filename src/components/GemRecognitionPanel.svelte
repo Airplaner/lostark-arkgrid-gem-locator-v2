@@ -125,16 +125,30 @@
   async function startGemCapture() {
     // 젬 캡쳐 시작
     const controller = await getCaptureController();
-    if (!controller.isIdle()) {
-      window.alert('CaptureController is not idle state');
-      return;
-    }
     // UI 잠금
     isLoading = true;
 
     // register callbacks
     controller.onLoad = () => {
       // 로딩 끝나면 UI 로딩 해제
+      isLoading = false;
+    };
+    controller.onStartCaptureError = (err) => {
+      let msg = '알 수 없는 에러가 발생하였습니다.';
+      switch (err) {
+        case 'recording':
+          msg = '이미 녹화 중입니다.';
+          break;
+        case 'screen-permission-denied':
+          msg = '화면 공유를 거부하였습니다.';
+          break;
+        case 'worker-init-failed':
+          msg = '분석 엔진을 준비하는데 실패하였습니다.';
+          break;
+        default:
+          msg = '알 수 없는 에러가 발생하였습니다';
+      }
+      window.alert(msg);
       isLoading = false;
     };
     controller.onReady = () => {
@@ -144,6 +158,9 @@
     controller.onFrameDone = (gemAttr, gems) => {
       // 분석 이후 현재 임시 젬 저장소에 반영
       applyCurrentGems(gemAttr, gems);
+    };
+    controller.onStop = () => {
+      isRecording = false;
     };
     controller.startCapture();
   }
@@ -204,7 +221,7 @@
           <button onclick={stopGemCapture}>🖥️ 화면 공유 종료</button>
         {/if}
         <button class:active={isDebugging} onclick={toggleDrawDebug} disabled={!isRecording}>
-          공유 중인 화면 {isDebugging ? '끄기' : '보기'}
+          🔨 공유 중인 화면 {isDebugging ? '끄기' : '보기'}
         </button>
       </div>
       <div class="right"></div>
@@ -260,21 +277,17 @@
             </p>
             <p>
               Q. 젬이 인식되지 않습니다.<br />
-              A. [공유 중인 화면 보기]를 눌러 다음 사항을 확인해주세요.
+              A. [🔨 공유 중인 화면 보기]를 눌러 다음 사항을 확인해주세요.
             </p>
             <ol>
-              <li>게임 화면이 올바르게 나오고 갱신 중인지 확인해주세요.</li>
-              <li>
-                '아크 그리드 젬 목록을 찾을 수 없습니다' 문구가 보이는 경우, 게임 내에서 아크 그리드
-                창을 연 뒤 젬 목록을 열어주세요.
-              </li>
+              <li>게임 화면이 올바르게 갱신 중인지 확인해주세요.</li>
               <li>
                 젬 옵션을 추출하는 영역이 실제 위치와 일치하지 않는다면 게임 해상도를 "1920x1080
                 (16:9)"로 화면을 "창 모드"로 변경해주세요.
               </li>
               <li>
-                젬 옵션을 추출하는 영역 중 일부가 빨갛게 되어 있다면 상단 '화면 인식 정밀도'를
-                낮춰서 시도해주세요.
+                젬 옵션을 추출하는 영역 중 일부가 빨갛게 되어 있다면 상단 '허용 오차 범위'
+                슬라이더를 높혀서 시도해주세요.
               </li>
               <br />
             </ol>

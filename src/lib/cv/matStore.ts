@@ -7,8 +7,8 @@ import {
   type ArkGridGemOptionType,
   ArkGridGemOptionTypes,
 } from '../models/arkGridGems';
-import { type EnUsTemplateName, enUsCoords } from '../opencv-template-coords/en_us';
-import { type KoKrTemplateName, koKrCoords } from '../opencv-template-coords/ko_kr';
+import { EnUsFileName, type EnUsTemplateName, enUsCoords } from '../opencv-template-coords/en_us';
+import { KoKrFileName, type KoKrTemplateName, koKrCoords } from '../opencv-template-coords/ko_kr';
 import { type AppLocale, supportedLocales } from '../state/appConfig.state.svelte';
 import { type MatchingAtlas, generateMatchingAtlas } from './atlas';
 import { getCv } from './cvRuntime';
@@ -48,13 +48,13 @@ async function loadGemTemplates(): Promise<GemTemplates> {
     en_us: {} as any,
   };
 
-  const koSprite = await fetchSpriteMat(`${import.meta.env.BASE_URL}/opencv_template_ko_kr.png`);
+  const koSprite = await fetchSpriteMat(`${import.meta.env.BASE_URL}/${KoKrFileName}`);
   for (const [name, rect] of Object.entries(koKrCoords)) {
     result.ko_kr[name] = koSprite.roi(new cv.Rect(rect.x, rect.y, rect.w, rect.h));
   }
   koSprite.delete();
 
-  const enSprite = await fetchSpriteMat(`${import.meta.env.BASE_URL}/opencv_template_en_us.png`);
+  const enSprite = await fetchSpriteMat(`${import.meta.env.BASE_URL}/${EnUsFileName}`);
   for (const [name, rect] of Object.entries(enUsCoords)) {
     result.en_us[name] = enSprite.roi(new cv.Rect(rect.x, rect.y, rect.w, rect.h));
   }

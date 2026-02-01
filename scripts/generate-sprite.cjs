@@ -9,9 +9,19 @@ const templateFolders = [
 
 const publicDir = './public';
 const tsOutputDir = './src/lib/opencv-template-coords';
+const currentTimestamp = Date.now();
 
 // TS output 폴더가 없으면 생성
 if (!fs.existsSync(tsOutputDir)) fs.mkdirSync(tsOutputDir, { recursive: true });
+
+// ✅ 기존 public 폴더에 있는 opencv_template_*.png 삭제
+fs.readdirSync(publicDir)
+  .filter((f) => f.startsWith('opencv_template_') && f.endsWith('.png'))
+  .forEach((f) => {
+    const filePath = path.join(publicDir, f);
+    fs.unlinkSync(filePath);
+    console.log(`Deleted old sprite: ${filePath}`);
+  });
 
 templateFolders.forEach(({ folder, lang }) => {
   const files = fs
@@ -31,7 +41,8 @@ templateFolders.forEach(({ folder, lang }) => {
     }
 
     // 스프라이트 이미지 저장
-    const spritePath = path.join(publicDir, `opencv_template_${lang}.png`);
+    const fileNameWithTimestamp = `opencv_template_${lang}_${currentTimestamp}.png`;
+    const spritePath = path.join(publicDir, fileNameWithTimestamp);
     fs.writeFileSync(spritePath, result.image);
     console.log(`Saved sprite: ${spritePath}`);
 
@@ -53,8 +64,9 @@ templateFolders.forEach(({ folder, lang }) => {
     tsContentLines.push('} as const;\n');
 
     // TemplateName 타입 추가
-    const typeName = lang === 'ko_kr' ? 'KoKrTemplateName' : 'EnUsTemplateName';
-    tsContentLines.push(`export type ${typeName} = keyof typeof ${langConstName};\n`);
+    const prefix = lang === 'ko_kr' ? 'KoKr' : 'EnUs';
+    tsContentLines.push(`export type ${prefix}TemplateName = keyof typeof ${langConstName};\n`);
+    tsContentLines.push(`export const ${prefix}FileName = "${fileNameWithTimestamp}";\n`);
 
     fs.writeFileSync(tsPath, tsContentLines.join('\n'));
     console.log(`Saved TS coords with type: ${tsPath}`);

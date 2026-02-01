@@ -393,8 +393,12 @@ self.onmessage = async (e: MessageEvent<CaptureWorkerRequest>) => {
   switch (data.type) {
     case 'init':
       // 초기화 요청
-      await processor.init();
-      postToMain({ type: 'init:done' });
+      try {
+        await processor.init();
+        postToMain({ type: 'init:done' });
+      } catch {
+        postToMain({ type: 'init:error' });
+      }
       break;
 
     case 'frame':

@@ -17,6 +17,7 @@ export type CaptureWorkerRequest =
 // worker → main
 export type CaptureWorkerResponse =
   | { type: 'init:done' }
+  | { type: 'init:error' }
   | {
       type: 'frame:done';
       result:
