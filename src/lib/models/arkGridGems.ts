@@ -83,6 +83,21 @@ export function determineGemGrade(
       ? LostArkGrades.RELIC
       : LostArkGrades.ANCIENT;
 }
+export function determineGemGradeByGem(gem: ArkGridGem) {
+  let basePoint = 8;
+  const name = gem.name;
+  if (name === '질서의 젬 : 견고' || name === '혼돈의 젬 : 왜곡') {
+    basePoint = 9;
+  } else if (name === '질서의 젬 : 불변' || name === '혼돈의 젬 : 붕괴') {
+    basePoint = 10;
+  }
+  const totalPoint = basePoint - gem.req + gem.point + gem.option1.value + gem.option2.value;
+  return totalPoint < 16
+    ? LostArkGrades.LEGENDARY
+    : totalPoint < 19
+      ? LostArkGrades.RELIC
+      : LostArkGrades.ANCIENT;
+}
 
 export function isSameArkGridGem(a: ArkGridGem | undefined, b: ArkGridGem | undefined): boolean {
   if (a === undefined || b === undefined) return false;
