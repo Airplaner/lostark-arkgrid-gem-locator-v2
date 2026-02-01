@@ -108,12 +108,13 @@ class FrameProcessor {
   findBest<K extends string>(
     t: RecgonitionTarget<K>,
     frame: CvMat,
-    debugCtx?: OffscreenCanvasRenderingContext2D | null
+    debugCtx?: OffscreenCanvasRenderingContext2D | null,
+    method?: number
   ): MatchingResult<K> | null {
     // 주어진 target을 찾고
     if (!this.cv) throw Error('cv is not ready');
     const roi = new this.cv.Rect(t.roi.x, t.roi.y, t.roi.width, t.roi.height);
-    const match = getBestMatch(frame, t.atlas, roi);
+    const match = getBestMatch(frame, t.atlas, roi, method);
     if (!match) return null;
     if (debugCtx) {
       showMatch(debugCtx, roi, match, {
@@ -198,7 +199,8 @@ class FrameProcessor {
           threshold: this.thresholdSet.anchor - detectionMargin,
         },
         resizedFrame,
-        debugCtx
+        debugCtx,
+        cv.TM_CCOEFF_NORMED
       );
       if (!anchor) {
         // 못 찾았으면 초기화 시킨 후 다음 프레임에 찾도록 시킴
