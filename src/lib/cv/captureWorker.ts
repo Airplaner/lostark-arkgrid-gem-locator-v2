@@ -36,7 +36,7 @@ class FrameProcessor {
   private initPromise: Promise<void> | null = null;
 
   // debug
-  private debugCanvas: OffscreenCanvas = new OffscreenCanvas(0, 0);
+  debugCanvas: OffscreenCanvas = new OffscreenCanvas(0, 0);
 
   // frame
   private canvas: OffscreenCanvas = new OffscreenCanvas(0, 0);
@@ -49,7 +49,8 @@ class FrameProcessor {
     gemImage: 0.8,
     willPower: 0.8,
     corePoint: 0.8,
-    default: 0.8,
+    optionName: 0.8,
+    optionLevel: 0.8,
   };
   constructor() {}
 
@@ -122,7 +123,7 @@ class FrameProcessor {
     return null;
   }
 
-  processFrame(frame: VideoFrame, drawDebug: boolean = false) {
+  processFrame(frame: VideoFrame, drawDebug: boolean = false, detectionMargin: number = 0) {
     const canvas = this.canvas;
     const ctx = this.ctx;
     let resizedFrame: CvMat | null = null;
@@ -150,20 +151,25 @@ class FrameProcessor {
           debugCtx.fillStyle = 'white';
           debugCtx.strokeStyle = 'black'; // 테두리 색
           debugCtx.lineWidth = 10 * resolutionScale; // 테두리 두께
-          const x = 25;
-          const y = 100;
-          // 테두리 먼저 그리기
-          debugCtx.strokeText(
-            `해상도: ${expectedResolution} (${frame.displayWidth}x${frame.displayHeight})`,
-            x,
-            y
-          );
-          // 그 위에 흰 글씨 채우기
-          debugCtx.fillText(
-            `해상도: ${expectedResolution} (${frame.displayWidth}x${frame.displayHeight})`,
-            x,
-            y
-          );
+          let x = 25;
+          let y = 100;
+          // 테두리 먼저 그리고 흰 글씨 채우기
+          let msg = `해상도: ${expectedResolution} (${frame.displayWidth}x${frame.displayHeight})`;
+          debugCtx.strokeText(msg, x, y);
+          debugCtx.fillText(msg, x, y);
+          y += 40;
+
+          debugCtx.font = '20px Arial';
+          msg = '매칭 정밀도';
+          debugCtx.strokeText(msg, x, y);
+          debugCtx.fillText(msg, x, y);
+          y += 20;
+          for (const [key, value] of Object.entries(this.thresholdSet)) {
+            const msg = `${key}: ${(value - detectionMargin).toFixed(2)}`;
+            debugCtx.strokeText(msg, x, y);
+            debugCtx.fillText(msg, x, y);
+            y += 20;
+          }
         }
       }
 
@@ -182,7 +188,7 @@ class FrameProcessor {
         {
           roi: roiAnchor,
           atlas: this.loadedAsset.atlasAnchor,
-          threshold: this.thresholdSet.anchor,
+          threshold: this.thresholdSet.anchor - detectionMargin,
         },
         resizedFrame,
         debugCtx
@@ -211,7 +217,7 @@ class FrameProcessor {
         {
           roi: { x: anchorX - 186, y: anchorY + 91, width: 224, height: 24 },
           atlas: this.loadedAsset.atlasGemAttr[currentLocale],
-          threshold: this.thresholdSet.gemAttr,
+          threshold: this.thresholdSet.gemAttr - detectionMargin,
         },
         resizedFrame,
         debugCtx
@@ -230,7 +236,7 @@ class FrameProcessor {
           {
             roi: { x: rowX + 9, y: rowY + 14, width: 30, height: 30 },
             atlas: this.loadedAsset.altasGemImage[currentLocale],
-            threshold: this.thresholdSet.gemImage,
+            threshold: this.thresholdSet.gemImage - detectionMargin,
           },
           resizedFrame,
           debugCtx
@@ -241,7 +247,7 @@ class FrameProcessor {
           {
             roi: { x: rowX + 65, y: rowY, width: 18, height: 30 },
             atlas: this.loadedAsset.atlasWillPower[currentLocale],
-            threshold: this.thresholdSet.willPower,
+            threshold: this.thresholdSet.willPower - detectionMargin,
           },
           resizedFrame,
           debugCtx
@@ -252,7 +258,7 @@ class FrameProcessor {
           {
             roi: { x: rowX + 65, y: rowY + 30, width: 18, height: 30 },
             atlas: this.loadedAsset.atlasCorePoint[currentLocale],
-            threshold: this.thresholdSet.corePoint,
+            threshold: this.thresholdSet.corePoint - detectionMargin,
           },
           resizedFrame,
           debugCtx
@@ -268,7 +274,7 @@ class FrameProcessor {
               height: 30,
             },
             atlas: this.loadedAsset.atalsOptionString[currentLocale],
-            threshold: this.thresholdSet.default,
+            threshold: this.thresholdSet.optionName - detectionMargin,
           },
           resizedFrame,
           debugCtx
@@ -286,7 +292,7 @@ class FrameProcessor {
               height: 30,
             },
             atlas: this.loadedAsset.atalsOptionLevel[currentLocale],
-            threshold: this.thresholdSet.default,
+            threshold: this.thresholdSet.optionLevel - detectionMargin,
           },
           resizedFrame,
           debugCtx
@@ -302,7 +308,7 @@ class FrameProcessor {
               height: 30,
             },
             atlas: this.loadedAsset.atalsOptionString[currentLocale],
-            threshold: this.thresholdSet.default,
+            threshold: this.thresholdSet.optionName - detectionMargin,
           },
           resizedFrame,
           debugCtx
@@ -320,7 +326,7 @@ class FrameProcessor {
               height: 30,
             },
             atlas: this.loadedAsset.atalsOptionLevel[currentLocale],
-            threshold: this.thresholdSet.default,
+            threshold: this.thresholdSet.optionLevel - detectionMargin,
           },
           resizedFrame,
           debugCtx
@@ -379,7 +385,7 @@ self.onmessage = async (e: MessageEvent<CaptureWorkerRequest>) => {
 
     case 'frame':
       // 프레임 분석 요청
-      const result = processor.processFrame(data.frame, data.drawDebug);
+      const result = processor.processFrame(data.frame, data.drawDebug, data.detectionMargin);
       postToMain({
         type: 'frame:done',
         result,

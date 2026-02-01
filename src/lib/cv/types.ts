@@ -11,7 +11,7 @@ export type CvPoint = CV.Point;
 // main → worker
 export type CaptureWorkerRequest =
   | { type: 'init' } // init worker
-  | { type: 'frame'; frame: VideoFrame; drawDebug: boolean } // send frame
+  | { type: 'frame'; frame: VideoFrame; drawDebug: boolean; detectionMargin: number } // send frame
   | { type: 'stop' };
 
 // worker → main

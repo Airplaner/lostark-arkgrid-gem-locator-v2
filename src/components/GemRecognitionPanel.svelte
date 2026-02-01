@@ -17,7 +17,8 @@
   let isRecording = $state<boolean>(false);
   let isDebugging = $state<boolean>(false);
   let isLoading = $state<boolean>(false);
-  let detectionThreshold = $state<number>(0.75);
+  let detectionMargin = $state<number>(0);
+  const StringDetectionMargin = ['일반', '여유', '최대'];
   let gemListElem: GemRecognitionGemList | null = null;
 
   onDestroy(async () => {});
@@ -163,6 +164,14 @@
     const controller = await getCaptureController();
     isDebugging = controller.toggleDrawDebug();
   }
+  async function updateControllerDetectionMargin(detectionMargin: number) {
+    const controller = await getCaptureController();
+    controller.detectionMargin = detectionMargin;
+  }
+  onDestroy(async () => {
+    const controller = await getCaptureController();
+    await controller.stopCapture();
+  });
 </script>
 
 <div class="panel">
@@ -203,15 +212,18 @@
     <div hidden={!isDebugging}>
       <div class="debug-screen">
         <div class="threshold-controller">
-          <label for="slider">화면 인식 정밀도 {detectionThreshold}</label>
           <input
             id="slider"
             type="range"
-            min="0.5"
-            max="0.85"
-            step="0.05"
-            bind:value={detectionThreshold}
+            min="0"
+            max="2"
+            step="1"
+            bind:value={detectionMargin}
+            oninput={async () => {
+              await updateControllerDetectionMargin(detectionMargin / 10);
+            }}
           />
+          <label for="slider">허용 오차 범위: {StringDetectionMargin[detectionMargin]}</label>
         </div>
         <canvas bind:this={debugCanvas} style="border: 1px black solid;"></canvas>
       </div>
@@ -377,7 +389,7 @@
     gap: 1rem;
   }
   .debug-screen > .threshold-controller > label {
-    width: 9.5rem;
+    width: 20rem;
   }
   .debug-screen > .threshold-controller > input {
     transform: translateY(2px);

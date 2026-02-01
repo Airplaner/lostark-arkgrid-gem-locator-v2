@@ -11,6 +11,7 @@ export class CaptureController {
 
   // web worker
   private worker: Worker | null = null;
+  detectionMargin: number = 0;
 
   // debug
   private drawDebug: boolean = false;
@@ -210,7 +211,12 @@ export class CaptureController {
         // 현재 frame을 postMessage
         const start = performance.now();
         this.worker.postMessage(
-          { type: 'frame', frame: value, drawDebug: this.drawDebug } satisfies CaptureWorkerRequest,
+          {
+            type: 'frame',
+            frame: value,
+            drawDebug: this.drawDebug,
+            detectionMargin: this.detectionMargin,
+          } satisfies CaptureWorkerRequest,
           [value]
         );
         value = undefined;
