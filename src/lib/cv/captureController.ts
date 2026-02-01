@@ -21,9 +21,6 @@ export class CaptureController {
   private awaitWorkerInitialization: (() => void) | null = null;
   private awaitFrameCompletion: (() => void) | null = null;
 
-  // 성능 측정용
-  private frameTimes: number[] = [];
-
   // 외부 등록 콜백
   onFrameDone: ((gemAttr: ArkGridAttr, gems: ArkGridGem[]) => void) | null = null; // 분석 완료
   onLoad: (() => void) | null = null; // worker 준비 완료
@@ -209,7 +206,6 @@ export class CaptureController {
           this.awaitFrameCompletion = resolve;
         });
         // 현재 frame을 postMessage
-        const start = performance.now();
         this.worker.postMessage(
           {
             type: 'frame',
@@ -222,16 +218,6 @@ export class CaptureController {
         value = undefined;
         // 주의: value 소유권은 worker에게 넘어갔으니 더 이상 건드리면 안 되기에 undefined
         await waitForAnalysis;
-
-        const timeElapsed = performance.now() - start;
-        this.frameTimes.push(timeElapsed);
-        while (this.frameTimes.length > 10) {
-          this.frameTimes.shift();
-        }
-        console.log(
-          `${timeElapsed.toFixed(2)}ms`,
-          `fps: ${(1000 / (this.frameTimes.reduce((acc, v) => acc + v, 0) / this.frameTimes.length)).toFixed(2)}`
-        );
       } finally {
         // 모종의 사유로 value의 소유권이 넘어가지 않았으면 controller에서 종료
         value?.close();

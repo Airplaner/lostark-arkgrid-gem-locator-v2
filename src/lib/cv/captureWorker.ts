@@ -37,6 +37,7 @@ class FrameProcessor {
 
   // debug
   debugCanvas: OffscreenCanvas = new OffscreenCanvas(0, 0);
+  private frameTimes: number[] = [];
 
   // frame
   private canvas: OffscreenCanvas = new OffscreenCanvas(0, 0);
@@ -124,6 +125,7 @@ class FrameProcessor {
   }
 
   processFrame(frame: VideoFrame, drawDebug: boolean = false, detectionMargin: number = 0) {
+    const start = performance.now();
     const canvas = this.canvas;
     const ctx = this.ctx;
     let resizedFrame: CvMat | null = null;
@@ -154,13 +156,18 @@ class FrameProcessor {
           let x = 25;
           let y = 100;
           // 테두리 먼저 그리고 흰 글씨 채우기
-          let msg = `해상도: ${expectedResolution} (${frame.displayWidth}x${frame.displayHeight})`;
+          let msg = `Resolution: ${expectedResolution} (${frame.displayWidth}x${frame.displayHeight})`;
+          debugCtx.strokeText(msg, x, y);
+          debugCtx.fillText(msg, x, y);
+          y += 40;
+
+          msg = `FPS: ${(1000 / (this.frameTimes.reduce((acc, v) => acc + v, 0) / this.frameTimes.length)).toFixed(2)}`;
           debugCtx.strokeText(msg, x, y);
           debugCtx.fillText(msg, x, y);
           y += 40;
 
           debugCtx.font = '20px Arial';
-          msg = '매칭 정밀도';
+          msg = 'OpenCV Matching Threshold';
           debugCtx.strokeText(msg, x, y);
           debugCtx.fillText(msg, x, y);
           y += 20;
@@ -365,6 +372,8 @@ class FrameProcessor {
     } finally {
       if (resizedFrame) resizedFrame.delete();
       frame.close();
+      this.frameTimes.push(performance.now() - start);
+      if (this.frameTimes.length > 10) this.frameTimes.shift();
     }
   }
 }
