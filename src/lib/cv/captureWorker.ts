@@ -1,6 +1,11 @@
 import type { CV } from '@techstark/opencv-js';
 
-import { type ArkGridGem, determineGemGrade, determineGemGradeByGem } from '../models/arkGridGems';
+import {
+  ARKGRID_GEM_NAME,
+  type ArkGridGem,
+  determineGemGrade,
+  determineGemGradeByGem,
+} from '../models/arkGridGems';
 import type { AppLocale } from '../state/appConfig.state.svelte';
 import type { MatchingAtlas } from './atlas';
 import { getCv, initOpenCv } from './cvRuntime';
@@ -350,7 +355,7 @@ class FrameProcessor {
         ) {
           const gem: ArkGridGem = {
             gemAttr: gemAttr.key,
-            name: gemName.key,
+            name: ARKGRID_GEM_NAME[gemName.key].ko,
             req: Number(willPower.key),
             point: Number(corePoint.key),
             option1: {
