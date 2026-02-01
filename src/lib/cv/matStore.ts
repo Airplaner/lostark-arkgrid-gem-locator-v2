@@ -1,7 +1,12 @@
 /**
  * 스프라이트 이미지를 한 번 fetch → cv.Mat 생성
  */
-import { type ArkGridAttr, ArkGridAttrs } from '../constants/enums';
+import {
+  type AppLocale,
+  type ArkGridAttr,
+  ArkGridAttrs,
+  supportedLocales,
+} from '../constants/enums';
 import {
   type ArkGridGemName,
   type ArkGridGemOptionType,
@@ -9,7 +14,6 @@ import {
 } from '../models/arkGridGems';
 import { EnUsFileName, type EnUsTemplateName, enUsCoords } from '../opencv-template-coords/en_us';
 import { KoKrFileName, type KoKrTemplateName, koKrCoords } from '../opencv-template-coords/ko_kr';
-import { type AppLocale, supportedLocales } from '../state/appConfig.state.svelte';
 import { type MatchingAtlas, generateMatchingAtlas } from './atlas';
 import { getCv } from './cvRuntime';
 import type { CvMat } from './types';

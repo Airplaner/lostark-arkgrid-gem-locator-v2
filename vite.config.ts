@@ -7,6 +7,7 @@ export default defineConfig({
   base: '/lostark-arkgrid-gem-locator-v2/',
   worker: {
     format: 'es',
+    plugins: () => [svelte()],
     // 'es': ES 모듈 형식으로 Worker 번들링 (import/export 사용 가능)
     // 'iife': 즉시 실행 함수 형식 (레거시 브라우저 지원)
     //

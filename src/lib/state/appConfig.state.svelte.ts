@@ -1,6 +1,11 @@
 import { persistedState } from 'svelte-persisted-state';
 
-import { type ArkGridAttr, ArkGridAttrs, DEFAULT_PROFILE_NAME } from '../constants/enums';
+import {
+  type AppLocale,
+  type ArkGridAttr,
+  ArkGridAttrs,
+  DEFAULT_PROFILE_NAME,
+} from '../constants/enums';
 import { type ArkGridCore, type ArkGridCoreType, ArkGridCoreTypes } from '../models/arkGridCores';
 import { apiClient } from '../openapi/openapi';
 import { type CharacterProfile, initNewProfile, migrateProfile } from './profile.state.svelte';
@@ -22,8 +27,6 @@ const defaultUIConfig: UIConfig = {
   debugMode: false,
   darkMode: false,
 };
-export type AppLocale = 'ko_kr' | 'en_us';
-export const supportedLocales: AppLocale[] = ['ko_kr', 'en_us'];
 
 interface AppConfig {
   characterProfiles: CharacterProfile[];

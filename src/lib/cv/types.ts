@@ -1,8 +1,7 @@
 import CV from '@techstark/opencv-js';
 
-import type { ArkGridAttr } from '../constants/enums';
+import type { AppLocale, ArkGridAttr } from '../constants/enums';
 import type { ArkGridGem } from '../models/arkGridGems';
-import type { AppLocale } from '../state/appConfig.state.svelte';
 
 export type CvMat = CV.Mat;
 export type CvRect = CV.Rect;

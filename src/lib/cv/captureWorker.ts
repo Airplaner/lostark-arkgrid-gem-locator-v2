@@ -1,12 +1,7 @@
 import type { CV } from '@techstark/opencv-js';
 
-import {
-  ARKGRID_GEM_NAME,
-  type ArkGridGem,
-  determineGemGrade,
-  determineGemGradeByGem,
-} from '../models/arkGridGems';
-import type { AppLocale } from '../state/appConfig.state.svelte';
+import type { AppLocale } from '../constants/enums';
+import { ARKGRID_GEM_NAME, type ArkGridGem, determineGemGradeByGem } from '../models/arkGridGems';
 import type { MatchingAtlas } from './atlas';
 import { getCv, initOpenCv } from './cvRuntime';
 import { showMatch } from './debug';
