@@ -13,7 +13,6 @@ export class CaptureController {
   private awaitFrameCompletion: (() => void) | null = null;
   private frameTimes: number[] = [];
   private imageTimes: number[][] = Array.from({ length: 9 }, () => []);
-  private static readonly MAX_SAMPLES = 100;
   onFrameDone: ((gemAttr: ArkGridAttr, gems: ArkGridGem[]) => void) | null = null; // 외부에서 등록해주면 분석 완료됐을 때 불러줌
 
   constructor(debugCanvas?: HTMLCanvasElement | null) {
@@ -23,7 +22,6 @@ export class CaptureController {
   // type-safe wrapper
   postMessage(msg: CaptureWorkerRequest) {
     if (!this.worker) throw Error('worker is not set');
-    console.log('send message', msg);
     this.worker.postMessage(msg);
   }
   getFrameStats() {
@@ -55,7 +53,6 @@ export class CaptureController {
   }
   private handleWorkerMessage(e: MessageEvent<CaptureWorkerResponse>) {
     const data = e.data;
-    console.log('message come', e.data);
 
     switch (data.type) {
       case 'init:done':
@@ -207,11 +204,22 @@ export class CaptureController {
         this.awaitFrameCompletion = resolve;
       });
       // 현재 frame을 postMessage
+      const start = performance.now();
       this.worker.postMessage({ type: 'frame', frame: value } satisfies CaptureWorkerRequest, [
         value,
       ]);
       // 주의: value 소유권은 worker에게 넘어갔으니 더 이상 건드리면 안 됨
       await waitForAnalysis;
+
+      const timeElapsed = performance.now() - start;
+      this.frameTimes.push(timeElapsed);
+      while (this.frameTimes.length > 10) {
+        this.frameTimes.shift();
+      }
+      console.log(
+        `${timeElapsed.toFixed(2)}ms`,
+        `fps: ${(1000 / (this.frameTimes.reduce((acc, v) => acc + v, 0) / this.frameTimes.length)).toFixed(2)}`
+      );
     }
     // loop가 탈출되면 idle로 설정
     this.state = 'idle';

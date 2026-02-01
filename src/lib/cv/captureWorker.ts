@@ -37,6 +37,7 @@ class FrameProcessor {
   private ctx = this.canvas.getContext('2d')!;
   private initPromise: Promise<void> | null = null;
   private cv: CV | null = null;
+  private previousInfo: { locale: AppLocale; anchorLoc: { x: number; y: number } } | null = null;
   thresholdSet = {
     anchor: 0.95,
     gemAttr: 0.9,
@@ -122,6 +123,7 @@ class FrameProcessor {
     let resizedFrame: CvMat | null = null;
     let debugCtx: OffscreenCanvasRenderingContext2D | null = null;
     const cv = this.cv;
+    if (!cv) return;
 
     try {
       if (!this.loadedAsset) return;
@@ -161,24 +163,48 @@ class FrameProcessor {
       }
 
       // 1. anchor 찾기
-      const anchor = this.findBest<AppLocale>(
+
+      // 이전 위치가 없다면 전역에서 탐색 후 반영
+      const roiAnchor = this.previousInfo
+        ? {
+            x: this.previousInfo.anchorLoc.x,
+            y: this.previousInfo.anchorLoc.y,
+            width: this.loadedAsset.atlasAnchor.entries[this.previousInfo.locale].width,
+            height: this.loadedAsset.atlasAnchor.entries[this.previousInfo.locale].height,
+          }
+        : { x: canvas.width / 2, y: 0, width: canvas.width / 2, height: canvas.height / 2 };
+      const anchor = this.findBest(
         {
-          roi: { x: canvas.width / 2, y: 36, width: canvas.width / 2, height: canvas.height / 2 },
+          roi: roiAnchor,
           atlas: this.loadedAsset.atlasAnchor,
           threshold: this.thresholdSet.anchor,
         },
         resizedFrame,
         debugCtx
       );
-      if (!anchor) return;
-      const currentLocale = anchor.key;
-      const anchorX = anchor.loc.x - 297;
-      const anchorY = anchor.loc.y;
+      if (!anchor) {
+        // 못 찾았으면 초기화 시킨 후 다음 프레임에 찾도록 시킴
+        this.previousInfo = null;
+        return;
+      } else {
+        // 찾았으면 반영
+        this.previousInfo = {
+          locale: anchor.key,
+          anchorLoc: {
+            x: anchor.loc.x,
+            y: anchor.loc.y,
+          },
+        };
+      }
 
-      //2
+      let currentLocale = this.previousInfo.locale;
+      let anchorX = this.previousInfo.anchorLoc.x;
+      let anchorY = this.previousInfo.anchorLoc.y;
+
+      //2 질서 혹은 혼돈 문구 탐색
       const gemAttr = this.findBest<KeyGemAttr>(
         {
-          roi: { x: anchorX + 111, y: anchorY + 91, width: 224, height: 24 },
+          roi: { x: anchorX - 186, y: anchorY + 91, width: 224, height: 24 },
           atlas: this.loadedAsset.atlasGemAttr[currentLocale],
           threshold: this.thresholdSet.anchor,
         },
@@ -191,7 +217,7 @@ class FrameProcessor {
       const currentGems: ArkGridGem[] = [];
       for (let i = 0; i < 9; i++) {
         // 젬 row의 위치 계산 (높이 61픽셀, gap 2픽셀)
-        const rowX = anchorX + 10;
+        const rowX = anchorX - 287;
         const rowY = anchorY + 213 + 63 * i;
 
         // 1) 젬 종류 (이름)
