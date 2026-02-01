@@ -34,7 +34,7 @@ class FrameProcessor {
   loadedAsset: Awaited<ReturnType<typeof loadGemAsset>> | null = null;
   debugCanvas: OffscreenCanvas | null = null;
   private canvas: OffscreenCanvas = new OffscreenCanvas(1, 1);
-  private ctx = this.canvas.getContext('2d')!;
+  private ctx = this.canvas.getContext('2d', { willReadFrequently: true })!;
   private initPromise: Promise<void> | null = null;
   private cv: CV | null = null;
   private previousInfo: { locale: AppLocale; anchorLoc: { x: number; y: number } } | null = null;

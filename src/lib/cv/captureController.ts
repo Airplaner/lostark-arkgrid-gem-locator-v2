@@ -3,54 +3,41 @@ import { type ArkGridGem, isSameArkGridGem } from '../models/arkGridGems';
 import type { CaptureWorkerRequest, CaptureWorkerResponse } from './types';
 
 export class CaptureController {
-  state: 'idle' | 'loading' | 'recording' | 'closing' = 'idle';
-  reader: ReadableStreamDefaultReader<VideoFrame> | null = null;
-  worker: Worker | null = null;
-  debugCanvas: HTMLCanvasElement | null = null;
+  private state: 'idle' | 'loading' | 'recording' | 'closing' = 'idle';
+
+  // 화면 녹화 기능들
+  private reader: ReadableStreamDefaultReader<VideoFrame> | null = null;
+  private track: MediaStreamVideoTrack | null = null;
+
+  // web worker
+  private worker: Worker | null = null;
+
+  // debug
+  private debugCanvas: HTMLCanvasElement | null = null;
 
   // 👇 기다리는 Promise들의 resolver
   private awaitWorkerInitialization: (() => void) | null = null;
   private awaitFrameCompletion: (() => void) | null = null;
+
+  // 성능 측정용
   private frameTimes: number[] = [];
-  private imageTimes: number[][] = Array.from({ length: 9 }, () => []);
-  onFrameDone: ((gemAttr: ArkGridAttr, gems: ArkGridGem[]) => void) | null = null; // 외부에서 등록해주면 분석 완료됐을 때 불러줌
+
+  // 외부 등록 콜백
+  onFrameDone: ((gemAttr: ArkGridAttr, gems: ArkGridGem[]) => void) | null = null; // 분석 완료
+  onLoad: (() => void) | null = null; // worker 준비 완료
+  onReady: (() => void) | null = null; // 프레임 소비 완료
+  onStop: (() => void) | null = null; // 녹화 중단
 
   constructor(debugCanvas?: HTMLCanvasElement | null) {
     if (debugCanvas) this.debugCanvas = debugCanvas;
   }
 
   // type-safe wrapper
-  postMessage(msg: CaptureWorkerRequest) {
+  private postMessage(msg: CaptureWorkerRequest) {
     if (!this.worker) throw Error('worker is not set');
     this.worker.postMessage(msg);
   }
-  getFrameStats() {
-    if (this.frameTimes.length === 0) return null;
 
-    const t = this.frameTimes;
-
-    return {
-      avg: t.reduce((a, b) => a + b, 0) / t.length,
-      min: Math.min(...t),
-      max: Math.max(...t),
-      count: t.length,
-    };
-  }
-  getImageStats() {
-    return this.imageTimes.map((times, index) => {
-      if (times.length === 0) return null;
-
-      const avg = times.reduce((a, b) => a + b, 0) / times.length;
-
-      return {
-        index,
-        avg,
-        min: Math.min(...times),
-        max: Math.max(...times),
-        count: times.length,
-      };
-    });
-  }
   private handleWorkerMessage(e: MessageEvent<CaptureWorkerResponse>) {
     const data = e.data;
 
@@ -58,6 +45,10 @@ export class CaptureController {
       case 'init:done':
         this.awaitWorkerInitialization?.();
         this.awaitWorkerInitialization = null;
+        const onLoad = this.onLoad;
+        if (onLoad) {
+          queueMicrotask(() => onLoad());
+        }
         break;
 
       case 'frame:done':
@@ -79,12 +70,15 @@ export class CaptureController {
         this.onFrameDone이나 data.result가
         바뀌지 않는다는 보장이 없다.”
         */
-        const result = data.result;
-        const onFrameDone = this.onFrameDone;
-        if (onFrameDone && result) {
-          queueMicrotask(() => {
-            onFrameDone(result.gemAttr, result.gems);
-          });
+        if (this.state === 'recording') {
+          // recording일 때에만 onFrameDone 불러줌
+          const result = data.result;
+          const onFrameDone = this.onFrameDone;
+          if (onFrameDone && result) {
+            queueMicrotask(() => {
+              onFrameDone(result.gemAttr, result.gems);
+            });
+          }
         }
         break;
 
@@ -98,9 +92,11 @@ export class CaptureController {
         try {
           if (data.message) console.log(data.message);
           if (data.image && this.debugCanvas) {
-            this.debugCanvas.width = data.image.width;
-            this.debugCanvas.height = data.image.height;
-            this.debugCanvas.getContext('2d')?.drawImage(data.image, 0, 0);
+            if (this.state == 'recording') {
+              this.debugCanvas.width = data.image.width;
+              this.debugCanvas.height = data.image.height;
+              this.debugCanvas.getContext('2d')?.drawImage(data.image, 0, 0);
+            }
           }
         } finally {
           if (data.image) data.image.close();
@@ -117,8 +113,8 @@ export class CaptureController {
       if (!stream) {
         throw Error('화면 공유에 실패하였습니다.');
       }
-      const track = stream.getVideoTracks()[0];
-      const processor = new MediaStreamTrackProcessor({ track });
+      this.track = stream.getVideoTracks()[0];
+      const processor = new MediaStreamTrackProcessor({ track: this.track });
       this.reader = processor.readable.getReader();
     } catch (err: any) {
       throw Error('화면 공유를 거부하였습니다.');
@@ -172,56 +168,81 @@ export class CaptureController {
       if (done) {
         throw Error('Failed to read even a frame');
       }
-      // opencv 및 어셋 로딩이 끝날 때까지 대기
+      value?.close();
+      // worker의 opencv 및 어셋 로딩이 끝날 때까지 대기
       await waitForInit;
 
+      // 프레임도 읽을 수 있고 worker도 준비가 끝난 경우 콜백
+      const onReady = this.onReady;
+      if (onReady) {
+        queueMicrotask(() => {
+          onReady();
+        });
+      }
+
       // 프레임 캡쳐 및 전송 loop로 이동
-      console.log('init done!');
       started = true;
       this.state = 'recording';
       this.loop();
     } finally {
+      // 시작에 실패했을 경우 다시 idle로
       if (!started) {
         this.state = 'idle';
       }
     }
   }
 
-  async loop() {
+  private async loop() {
     // state가 recording이라면, reader로부터 프레임을 읽어서 worker에게 전달 및 결과를 기다린다.
     while (this.state == 'recording') {
       if (!this.reader) {
         throw Error('reader not exists');
       }
-      const { value, done } = await this.reader.read();
-      if (done) break;
-      if (!this.worker) {
-        throw Error('worker not exists');
-      }
+      let value: VideoFrame | undefined;
+      try {
+        if (!this.worker) throw Error('worker not exists');
+        const result = await this.reader.read();
+        value = result.value;
+        const done = result.done;
+        if (done) break; // 사용자가 화면 공유 중단시 여기서 break
+        if (!value) break;
 
-      // 분석이 끝나면 resolve되는 promise 생성
-      const waitForAnalysis = new Promise<void>((resolve) => {
-        this.awaitFrameCompletion = resolve;
-      });
-      // 현재 frame을 postMessage
-      const start = performance.now();
-      this.worker.postMessage({ type: 'frame', frame: value } satisfies CaptureWorkerRequest, [
-        value,
-      ]);
-      // 주의: value 소유권은 worker에게 넘어갔으니 더 이상 건드리면 안 됨
-      await waitForAnalysis;
+        // 분석이 끝나면 resolve되는 promise 생성
+        const waitForAnalysis = new Promise<void>((resolve) => {
+          this.awaitFrameCompletion = resolve;
+        });
+        // 현재 frame을 postMessage
+        const start = performance.now();
+        this.worker.postMessage({ type: 'frame', frame: value } satisfies CaptureWorkerRequest, [
+          value,
+        ]);
+        value = undefined;
+        // 주의: value 소유권은 worker에게 넘어갔으니 더 이상 건드리면 안 되기에 undefined
+        await waitForAnalysis;
 
-      const timeElapsed = performance.now() - start;
-      this.frameTimes.push(timeElapsed);
-      while (this.frameTimes.length > 10) {
-        this.frameTimes.shift();
+        const timeElapsed = performance.now() - start;
+        this.frameTimes.push(timeElapsed);
+        while (this.frameTimes.length > 10) {
+          this.frameTimes.shift();
+        }
+        console.log(
+          `${timeElapsed.toFixed(2)}ms`,
+          `fps: ${(1000 / (this.frameTimes.reduce((acc, v) => acc + v, 0) / this.frameTimes.length)).toFixed(2)}`
+        );
+      } finally {
+        // 모종의 사유로 value의 소유권이 넘어가지 않았으면 controller에서 종료
+        value?.close();
       }
-      console.log(
-        `${timeElapsed.toFixed(2)}ms`,
-        `fps: ${(1000 / (this.frameTimes.reduce((acc, v) => acc + v, 0) / this.frameTimes.length)).toFixed(2)}`
-      );
     }
     // loop가 탈출되면 idle로 설정
+    this.track?.stop();
+    this.track = null;
+    const onStop = this.onStop;
+    if (onStop) {
+      queueMicrotask(() => {
+        onStop();
+      });
+    }
     this.state = 'idle';
   }
 
@@ -233,5 +254,11 @@ export class CaptureController {
     if (this.state === 'recording') {
       this.state = 'closing'; // 추후 loop 탈출 이후 idle로 가는 것을 기대
     }
+  }
+  isIdle() {
+    return this.state === 'idle';
+  }
+  isRecording() {
+    return this.state == 'recording';
   }
 }

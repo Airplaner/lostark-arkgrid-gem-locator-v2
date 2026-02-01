@@ -11,12 +11,11 @@
     eager: true,
     import: 'default',
   });
-  let cv = window.cv;
   let debugCanvas: HTMLCanvasElement | null;
   let totalOrderGems = $state<ArkGridGem[]>([]);
   let totalChaosGems = $state<ArkGridGem[]>([]);
   let isRecording = $state<boolean>(false);
-  let isDebugging = $state<boolean>(true);
+  let isDebugging = $state<boolean>(false);
   let isLoading = $state<boolean>(false);
   let detectionThreshold = $state<number>(0.75);
   let gemListElem: GemRecognitionGemList | null = null;
@@ -121,6 +120,45 @@
       }
     }
   }
+
+  async function startGemCapture() {
+    // 젬 캡쳐 시작
+    const controller = await getCaptureController();
+    if (!controller.isIdle()) {
+      window.alert('CaptureController is not idle state');
+      return;
+    }
+    // UI 잠금
+    isLoading = true;
+
+    // register callbacks
+    controller.onLoad = () => {
+      // 로딩 끝나면 UI 로딩 해제
+      isLoading = false;
+    };
+    controller.onReady = () => {
+      // 첫 프레임 소비 이후 초록불 ON
+      isRecording = true;
+    };
+    controller.onFrameDone = (gemAttr, gems) => {
+      // 분석 이후 현재 임시 젬 저장소에 반영
+      applyCurrentGems(gemAttr, gems);
+    };
+    controller.startCapture(true);
+  }
+
+  async function stopGemCapture() {
+    const controller = await getCaptureController();
+    if (controller.isRecording()) {
+      // controller 중단 요청 및 완료 이후 중단
+      await controller.stopCapture();
+      isRecording = false;
+      if (debugCanvas) {
+        debugCanvas.width = 0;
+        debugCanvas.height = 0;
+      }
+    }
+  }
 </script>
 
 <div class="panel">
@@ -148,23 +186,9 @@
     <div class="buttons">
       <div class="left">
         {#if !isRecording}
-          <button
-            onclick={async () => {
-              const controller = await getCaptureController();
-              controller.onFrameDone = (gemAttr, gems) => {
-                applyCurrentGems(gemAttr, gems);
-              };
-              controller.startCapture(true);
-            }}
-            data-track="start-capture">🖥️ 화면 공유 시작</button
-          >
+          <button onclick={startGemCapture} data-track="start-capture">🖥️ 화면 공유 시작</button>
         {:else}
-          <button
-            onclick={async () => {
-              const controller = await getCaptureController();
-              controller.stopCapture();
-            }}>🖥️ 화면 공유 종료</button
-          >
+          <button onclick={stopGemCapture}>🖥️ 화면 공유 종료</button>
         {/if}
         <button
           class:active={isDebugging}
