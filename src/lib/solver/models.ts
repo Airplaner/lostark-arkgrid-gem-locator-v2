@@ -20,13 +20,12 @@ export class Gem {
 export function buildScoreMap(coeff: number, maxLevel: number) {
   const result: [number, number][] = [];
   for (let v = 0; v <= maxLevel; v++) {
-    // 현재 주어진 공격력 레벨이 v일 때, 해당 v로 실제로 올릴 수 있는데 최소 및 최대 점수
     let minScore = 100;
     let maxScore = 0;
-    for (let base = 0; v + base <= maxLevel; base++) {
-      // 현재 공격력 레벨의 합이 base일 때
 
-      // 전투력 증가량 전후를 구한다.
+    // ✅ #6: 상한을 미리 계산하여 루프 오버헤드 감소
+    const limit = maxLevel - v;
+    for (let base = 0; base <= limit; base++) {
       const coeffAfter = Math.floor(((base + v) * coeff) / 120) + 10000;
       const coeffBefore = Math.floor((base * coeff) / 120) + 10000;
 
