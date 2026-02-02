@@ -95,6 +95,8 @@ export function getBestGemSetPacks(
     currentMaxScore: number, // 현재까지 선택한 GemSet들로 얻은 최대 점수
     targetMinScore: number // 정답으로 유추하는 GemSetPack의 최소 점수
   ): GemSet[] {
+    // 주어진 Core가 가진 GemSet 중 currentBitmask와 충돌하지 않는 GemSet의 목록을 반환
+    // assert gss는 반드시 MaxScore에 대해서 내림차순으로 정렬된 상태!
     const key = (currentBitmask << 3n) | BigInt(gemSetIndex);
     const cached = memo.get(key);
     if (cached) {
@@ -103,6 +105,7 @@ export function getBestGemSetPacks(
     }
     // missCount++;
     const gss = gssList[gemSetIndex];
+    // currentMaxScore에 maxScore를 곱했을 때 targetMinScore보다는 커야 후보가 될 수 있다.
     const threshold = currentMaxScore === 0 ? 0 : targetMinScore / currentMaxScore;
     const res: GemSet[] = [];
     for (const gs of gss) {
