@@ -76,7 +76,7 @@ export function getBestMatch<K extends string>(
     //     `Template size ${template.cols}x${template.rows} is larger than ROI ${targetFrame.cols}x${targetFrame.rows}. matchTemplate skipped.`
     //   );
     // }
-    cv.matchTemplate(targetFrame, template, result, method ? method : cv.TM_CCORR_NORMED);
+    cv.matchTemplate(targetFrame, template, result, method ? method : cv.TM_CCOEFF_NORMED);
     const mm = cv.minMaxLoc(result);
     if (!bestMm || mm.maxVal > bestMm.maxVal) {
       bestMm = mm;

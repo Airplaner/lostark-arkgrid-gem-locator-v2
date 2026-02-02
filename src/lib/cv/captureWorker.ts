@@ -199,8 +199,7 @@ class FrameProcessor {
           threshold: this.thresholdSet.anchor - detectionMargin,
         },
         resizedFrame,
-        debugCtx,
-        cv.TM_CCOEFF_NORMED
+        debugCtx
       );
       if (!anchor) {
         // 못 찾았으면 초기화 시킨 후 다음 프레임에 찾도록 시킴
@@ -222,7 +221,7 @@ class FrameProcessor {
       let anchorY = this.previousInfo.anchorLoc.y;
 
       //2 질서 혹은 혼돈 문구 탐색
-      const gemAttr = this.findBest<KeyGemAttr>(
+      const gemAttr = this.findBest(
         {
           roi: { x: anchorX - 186, y: anchorY + 91, width: 224, height: 24 },
           atlas: this.loadedAsset.atlasGemAttr[currentLocale],
@@ -241,7 +240,7 @@ class FrameProcessor {
         const rowY = anchorY + 213 + 63 * i;
 
         // 1) 젬 종류 (이름)
-        const gemName = this.findBest<KeyGemName>(
+        const gemName = this.findBest(
           {
             roi: { x: rowX + 9, y: rowY + 14, width: 30, height: 30 },
             atlas: this.loadedAsset.altasGemImage[currentLocale],
@@ -252,31 +251,29 @@ class FrameProcessor {
         );
 
         // 2) 의지력
-        const willPower = this.findBest<KeyWillPower>(
+        const willPower = this.findBest(
           {
             roi: { x: rowX + 65, y: rowY, width: 18, height: 30 },
             atlas: this.loadedAsset.atlasWillPower[currentLocale],
             threshold: this.thresholdSet.willPower - detectionMargin,
           },
           resizedFrame,
-          debugCtx,
-          cv.TM_CCOEFF_NORMED
+          debugCtx
         );
 
         // 3) 질서/혼돈 포인트
-        const corePoint = this.findBest<KeyCorePoint>(
+        const corePoint = this.findBest(
           {
             roi: { x: rowX + 65, y: rowY + 30, width: 18, height: 30 },
             atlas: this.loadedAsset.atlasCorePoint[currentLocale],
             threshold: this.thresholdSet.corePoint - detectionMargin,
           },
           resizedFrame,
-          debugCtx,
-          cv.TM_CCOEFF_NORMED
+          debugCtx
         );
 
         // 4) 윗 옵션
-        const optionAName = this.findBest<KeyOptionString>(
+        const optionAName = this.findBest(
           {
             roi: {
               x: rowX + 125,
@@ -294,7 +291,7 @@ class FrameProcessor {
           ? optionAName.loc.x - (rowX + 125) + optionAName.template.cols + 16
           : 60;
 
-        const optionALevel = this.findBest<KeyOptionLevel>(
+        const optionALevel = this.findBest(
           {
             roi: {
               x: rowX + 125 + optionALevelXOffset,
@@ -306,12 +303,11 @@ class FrameProcessor {
             threshold: this.thresholdSet.optionLevel - detectionMargin,
           },
           resizedFrame,
-          debugCtx,
-          cv.TM_CCOEFF_NORMED
+          debugCtx
         );
 
         // 5) 아랫 옵션
-        const optionBName = this.findBest<KeyOptionString>(
+        const optionBName = this.findBest(
           {
             roi: {
               x: rowX + 125,
@@ -329,7 +325,7 @@ class FrameProcessor {
           ? optionBName.loc.x - (rowX + 125) + optionBName.template.cols + 16
           : 60;
 
-        const optionBLevel = this.findBest<KeyOptionLevel>(
+        const optionBLevel = this.findBest(
           {
             roi: {
               x: rowX + 125 + optionBLevelXOffset,
@@ -341,8 +337,7 @@ class FrameProcessor {
             threshold: this.thresholdSet.optionLevel - detectionMargin,
           },
           resizedFrame,
-          debugCtx,
-          cv.TM_CCOEFF_NORMED
+          debugCtx
         );
 
         if (
