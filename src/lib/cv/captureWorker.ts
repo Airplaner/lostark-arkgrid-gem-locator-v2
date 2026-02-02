@@ -5,15 +5,7 @@ import { ARKGRID_GEM_NAME, type ArkGridGem, determineGemGradeByGem } from '../mo
 import type { MatchingAtlas } from './atlas';
 import { getCv, initOpenCv } from './cvRuntime';
 import { showMatch } from './debug';
-import {
-  type KeyCorePoint,
-  type KeyGemAttr,
-  type KeyGemName,
-  type KeyOptionLevel,
-  type KeyOptionString,
-  type KeyWillPower,
-  loadGemAsset,
-} from './matStore';
+import { loadGemAsset } from './matStore';
 import { type MatchingResult, getBestMatch } from './matcher';
 import type { CaptureWorkerRequest, CaptureWorkerResponse, CvMat } from './types';
 
@@ -41,19 +33,25 @@ class FrameProcessor {
 
   // frame
   private canvas: OffscreenCanvas = new OffscreenCanvas(0, 0);
-  private ctx = this.canvas.getContext('2d', { willReadFrequently: true })!;
+  private ctx: OffscreenCanvasRenderingContext2D;
   private cv: CV | null = null;
   private previousInfo: { locale: AppLocale; anchorLoc: { x: number; y: number } } | null = null;
   private thresholdSet = {
     anchor: 0.95,
-    gemAttr: 0.9,
+    gemAttr: 0.8,
     gemImage: 0.8,
     willPower: 0.8,
     corePoint: 0.8,
     optionName: 0.8,
     optionLevel: 0.8,
   };
-  constructor() {}
+  constructor() {
+    const ctx = this.canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) throw new Error('2D context not available!');
+    this.ctx = ctx;
+    this.ctx.imageSmoothingEnabled = true;
+    this.ctx.imageSmoothingQuality = 'high';
+  }
 
   async init() {
     if (this.initPromise) {
