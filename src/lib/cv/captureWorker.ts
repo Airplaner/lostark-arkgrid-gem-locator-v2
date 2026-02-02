@@ -143,6 +143,10 @@ class FrameProcessor {
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       resizedFrame = cv.matFromImageData(imageData);
       cv.cvtColor(resizedFrame, resizedFrame, cv.COLOR_RGBA2GRAY);
+      if (resolutionScale != 1) {
+        // 자체적으로 downscale을 할 땐 추가 margin 부여
+        detectionMargin += 0.1;
+      }
       if (drawDebug) {
         this.debugCanvas.width = frame.displayWidth * resolutionScale;
         this.debugCanvas.height = frame.displayHeight * resolutionScale;
