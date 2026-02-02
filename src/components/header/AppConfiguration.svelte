@@ -184,7 +184,7 @@
         window.alert(`${currentProfileName.current}의 정보를 가져올 수 없습니다.`);
         return;
       }
-      (window as any).gtag('event', 'import-from-open-api', {
+      window.gtag?.('event', 'import-from-open-api', {
         event_label: 'success',
       });
       const arkpassive: LostArkOpenAPI.ArkPassive | undefined = res.data.ArkPassive;
