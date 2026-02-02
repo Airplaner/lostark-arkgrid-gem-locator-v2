@@ -85,23 +85,33 @@ export function getBestGemSetPacks(
   if (gss2) gss2.sort((a, b) => b.maxScore - a.maxScore);
   if (gss3) gss3.sort((a, b) => b.maxScore - a.maxScore);
 
+  const memo = new Map<bigint, GemSet[]>();
+  // let hitCount = 0;
+  // let missCount = 0;
+
   function getCandidates(
     currentBitmask: bigint, // 현재 사용한 젬
     gemSetIndex: number, // 추출 대상 GemSet[]
     currentMaxScore: number, // 현재까지 선택한 GemSet들로 얻은 최대 점수
     targetMinScore: number // 정답으로 유추하는 GemSetPack의 최소 점수
   ): GemSet[] {
-    // 주어진 Core가 가진 GemSet 중 currentBitmask와 충돌하지 않는 GemSet의 목록을 반환
-    // assert gss는 반드시 MaxScore에 대해서 내림차순으로 정렬된 상태!
-    let res = [];
-    // currentMaxScore에 maxScore를 곱했을 때 targetMinScore보다는 커야 후보가 될 수 있다.
-    const threshold = targetMinScore / currentMaxScore;
-    for (const gs of gssList[gemSetIndex]) {
+    const key = (currentBitmask << 3n) | BigInt(gemSetIndex);
+    const cached = memo.get(key);
+    if (cached) {
+      // hitCount++;
+      return cached;
+    }
+    // missCount++;
+    const gss = gssList[gemSetIndex];
+    const threshold = currentMaxScore === 0 ? 0 : targetMinScore / currentMaxScore;
+    const res: GemSet[] = [];
+    for (const gs of gss) {
       if (gs.maxScore < threshold) break;
       if (ignoreDuplication || (gs.bitmask & currentBitmask) === 0n) {
         res.push(gs);
       }
     }
+    memo.set(key, res);
     return res;
   }
   /* 코어 0개 */
