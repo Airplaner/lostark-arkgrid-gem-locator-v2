@@ -41,10 +41,6 @@ export function showMatch(
   debugCtx.font = `${fontSize}px Arial`; // 폰트 설정
   debugCtx.fillStyle = option?.fontColor ?? 'white';
   debugCtx.textBaseline = 'top'; // y 기준을 rect.y로 맞춤
-  debugCtx.fillText(matchingResult.key, roi.x + rectLineWidth, roi.y + rectLineWidth);
-  debugCtx.fillText(
-    matchingResult.score.toFixed(2),
-    roi.x + rectLineWidth,
-    roi.y + rectLineWidth + fontSize
-  );
+  const debugMsg = `${matchingResult.key} ${matchingResult.score.toFixed(2)}`;
+  debugCtx.fillText(debugMsg, roi.x + rectLineWidth, roi.y + rectLineWidth);
 }
