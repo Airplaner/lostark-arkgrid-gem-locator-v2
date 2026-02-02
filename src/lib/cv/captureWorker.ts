@@ -259,7 +259,8 @@ class FrameProcessor {
             threshold: this.thresholdSet.willPower - detectionMargin,
           },
           resizedFrame,
-          debugCtx
+          debugCtx,
+          cv.TM_CCOEFF_NORMED
         );
 
         // 3) 질서/혼돈 포인트
@@ -270,7 +271,8 @@ class FrameProcessor {
             threshold: this.thresholdSet.corePoint - detectionMargin,
           },
           resizedFrame,
-          debugCtx
+          debugCtx,
+          cv.TM_CCOEFF_NORMED
         );
 
         // 4) 윗 옵션
@@ -304,7 +306,8 @@ class FrameProcessor {
             threshold: this.thresholdSet.optionLevel - detectionMargin,
           },
           resizedFrame,
-          debugCtx
+          debugCtx,
+          cv.TM_CCOEFF_NORMED
         );
 
         // 5) 아랫 옵션
@@ -338,7 +341,8 @@ class FrameProcessor {
             threshold: this.thresholdSet.optionLevel - detectionMargin,
           },
           resizedFrame,
-          debugCtx
+          debugCtx,
+          cv.TM_CCOEFF_NORMED
         );
 
         if (
