@@ -20,7 +20,7 @@
   let { gems }: Props = $props();
 
   let locale = $derived(appConfig.current.locale);
-  const Ltitle: LocalizationName = {
+  const LTitle: LocalizationName = {
     ko_kr: '인식된 젬 목록',
     en_us: 'Recognized Astrogems',
   };
@@ -38,7 +38,7 @@
   };
   const LConfirm: LocalizationName = {
     ko_kr: '반영 완료',
-    en_us: 'Gems are applied',
+    en_us: 'Astrogems applied',
   };
   const LWarning: LocalizationName = {
     ko_kr:
@@ -114,7 +114,7 @@
 </script>
 
 <div class="panel">
-  <div class="title">{Ltitle[locale]}</div>
+  <div class="title">{LTitle[locale]}</div>
   <div class="tab-container">
     {#each tabs as tab, i}
       <button class="tab {activeTab === i ? 'active' : ''}" onclick={() => selectTab(i)}>

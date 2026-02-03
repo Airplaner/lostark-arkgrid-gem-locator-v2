@@ -21,13 +21,13 @@
   };
   let { gemAttr }: Props = $props();
 
-  const Ltitle: LocalizationName = {
+  const LTitle: LocalizationName = {
     ko_kr: '젬 추가',
-    en_us: 'Add Gem',
+    en_us: 'Add',
   };
   const LGemAddResult: LocalizationName = {
     ko_kr: '젬 추가 완료',
-    en_us: 'Gem Added',
+    en_us: 'Astrogem Added',
   };
   let dialog: HTMLDialogElement;
 
@@ -128,10 +128,10 @@
   }
 </script>
 
-<button onclick={open}>{Ltitle[locale]}</button>
+<button onclick={open}>{LTitle[locale]}</button>
 <dialog bind:this={dialog}>
   <div class="root">
-    <div class="title">{Ltitle[locale]}</div>
+    <div class="title">{LTitle[locale]}</div>
     <div class="content">
       <div class="col">
         <div class="image-wrapper">

@@ -3,6 +3,8 @@
   import { tick } from 'svelte';
 
   import { type ArkGridAttr, ArkGridAttrs } from '../lib/constants/enums';
+  import { LChaos, LOrder } from '../lib/constants/localization';
+  import { appConfig } from '../lib/state/appConfig.state.svelte';
   import { type AllGems, clearGems } from '../lib/state/profile.state.svelte';
   import ArkGridGemAddPanel from './ArkGridGemAddPanel.svelte';
   import ArkGridGemList from './ArkGridGemList.svelte';
@@ -20,8 +22,9 @@
   });
 
   // 탭 상태
+  let locale = $derived(appConfig.current.locale);
   let activeTab = $state(0);
-  const tabs = ['질서', '혼돈'];
+  let tabs = $derived([LOrder[locale], LChaos[locale]]);
   let container: ArkGridGemList;
   let scrollPositions = $state<number[]>([0, 0]);
 
@@ -54,14 +57,57 @@
   let currentAttr: ArkGridAttr = $derived(activeTab == 0 ? '질서' : '혼돈');
 
   function clearGemWithConfirm() {
-    if (!window.confirm(`현재 프로필의 모든 젬을 삭제합니다. 진행하시겠습니까?`)) return;
+    if (!window.confirm(LResetConfirm)) return;
     clearGems();
-    toast.push(`젬 삭제 완료`);
+    toast.push(LResetDone);
   }
+  const LTitle = $derived(
+    {
+      ko_kr: '젬 목록',
+      en_us: 'Astrogems',
+    }[locale]
+  );
+  const LGemTotalCount = $derived(
+    {
+      ko_kr: `젬 보유 수량 ${gems.orderGems.length + gems.chaosGems.length} / 100<br>(질서 ${gems.orderGems.length}개, 혼돈 ${gems.chaosGems.length}개
+    보유 중)`,
+      en_us: `Astrogems Owned: ${gems.orderGems.length + gems.chaosGems.length} / 100<br>(Order ${gems.orderGems.length}, Chaos ${gems.chaosGems.length} owned)`,
+    }[locale]
+  );
+  const LEmpty = $derived(
+    {
+      ko_kr: '인식된 젬이 없습니다.',
+      en_us: 'No astrogems owned',
+    }[locale]
+  );
+  const LDeleteGem = $derived(
+    {
+      ko_kr: '젬 삭제',
+      en_us: 'Delete',
+    }[locale]
+  );
+  const LReset = $derived(
+    {
+      ko_kr: '전체 초기화',
+      en_us: 'Reset',
+    }[locale]
+  );
+  const LResetConfirm = $derived(
+    {
+      ko_kr: '현재 프로필의 모든 젬을 삭제합니다. 진행하시겠습니까?',
+      en_us: 'This will delete all astrogems in the current profile. Do you want to proceed?',
+    }[locale]
+  );
+  const LResetDone = $derived(
+    {
+      ko_kr: '젬 삭제 완료',
+      en_us: 'Astrogems reset',
+    }[locale]
+  );
 </script>
 
 <div class="panel">
-  <div class="title">젬 목록</div>
+  <div class="title">{LTitle}</div>
   <div class="tab-container">
     {#each tabs as tab, i}
       <button class="tab {activeTab === i ? 'active' : ''}" onclick={() => selectTab(i)}>
@@ -72,10 +118,14 @@
       </button>
     {/each}
   </div>
-  <ArkGridGemList gems={currentGems} bind:this={container} {showDeleteButton}></ArkGridGemList>
+  <ArkGridGemList
+    gems={currentGems}
+    bind:this={container}
+    {showDeleteButton}
+    emptyDescription={LEmpty}
+  ></ArkGridGemList>
   <div class="gem-count">
-    젬 보유 수량 {gems.orderGems.length + gems.chaosGems.length} / 100<br />(질서 {gems.orderGems
-      .length}개, 혼돈 {gems.chaosGems.length}개 보유 중)
+    {@html LGemTotalCount}
   </div>
   <div class="buttons">
     <div class="left">
@@ -86,11 +136,11 @@
         disabled={gems.orderGems.length == 0 && gems.chaosGems.length == 0}
         onclick={() => (showDeleteButton = !showDeleteButton)}
       >
-        개별 젬 삭제 {showDeleteButton ? '끄기' : '켜기'}
+        {LDeleteGem}
       </button>
       <button
         disabled={gems.orderGems.length == 0 && gems.chaosGems.length == 0}
-        onclick={() => clearGemWithConfirm()}>전체 초기화</button
+        onclick={() => clearGemWithConfirm()}>{LReset}</button
       >
     </div>
   </div>

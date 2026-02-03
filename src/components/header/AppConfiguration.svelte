@@ -353,9 +353,7 @@
       class:fa-toggle-off={!appConfig.current.uiConfig.darkMode}
     ></i>
   </button>
-  <button hidden={!appConfig.current.uiConfig.debugMode} onclick={toggleLocale}
-    >Locale: {appConfig.current.locale}</button
-  >
+  <button onclick={toggleLocale}>Locale: {appConfig.current.locale}</button>
 </div>
 
 <style>

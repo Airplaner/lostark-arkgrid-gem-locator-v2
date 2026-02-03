@@ -1,11 +1,7 @@
 <script lang="ts">
-  import { type ArkGridAttr, ArkGridAttrs, type LocalizationName } from '../lib/constants/enums';
-  import {
-    type ArkGridCore,
-    type ArkGridCoreType,
-    ArkGridCoreTypes,
-  } from '../lib/models/arkGridCores';
-  import { type ArkGridGem, ArkGridGemOptionTypes } from '../lib/models/arkGridGems';
+  import { type ArkGridAttr, ArkGridAttrs } from '../lib/constants/enums';
+  import { type ArkGridCoreType, ArkGridCoreTypes } from '../lib/models/arkGridCores';
+  import { type ArkGridGem } from '../lib/models/arkGridGems';
   import {
     Core,
     Gem,
@@ -35,10 +31,42 @@
   let { profile = $bindable() }: Props = $props();
 
   let locale = $derived(appConfig.current.locale);
-  const Ltitle: LocalizationName = {
-    ko_kr: '젬 화면 인식',
-    en_us: 'Screen Recognition For Adding Gem',
-  };
+  const LTitle = $derived(
+    {
+      ko_kr: '최적화 설정',
+      en_us: 'Optimization Settings',
+    }[locale]
+  );
+  const LSubtitle = $derived(
+    {
+      ko_kr: '코어별 최소 포인트 설정',
+      en_us: 'Minimum Core Points',
+    }[locale]
+  );
+  const LRunSolve = $derived(
+    {
+      ko_kr: '최적화 실행',
+      en_us: 'Run Optimization',
+    }[locale]
+  );
+  const LFailed = $derived(
+    {
+      ko_kr: '목표 포인트를 조절해보세요.',
+      en_us: 'Please adjust the minimum core points.',
+    }[locale]
+  );
+  const LOrderFailed = $derived(
+    {
+      ko_kr: '질서 배치 실패',
+      en_us: 'Order cores optimization failed',
+    }[locale]
+  );
+  const LChaosFailed = $derived(
+    {
+      ko_kr: '혼돈 배치 실패',
+      en_us: 'Chaos cores optimization failed',
+    }[locale]
+  );
 
   const coreComponents: Record<ArkGridAttr, Record<ArkGridCoreType, SolveCoreEdit | null>> = $state(
     Object.fromEntries(
@@ -418,10 +446,10 @@
 </script>
 
 <div class="panel">
-  <div class="title">최적화 설정</div>
+  <div class="title">{LTitle}</div>
   <div class="container">
     <div class="core-solve-goal-edit">
-      <div class="title">코어별 최소 포인트 설정</div>
+      <div class="title">{LSubtitle}</div>
       <div class="container">
         {#each Object.values(ArkGridAttrs) as attr}
           {#each Object.values(ArkGridCoreTypes) as ctype}
@@ -438,16 +466,16 @@
     {#if failedSign.order || failedSign.chaos}
       <div class="failed-sign">
         {#if failedSign.order}
-          <div class="big">⚠️ 질서 배치 실패 ⚠️</div>
+          <div class="big">⚠️ {LOrderFailed} ⚠️</div>
         {/if}
         {#if failedSign.chaos}
-          <div class="big">⚠️ 혼돈 배치 실패 ⚠️</div>
+          <div class="big">⚠️ {LChaosFailed} ⚠️</div>
         {/if}
-        <div class="small">목표 포인트를 조절해보세요.</div>
+        <div class="small">{LFailed}</div>
       </div>
     {/if}
     <button class="solve-button" onclick={() => runSolve(isSupporter)} data-track="run-solve"
-      >최적화 실행</button
+      >{LRunSolve}</button
     >
     {#if profile.solveInfo.after}
       <SolveResult solveAfter={profile.solveInfo.after}></SolveResult>
@@ -461,7 +489,7 @@
   }
   .solve-button {
     font-size: 1.5rem;
-    width: 10rem;
+    width: 15rem;
     height: 4rem;
     align-self: center;
   }

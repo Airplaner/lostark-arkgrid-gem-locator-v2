@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { appConfig } from '../../lib/state/appConfig.state.svelte';
   import SolvePanel from '../SolvePanel.svelte';
 
   type ScoreSet = {
@@ -11,10 +12,29 @@
 
   let scoreRatio = $derived(Math.min(scoreSet.score / scoreSet.perfectScore, 1));
   let bestRatio = $derived(Math.min(scoreSet.bestScore / scoreSet.perfectScore, 1));
+  let locale = $derived(appConfig.current.locale);
+  const LTitle = $derived(
+    {
+      ko_kr: '아크 그리드 전투력',
+      en_us: 'Ark Grid Combat Power',
+    }[locale]
+  );
+  const LCurrent = $derived(
+    {
+      ko_kr: '현재 전투력 증가%',
+      en_us: 'Current Combat Power %',
+    }[locale]
+  );
+  const LMaximum = $derived(
+    {
+      ko_kr: '현재 코어의 전투력 증가% 한계',
+      en_us: 'Maximum Combat Power % with current cores',
+    }[locale]
+  );
 </script>
 
 <div class="root">
-  <div class="title">코어력</div>
+  <div class="title">{LTitle}</div>
   <div class="score-wrapper">
     <div class="score-bar">
       <div class="indicator dot moving" style="--target-left:{scoreRatio * 100}%"></div>
@@ -32,14 +52,14 @@
       <div class="icon">
         <div class="dot"></div>
       </div>
-      <div>현재 전투력 증가%</div>
+      <div>{LCurrent}</div>
     </div>
 
     <div class="row">
       <div class="icon">
         <div class="bar"></div>
       </div>
-      <div>현재 코어의 전투력 증가% 한계</div>
+      <div>{LMaximum}</div>
     </div>
   </div>
 </div>

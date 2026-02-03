@@ -1,7 +1,13 @@
 <script lang="ts">
-  import { type ArkGridAttr, LostArkGrades } from '../lib/constants/enums';
+  import {
+    type ArkGridAttr,
+    ArkGridAttrTypes,
+    LostArkGradeTypes,
+    LostArkGrades,
+  } from '../lib/constants/enums';
   import {
     type ArkGridCoreType,
+    ArkGridCoreTypeTypes,
     getCoreImage,
     getMaxCorePoint,
     resetCoreCoeff,
@@ -21,28 +27,59 @@
   const coeffKeys = ['p10', 'p14', 'p17', 'p18', 'p19', 'p20'] as const;
   let core = $derived(getCore(attr, ctype));
   let arkGridCoreTierName: Record<ArkGridCoreType, Array<string>> = $derived.by(() => {
-    return !isSupporter
-      ? {
-          해: ['현란한 공격', '안정적인/재빠른 공격', '그 외'],
-          달: ['불타는 일격', '흡수의/부수는 일격', '그 외'],
-          별: ['공격', '무기', '그 외'],
-        }
-      : {
-          해: ['신념의 강화', '흐르는 마나/불굴의 강화', '그 외'],
-          달: ['낙인의 흔적', '강철의/치명적인 흔적', '그 외'],
-          별: ['무기', '생명', '그 외'],
-        };
+    if (locale == 'ko_kr') {
+      return !isSupporter
+        ? {
+            해: ['현란한 공격', '안정적인/재빠른 공격', '그 외'],
+            달: ['불타는 일격', '흡수의/부수는 일격', '그 외'],
+            별: ['공격', '무기', '그 외'],
+          }
+        : {
+            해: ['신념의 강화', '흐르는 마나/불굴의 강화', '그 외'],
+            달: ['낙인의 흔적', '강철의/치명적인 흔적', '그 외'],
+            별: ['무기', '생명', '그 외'],
+          };
+    } else {
+      return !isSupporter
+        ? {
+            해: ['Flash Attack', 'Stable/Swift Attack', 'Others'],
+            달: ['Smoldering Strike', 'Abosrbing/Crushing Strike', 'Others'],
+            별: ['Attack', 'Weapon', 'Others'],
+          }
+        : {
+            해: ['Faith Enh.', 'Flowing Magick/Fortitude Enh.', 'Others'],
+            달: ['Echoing Brand', 'Echoing Death/Steel', 'Others'],
+            별: ['Weapon', 'Life', 'Others'],
+          };
+    }
   });
   let maxCorePoint = $derived(getMaxCorePoint(core));
 
   let locale = $derived(appConfig.current.locale);
+  const LTitle = $derived(
+    locale == 'ko_kr'
+      ? `${attr}의 ${ctype}`
+      : `${ArkGridAttrTypes[attr].name[locale]} of the ${ArkGridCoreTypeTypes[ctype].name[locale]}`
+  );
+  const LRarity = $derived(
+    {
+      ko_kr: '등급',
+      en_us: 'Rarity',
+    }[locale]
+  );
+  const LCoretypes = $derived(
+    {
+      ko_kr: '종류',
+      en_us: 'Type',
+    }[locale]
+  );
 </script>
 
 <fieldset class="core-slot">
   <legend class="core-title">
     <div class="core-img-name-tuple">
       <img src={getCoreImage(attr, ctype)} alt="{attr} {ctype}" data-grade={core?.grade} />
-      {attr}의 {ctype}
+      {LTitle}
     </div>
     {#if core}
       <button class="close" aria-label="닫기" onclick={() => resetCore(attr, ctype)}>x</button>
@@ -50,7 +87,7 @@
   </legend>
   {#if core}
     <div class="row core-grade">
-      <span class="title">등급</span>
+      <span class="title">{LRarity}</span>
       <div class="input-title-tuples">
         {#each Object.values(LostArkGrades) as grade}
           <label class="input-title-tuple">
@@ -63,7 +100,7 @@
               }}
               value={grade}
             />
-            {grade}
+            {LostArkGradeTypes[grade].name[locale]}
           </label>
         {/each}
       </div>
@@ -71,7 +108,7 @@
 
     {#if attr == '혼돈'}
       <div class="row core-tier">
-        <span class="title">종류</span>
+        <span class="title">{LCoretypes}</span>
         <div class="input-title-tuples">
           {#each arkGridCoreTierName[ctype] as tierName, tier}
             <label class="input-title-tuple">

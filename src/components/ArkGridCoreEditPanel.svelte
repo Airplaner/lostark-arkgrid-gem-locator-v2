@@ -17,7 +17,7 @@
   let { profile }: Props = $props();
 
   let locale = $derived(appConfig.current.locale);
-  const Ltitle: LocalizationName = {
+  const LTitle: LocalizationName = {
     ko_kr: '코어 설정',
     en_us: 'Core Setting',
   };
@@ -59,7 +59,7 @@
 <div class="panel">
   <div class="title-and-button">
     <div class="title">
-      {Ltitle[locale]} - {isSupporter ? LSupporter[locale] : LDealeer[locale]}
+      {LTitle[locale]} - {isSupporter ? LSupporter[locale] : LDealeer[locale]}
       <img src={profile.isSupporter ? imgRoleSupporter : imgRoleCombat} alt="role" />
     </div>
     <button onclick={toggleIsSupporter}>{LSwitchRole[locale]}</button>

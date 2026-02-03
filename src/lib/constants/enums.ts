@@ -3,12 +3,16 @@ export type ArkGridAttrType = {
 };
 export const ArkGridAttrTypes = {
   질서: {
-    ko_kr: '질서',
-    en_us: 'Order',
+    name: {
+      ko_kr: '질서',
+      en_us: 'Order',
+    },
   },
   혼돈: {
-    ko_kr: '혼돈',
-    en_us: 'Chaos',
+    name: {
+      ko_kr: '혼돈',
+      en_us: 'Chaos',
+    },
   },
 } as const;
 export type ArkGridAttr = keyof typeof ArkGridAttrTypes;
@@ -19,20 +23,28 @@ export type LostArkGradeType = {
 };
 export const LostArkGradeTypes = {
   영웅: {
-    ko_kr: '영웅',
-    en_us: 'Epic',
+    name: {
+      ko_kr: '영웅',
+      en_us: 'Epic',
+    },
   },
   전설: {
-    ko_kr: '전설',
-    en_us: 'Legendary',
+    name: {
+      ko_kr: '전설',
+      en_us: 'Legendary',
+    },
   },
   유물: {
-    ko_kr: '유물',
-    en_us: 'Relic',
+    name: {
+      ko_kr: '유물',
+      en_us: 'Relic',
+    },
   },
   고대: {
-    ko_kr: '고대',
-    en_us: 'Ancient',
+    name: {
+      ko_kr: '고대',
+      en_us: 'Ancient',
+    },
   },
 } as const;
 export type LostArkGrade = keyof typeof LostArkGradeTypes;

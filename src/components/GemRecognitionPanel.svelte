@@ -9,7 +9,7 @@
   import GemRecognitionGuide from './GemRecognitionGuide.svelte';
 
   let locale = $derived(appConfig.current.locale);
-  const Ltitle: LocalizationName = {
+  const LTitle: LocalizationName = {
     ko_kr: '젬 화면 인식',
     en_us: 'Astrogem Recognition Screen',
   };
@@ -220,7 +220,7 @@
   {/if}
   <div class="title">
     <div class="title-with-dot">
-      <span>{Ltitle[locale]}</span>
+      <span>{LTitle[locale]}</span>
       <div class="status-dot" class:online={isRecording} class:offline={!isRecording}></div>
     </div>
     <button

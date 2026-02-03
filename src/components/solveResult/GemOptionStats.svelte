@@ -1,10 +1,6 @@
 <script lang="ts">
   import type { AppLocale } from '../../lib/constants/enums';
-  import {
-    type ArkGridGemOptionName,
-    ArkGridGemOptionNames,
-    ArkGridGemOptionTypes,
-  } from '../../lib/models/arkGridGems';
+  import { type ArkGridGemOptionName, ArkGridGemOptionTypes } from '../../lib/models/arkGridGems';
   import { appConfig } from '../../lib/state/appConfig.state.svelte';
   import type { SolveAnswer } from '../../lib/state/profile.state.svelte';
 
@@ -31,10 +27,16 @@
     return statistics;
   });
   let locale: AppLocale = $derived(appConfig.current.locale);
+  const LTitle = $derived(
+    {
+      ko_kr: '젬 옵션',
+      en_us: 'Astrogem Options',
+    }[locale]
+  );
 </script>
 
 <div class="root">
-  <div class="title">젬 옵션</div>
+  <div class="title">{LTitle}</div>
   <div class="container">
     {#each Object.entries(ArkGridGemOptionTypes) as [optionName, optionType]}
       <div class="item">

@@ -19,7 +19,7 @@
   import { type CharacterProfile, getCurrentProfile } from './lib/state/profile.state.svelte';
 
   let locale = $derived(appConfig.current.locale);
-  const Ltitle: LocalizationName = {
+  const LTitle: LocalizationName = {
     ko_kr: '아크 그리드 전투력 최적화',
     en_us: 'Ark Grid Combat Power Optimizer',
   };
@@ -85,7 +85,7 @@
 <main>
   <SvelteToast options={{ reversed: true, intro: { y: 192 } }} />
   <div class="contents">
-    <div class="title">{Ltitle[locale]}</div>
+    <div class="title">{LTitle[locale]}</div>
     <AppConfiguration></AppConfiguration>
     <ProfileEdit></ProfileEdit>
     <GemRecognitionPanel></GemRecognitionPanel>

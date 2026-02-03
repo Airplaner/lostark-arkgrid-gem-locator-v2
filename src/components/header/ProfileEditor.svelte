@@ -22,7 +22,7 @@
   } from '../../lib/state/profile.state.svelte';
 
   let locale = $derived(appConfig.current.locale);
-  const Ltitle: LocalizationName = {
+  const LTitle: LocalizationName = {
     ko_kr: '프로필',
     en_us: 'Profile',
   };
@@ -37,7 +37,7 @@
 </script>
 
 <div class="root">
-  <div class="title">👤 {Ltitle[locale]}</div>
+  <div class="title">👤 {LTitle[locale]}</div>
   <div class="buttons">
     {#each appConfig.current.characterProfiles as profile}
       <button

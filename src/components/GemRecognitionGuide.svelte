@@ -6,7 +6,7 @@
     eager: true,
     import: 'default',
   });
-  const Ltitle: LocalizationName = {
+  const LTitle: LocalizationName = {
     ko_kr: '가이드',
     en_us: 'Guide',
   };
@@ -15,7 +15,7 @@
 
 <div class="guide">
   <div class="title">
-    <span>🎓️ {Ltitle[locale]}</span>
+    <span>🎓️ {LTitle[locale]}</span>
     <button class="fold-button" onclick={() => toggleUI('showGemRecognitionGuide')}
       >{appConfig.current.uiConfig.showGemRecognitionGuide ? '▲' : '▼'}</button
     >

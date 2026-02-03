@@ -1,8 +1,9 @@
 <script lang="ts">
-  import type { ArkGridAttr } from '../../lib/constants/enums';
+  import { type ArkGridAttr, ArkGridAttrTypes } from '../../lib/constants/enums';
   import {
     type ArkGridCore,
     type ArkGridCoreType,
+    ArkGridCoreTypeTypes,
     getDefaultCoreEnergy,
   } from '../../lib/models/arkGridCores';
   import { type ArkGridGem, ArkGridGemOptionTypes } from '../../lib/models/arkGridGems';
@@ -31,18 +32,37 @@
       return sum + gem.req;
     }, 0);
   });
+  let locale = $derived(appConfig.current.locale);
+  const LTitle = $derived(
+    locale == 'ko_kr'
+      ? `${attr}의 ${ctype}`
+      : `${ArkGridAttrTypes[attr].name[locale]} of the ${ArkGridCoreTypeTypes[ctype].name[locale]}`
+  );
+  const LPoint = $derived(
+    {
+      ko_kr: '포인트',
+      en_us: 'Points',
+    }[locale]
+  );
+  const LCosts = $derived(
+    {
+      ko_kr: '의지력',
+      en_us: 'Costs',
+    }[locale]
+  );
 </script>
 
 <div class="root">
   <div class="title">
     <div class="name">
-      {attr}의 {ctype}
+      {LTitle}
     </div>
   </div>
   <div class="core-point-and-power">
-    <div class="item" hidden={!core}>포인트 {corePoint}</div>
+    <div class="item" hidden={!core}>{LPoint} {corePoint}</div>
     <div class="item" hidden={!core}>
-      의지력 {usedPower}/{getDefaultCoreEnergy(core)}
+      {LCosts}
+      {usedPower}/{getDefaultCoreEnergy(core)}
     </div>
   </div>
   <div class="gems">
