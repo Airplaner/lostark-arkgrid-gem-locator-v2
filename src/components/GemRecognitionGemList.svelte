@@ -2,7 +2,7 @@
   import { toast } from '@zerodevx/svelte-toast';
   import { tick } from 'svelte';
 
-  import { ArkGridAttrs, type LocalizationName } from '../lib/constants/enums';
+  import { type LocalizationName } from '../lib/constants/enums';
   import { LChaos, LOrder } from '../lib/constants/localization';
   import { appConfig } from '../lib/state/appConfig.state.svelte';
   import {
@@ -46,9 +46,9 @@
       '해당 젬을 모두 삭제하고 덮어 씌우시겠습니까?\n' +
       '취소할 경우 인식된 젬이 추가만 됩니다.',
     en_us:
-      '⚠️ Gems already exist in the current profile.\n' +
-      'Do you want to delete all existing gems and overwrite them?\n' +
-      'If you cancel, the recognized gems will only be added.',
+      '⚠️ Astrogems already exist in the current profile.\n' +
+      'Do you want to delete all existing astrogems and overwrite them?\n' +
+      'If you cancel, the recognized astrogems will only be added.',
   };
   let container: ArkGridGemList;
   let orderGems = $derived(gems.orderGems);
