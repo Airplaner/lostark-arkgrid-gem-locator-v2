@@ -21,6 +21,7 @@
   import {
     appConfig,
     toggleDarkMode,
+    toggleLocale,
     toggleUI,
     updateOpenApiJWT,
   } from '../../lib/state/appConfig.state.svelte';
@@ -45,12 +46,9 @@
     }
     const textOnly = gem.Tooltip.replace(/<[^>]*>/g, '');
 
-    let gemName: string | undefined = undefined;
-    for (const candidateName of ArkGridGemNames) {
-      if (textOnly.includes(candidateName)) {
-        gemName = candidateName;
-      }
-    }
+    // 툴팁 전체에서 이름 추출
+    // XXX 만약 '질서의 젬 : 안정'이라는 문구가 안정 젬이 아닌 곳에 나오게 된다면!?
+    const gemName = ArkGridGemNames.find((candidate) => textOnly.includes(candidate));
     if (!gemName) {
       throw Error('이름 없음');
     }
@@ -187,10 +185,13 @@
       window.gtag?.('event', 'import-from-open-api', {
         event_label: 'success',
       });
-      const arkpassive: LostArkOpenAPI.ArkPassive | undefined = res.data.ArkPassive;
-      const arkgrid: LostArkOpenAPI.ArkGrid | undefined = res.data.ArkGrid;
-      const armoryEquipment: LostArkOpenAPI.ArmoryEquipment[] | undefined =
-        res.data.ArmoryEquipment;
+      const data = res.data as Record<string, unknown>;
+      const arkpassive = data['ArkPassive'] as LostArkOpenAPI.ArkPassive | undefined;
+      const arkgrid = data['ArkGrid'] as LostArkOpenAPI.ArkGrid | undefined;
+      const armoryEquipment = data['ArmoryEquipment'] as
+        | LostArkOpenAPI.ArmoryEquipment[]
+        | undefined;
+
       let isSupporter = false;
 
       // 장비에서 무기 공격력 추출
@@ -329,6 +330,9 @@
       class:fa-toggle-off={!appConfig.current.uiConfig.darkMode}
     ></i>
   </button>
+  <button hidden={!appConfig.current.uiConfig.debugMode} onclick={toggleLocale}
+    >Locale: {appConfig.current.locale}</button
+  >
 </div>
 
 <style>

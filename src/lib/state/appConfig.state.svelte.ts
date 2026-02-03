@@ -136,6 +136,9 @@ export function toggleLocale() {
     appConfig.current.locale = 'ko_kr';
   }
 }
+export function setLocale(locale: AppLocale) {
+  appConfig.current.locale = locale;
+}
 
 export function toggleDarkMode() {
   appConfig.current.uiConfig.darkMode = !appConfig.current.uiConfig.darkMode;

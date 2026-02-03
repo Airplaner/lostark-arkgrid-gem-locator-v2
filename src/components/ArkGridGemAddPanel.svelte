@@ -1,8 +1,18 @@
 <script lang="ts">
   import { toast } from '@zerodevx/svelte-toast';
 
-  import type { ArkGridAttr } from '../lib/constants/enums';
-  import { type ArkGridGemOption, ArkGridGemOptionTypes } from '../lib/models/arkGridGems';
+  import imgCorePoint from '../assets/corepoint.png';
+  import imgWillPower from '../assets/willpower.png';
+  import type { AppLocale, ArkGridAttr } from '../lib/constants/enums';
+  import {
+    type ArkGridGemName,
+    ArkGridGemNames,
+    type ArkGridGemOption,
+    ArkGridGemOptionTypes,
+    ArkGridGemSpecs,
+    getGemImage,
+  } from '../lib/models/arkGridGems';
+  import { appConfig } from '../lib/state/appConfig.state.svelte';
   import { addGem } from '../lib/state/profile.state.svelte';
 
   type Props = {
@@ -15,47 +25,98 @@
   function open() {
     dialog.showModal();
   }
-
   function close() {
     dialog.close();
   }
   function confirm() {
-    if (
-      willPower < 3 ||
-      willPower > 10 ||
-      corePoint < 1 ||
-      corePoint > 5 ||
-      optionA.value < 1 ||
-      optionA.value > 5 ||
-      optionB.value < 1 ||
-      optionB.value > 5
-    ) {
-      window.alert('Invalid gem!');
-    }
     addGem(
       JSON.parse(
         JSON.stringify({
           gemAttr,
-          req: willPower,
-          point: corePoint,
-          option1: optionA,
-          option2: optionB,
+          name: gemInput.name,
+          req: gemInput.willPower,
+          point: gemInput.corePoint,
+          option1: gemInput.optionA,
+          option2: gemInput.optionB,
         })
       )
     );
     dialog.close();
     toast.push('젬 추가 완료');
   }
-  let optionA = $state<ArkGridGemOption>({
-    optionType: ArkGridGemOptionTypes.ATTACK,
-    value: 1,
+
+  function enforceSingleDigit(v: number, minimum: number, maximum: number) {
+    // 이미 값이 있던 경우 값을 추가로 입력하면 10이상이 된다. 그때 마지막 자리만 사용한다.
+    if (v > 10) {
+      v = v % 10;
+    }
+    return Math.min(maximum, Math.max(minimum, v));
+  }
+
+  let gemInput: {
+    name: ArkGridGemName;
+    willPower: number;
+    corePoint: number;
+    optionA: ArkGridGemOption;
+    optionB: ArkGridGemOption;
+  } = $state({
+    name: '질서의 젬 : 안정',
+    willPower: 3,
+    corePoint: 5,
+    optionA: {
+      optionType: '공격력',
+      value: 1,
+    },
+    optionB: {
+      optionType: '추가 피해',
+      value: 1,
+    },
   });
-  let optionB = $state<ArkGridGemOption>({
-    optionType: ArkGridGemOptionTypes.BOSS_DAMAGE,
-    value: 1,
+  let locale: AppLocale = $derived(appConfig.current.locale);
+
+  // 현재 gemAttr에서 가능한 gemSpec들을 가져옴
+  let availableGemSpecs = $derived(
+    Object.entries(ArkGridGemSpecs)
+      .filter(([, spec]) => spec.attr === gemAttr)
+      .map(([key, spec]) => ({
+        key: key as ArkGridGemName,
+        spec,
+      }))
+  );
+  $effect(() => {
+    // 현재 이름이 가능한 이름이 아니라면, 0번째로 리셋 (안정, 침식)
+    if (!availableGemSpecs.some((v) => v.key === gemInput.name)) {
+      gemInput.name = availableGemSpecs[0]?.key;
+    }
   });
-  let willPower = $state(3);
-  let corePoint = $state(5);
+
+  // 2. 현재 gemSepc에서 가능한 옵션 가져옴
+  let gemSpec = $derived(ArkGridGemSpecs[gemInput.name]);
+  let availableGemOptionTypes = $derived(gemSpec.availableOptions);
+
+  $effect(() => {
+    // 현재 가능한 옵션이 아니라면, 가능한 옵션으로 초기화
+    // 초기화 시킬 땐 반대 옵션과 같다면 최소한 같지 않도록 함
+    if (!availableGemOptionTypes.some((v) => v === gemInput.optionA.optionType)) {
+      gemInput.optionA.optionType =
+        gemInput.optionB.optionType === availableGemOptionTypes[0]
+          ? availableGemOptionTypes[1]
+          : availableGemOptionTypes[0];
+      gemInput.optionA.value = 1;
+    }
+    if (!availableGemOptionTypes.some((v) => v === gemInput.optionB.optionType)) {
+      // B의 경우 A와 겹치지 않는 옵션으로 초기화
+      gemInput.optionB.optionType =
+        gemInput.optionA.optionType === availableGemOptionTypes[0]
+          ? availableGemOptionTypes[1]
+          : availableGemOptionTypes[0];
+      gemInput.optionB.value = 1;
+    }
+  });
+
+  function isInvalidGemInput() {
+    return gemInput.optionA.optionType === gemInput.optionB.optionType;
+  }
 </script>
 
 <button onclick={open}>젬 추가</button>
@@ -63,63 +124,144 @@
   <div class="root">
     <div class="title">젬 추가</div>
     <div class="content">
-      <label
-        >의지력:
-        <input bind:value={willPower} type="number" min="3" max="9" />
-      </label>
-      <label
-        >포인트:
-        <input bind:value={corePoint} type="number" min="1" max="5" />
-      </label>
-      {#each [{ gemOption: optionA, otherOption: optionB }, { gemOption: optionB, otherOption: optionA }] as { gemOption, otherOption }}
+      <div class="col">
+        <div class="image-wrapper">
+          <img src={getGemImage(gemAttr, gemInput.name)} alt={gemInput.name} />
+        </div>
+        <label>
+          <select bind:value={gemInput.name}>
+            {#each availableGemSpecs as spec}
+              <option value={spec.key}>{spec.spec.name[locale]}</option>
+            {/each}
+          </select>
+        </label>
+      </div>
+      <div class="col">
         <div class="row">
           <label>
-            젬 옵션
-            <select bind:value={gemOption.optionType}>
-              {#each Object.values(ArkGridGemOptionTypes) as option}
-                <option value={option} disabled={option === otherOption.optionType}>{option}</option
-                >
-              {/each}
-            </select>
-            <input bind:value={gemOption.value} type="number" min="1" max="5" />
+            <!-- svelte 5 function binding -->
+            <input
+              bind:value={
+                () => gemInput.willPower,
+                (v) =>
+                  (gemInput.willPower = enforceSingleDigit(v, gemSpec.req - 5, gemSpec.req - 1))
+              }
+              type="number"
+              min={gemSpec.req - 5}
+              max={gemSpec.req - 1}
+            />
           </label>
+          <div class="image-wrapper">
+            <img src={imgWillPower} alt="의지력" />
+          </div>
         </div>
-      {/each}
+        <div class="row">
+          <label>
+            <input
+              bind:value={
+                () => gemInput.corePoint, (v) => (gemInput.corePoint = enforceSingleDigit(v, 1, 5))
+              }
+              type="number"
+              min="1"
+              max="5"
+            />
+          </label>
+          <div class="image-wrapper">
+            <img src={imgCorePoint} alt="포인트" />
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        {#each [gemInput.optionA, gemInput.optionB] as gemOption}
+          <div class="row">
+            <label>
+              <select bind:value={gemOption.optionType}>
+                {#each Object.values(ArkGridGemOptionTypes) as option}
+                  <option
+                    value={option}
+                    disabled={!availableGemOptionTypes.some((v) => v === option)}>{option}</option
+                  >
+                {/each}
+              </select>
+            </label>
+            <label>
+              Lv.
+              <input
+                bind:value={
+                  () => gemOption.value, (v) => (gemOption.value = enforceSingleDigit(v, 1, 5))
+                }
+                type="number"
+                min="1"
+                max="5"
+              />
+            </label>
+          </div>
+        {/each}
+      </div>
     </div>
 
     <div class="buttons">
       <button onclick={close}>취소</button>
-      <button onclick={confirm}>확인</button>
+      <button onclick={confirm} disabled={isInvalidGemInput()}>확인</button>
     </div>
   </div>
 </dialog>
 
 <style>
+  /*
+  root -
+   - title
+   - content
+    - row
+    - row
+   - buttons
+  */
   .root {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 2rem;
+    user-select: none;
   }
-  .content {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 1rem;
-  }
+
   .title {
     font-size: 1.4rem;
     font-weight: 500;
     text-align: center;
   }
+  .content {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+  }
+  .col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    justify-content: center;
+    align-items: center;
+  }
   .row {
     display: flex;
+    flex-direction: row;
+    justify-content: space-between;
     gap: 1rem;
-    justify-content: center;
   }
-  input {
-    width: 2rem;
+  .image-wrapper {
+    display: flex;
+    align-items: center; /* 세로 중앙 */
+    justify-content: center; /* 가로 중앙 (선택) */
   }
+  .image-wrapper img {
+    margin: auto;
+  }
+
+  input,
+  option,
+  select {
+    font-size: 1rem;
+    width: 8.5rem;
+  }
+
   .buttons {
     display: flex;
     gap: 1rem;
@@ -129,9 +271,7 @@
   dialog::backdrop {
     background: rgba(0, 0, 0, 0.5);
   }
-
-  dialog {
-    border-radius: 8px;
-    border: 1px var(--border) solid;
+  input[type='number'] {
+    width: 2rem;
   }
 </style>

@@ -1,30 +1,8 @@
 <script lang="ts">
   import imgCorePoint from '../assets/corepoint.png';
   import imgWillPower from '../assets/willpower.png';
-  import { ArkGridAttrs } from '../lib/constants/enums';
-  import type { ArkGridGem } from '../lib/models/arkGridGems';
+  import { type ArkGridGem, getGemImage } from '../lib/models/arkGridGems';
   import { deleteGem } from '../lib/state/profile.state.svelte';
-
-  const MapGemNameImage: Record<string, string> = {
-    '질서의 젬 : 안정': 'order_0',
-    '질서의 젬 : 견고': 'order_1',
-    '질서의 젬 : 불변': 'order_2',
-    '혼돈의 젬 : 침식': 'chaos_0',
-    '혼돈의 젬 : 왜곡': 'chaos_1',
-    '혼돈의 젬 : 붕괴': 'chaos_2',
-  };
-  const gemImages = import.meta.glob<string>('../assets/gems/*.png', {
-    eager: true,
-    import: 'default',
-  });
-  function getGemImage(gem: ArkGridGem): string {
-    if (!gem.name) {
-      return gem.gemAttr == ArkGridAttrs.Order
-        ? gemImages['../assets/gems/order_0.png']
-        : gemImages['../assets/gems/chaos_0.png'];
-    }
-    return gemImages[`../assets/gems/${MapGemNameImage[gem.name] ?? 'order_0'}.png`];
-  }
 
   interface Props {
     gem: ArkGridGem;
@@ -37,7 +15,7 @@
 <div class="gem-box">
   <div class="gem">
     <div class="col gemImage" data-grade={gem.grade}>
-      <img src={getGemImage(gem)} alt={gem.name} />
+      <img src={getGemImage(gem.gemAttr, gem.name)} alt={gem.name} />
     </div>
     <div class="col main-options">
       <div class="main-option">

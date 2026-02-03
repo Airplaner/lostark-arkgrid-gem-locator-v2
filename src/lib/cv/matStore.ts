@@ -127,12 +127,12 @@ export async function loadGemAsset() {
     (acc, locale) => {
       const mats = gt[locale];
       acc[locale] = generateMatchingAtlas({
-        order_1: mats['안정.png'],
-        order_2: mats['견고.png'],
-        order_3: mats['불변.png'],
-        chaos_1: mats['침식.png'],
-        chaos_2: mats['왜곡.png'],
-        chaos_3: mats['붕괴.png'],
+        '질서의 젬 : 안정': mats['안정.png'],
+        '질서의 젬 : 견고': mats['견고.png'],
+        '질서의 젬 : 불변': mats['불변.png'],
+        '혼돈의 젬 : 침식': mats['침식.png'],
+        '혼돈의 젬 : 왜곡': mats['왜곡.png'],
+        '혼돈의 젬 : 붕괴': mats['붕괴.png'],
       });
       return acc;
     },

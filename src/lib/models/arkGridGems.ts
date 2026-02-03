@@ -1,4 +1,10 @@
-import { type ArkGridAttr, type LostArkGrade, LostArkGrades } from '../constants/enums';
+import {
+  type AppLocale,
+  type ArkGridAttr,
+  ArkGridAttrs,
+  type LostArkGrade,
+  LostArkGrades,
+} from '../constants/enums';
 
 export const ArkGridGemOptionTypes = {
   ATTACK: '공격력',
@@ -11,41 +17,100 @@ export const ArkGridGemOptionTypes = {
 export type ArkGridGemOptionType =
   (typeof ArkGridGemOptionTypes)[keyof typeof ArkGridGemOptionTypes];
 
-export const ARKGRID_GEM_NAME = {
-  order_1: {
-    ko: '질서의 젬 : 안정',
-    en: 'Order Astrogem: Stability',
-  },
-  order_2: {
-    ko: '질서의 젬 : 견고',
-    en: 'Order Astrogem: Solidity',
-  },
-  order_3: {
-    ko: '질서의 젬 : 불변',
-    en: 'Order Astrogem: Immutability',
-  },
-  chaos_1: {
-    ko: '혼돈의 젬 : 침식',
-    en: 'Chaos Astrogem: Corrosion',
-  },
-  chaos_2: {
-    ko: '혼돈의 젬 : 왜곡',
-    en: 'Chaos Astrogem: Distortion',
-  },
-  chaos_3: {
-    ko: '혼돈의 젬 : 붕괴',
-    en: 'Chaos Astrogem: Destruction',
-  },
+export type ArkGridGemSpec = {
+  attr: ArkGridAttr;
+  name: Record<AppLocale, string>;
+  req: Number;
+  availableOptions: ArkGridGemOptionType[];
 };
-export type ArkGridGemName = keyof typeof ARKGRID_GEM_NAME;
-export const ArkGridGemNames = [
-  '질서의 젬 : 안정',
-  '질서의 젬 : 견고',
-  '질서의 젬 : 불변',
-  '혼돈의 젬 : 침식',
-  '혼돈의 젬 : 왜곡',
-  '혼돈의 젬 : 붕괴',
-];
+export const ArkGridGemSpecs = {
+  '질서의 젬 : 안정': {
+    attr: ArkGridAttrs.Order,
+    name: {
+      ko_kr: '질서의 젬 : 안정',
+      en_us: 'Order Astrogem: Stability',
+    },
+    req: 8,
+    availableOptions: [
+      ArkGridGemOptionTypes.ATTACK,
+      ArkGridGemOptionTypes.SKILL_DAMAGE,
+      ArkGridGemOptionTypes.STIGMA,
+      ArkGridGemOptionTypes.PARTY_DAMAGE,
+    ],
+  },
+  '질서의 젬 : 견고': {
+    attr: ArkGridAttrs.Order,
+    name: {
+      ko_kr: '질서의 젬 : 견고',
+      en_us: 'Order Astrogem: Solidity',
+    },
+    req: 9,
+    availableOptions: [
+      ArkGridGemOptionTypes.ATTACK,
+      ArkGridGemOptionTypes.BOSS_DAMAGE,
+      ArkGridGemOptionTypes.PARTY_DAMAGE,
+      ArkGridGemOptionTypes.PARTY_ATTACK,
+    ],
+  },
+  '질서의 젬 : 불변': {
+    attr: ArkGridAttrs.Order,
+    name: {
+      ko_kr: '질서의 젬 : 불변',
+      en_us: 'Order Astrogem: Immutability',
+    },
+    req: 10,
+    availableOptions: [
+      ArkGridGemOptionTypes.SKILL_DAMAGE,
+      ArkGridGemOptionTypes.BOSS_DAMAGE,
+      ArkGridGemOptionTypes.STIGMA,
+      ArkGridGemOptionTypes.PARTY_ATTACK,
+    ],
+  },
+  '혼돈의 젬 : 침식': {
+    attr: ArkGridAttrs.Chaos,
+    name: {
+      ko_kr: '혼돈의 젬 : 침식',
+      en_us: 'Chaos Astrogem: Corrosion',
+    },
+    req: 8,
+    availableOptions: [
+      ArkGridGemOptionTypes.ATTACK,
+      ArkGridGemOptionTypes.SKILL_DAMAGE,
+      ArkGridGemOptionTypes.STIGMA,
+      ArkGridGemOptionTypes.PARTY_DAMAGE,
+    ],
+  },
+  '혼돈의 젬 : 왜곡': {
+    attr: ArkGridAttrs.Chaos,
+    name: {
+      ko_kr: '혼돈의 젬 : 왜곡',
+      en_us: 'Chaos Astrogem: Distortion',
+    },
+    req: 9,
+    availableOptions: [
+      ArkGridGemOptionTypes.ATTACK,
+      ArkGridGemOptionTypes.BOSS_DAMAGE,
+      ArkGridGemOptionTypes.PARTY_DAMAGE,
+      ArkGridGemOptionTypes.PARTY_ATTACK,
+    ],
+  },
+  '혼돈의 젬 : 붕괴': {
+    attr: ArkGridAttrs.Chaos,
+    name: {
+      ko_kr: '혼돈의 젬 : 붕괴',
+      en_us: 'Chaos Astrogem: Destruction',
+    },
+    req: 10,
+    availableOptions: [
+      ArkGridGemOptionTypes.SKILL_DAMAGE,
+      ArkGridGemOptionTypes.BOSS_DAMAGE,
+      ArkGridGemOptionTypes.STIGMA,
+      ArkGridGemOptionTypes.PARTY_ATTACK,
+    ],
+  },
+} as const satisfies Record<string, ArkGridGemSpec>;
+export type ArkGridGemName = keyof typeof ArkGridGemSpecs;
+export const ArkGridGemNames = Object.keys(ArkGridGemSpecs) as ArkGridGemName[];
 
 export type ArkGridGemOption = {
   optionType: ArkGridGemOptionType;
@@ -53,7 +118,7 @@ export type ArkGridGemOption = {
 };
 
 export interface ArkGridGem {
-  name?: string;
+  name?: ArkGridGemName;
   grade?: LostArkGrade;
   gemAttr: ArkGridAttr;
   req: number;
@@ -68,14 +133,9 @@ export function determineGemGrade(
   point: number,
   option1: ArkGridGemOption,
   option2: ArkGridGemOption,
-  name?: string
+  name?: ArkGridGemName
 ) {
-  let basePoint = 8;
-  if (name === '질서의 젬 : 견고' || name === '혼돈의 젬 : 왜곡') {
-    basePoint = 9;
-  } else if (name === '질서의 젬 : 불변' || name === '혼돈의 젬 : 붕괴') {
-    basePoint = 10;
-  }
+  let basePoint = name ? ArkGridGemSpecs[name].req : 8;
   const totalPoint = basePoint - req + point + option1.value + option2.value;
   return totalPoint < 16
     ? LostArkGrades.LEGENDARY
@@ -84,13 +144,7 @@ export function determineGemGrade(
       : LostArkGrades.ANCIENT;
 }
 export function determineGemGradeByGem(gem: ArkGridGem) {
-  let basePoint = 8;
-  const name = gem.name;
-  if (name === '질서의 젬 : 견고' || name === '혼돈의 젬 : 왜곡') {
-    basePoint = 9;
-  } else if (name === '질서의 젬 : 불변' || name === '혼돈의 젬 : 붕괴') {
-    basePoint = 10;
-  }
+  let basePoint = gem.name ? ArkGridGemSpecs[gem.name].req : 8;
   const totalPoint = basePoint - gem.req + gem.point + gem.option1.value + gem.option2.value;
   return totalPoint < 16
     ? LostArkGrades.LEGENDARY
@@ -102,6 +156,7 @@ export function determineGemGradeByGem(gem: ArkGridGem) {
 export function isSameArkGridGem(a: ArkGridGem | undefined, b: ArkGridGem | undefined): boolean {
   if (a === undefined || b === undefined) return false;
   return (
+    (a.name !== undefined && b.name !== undefined ? a.name === b.name : true) &&
     a.gemAttr === b.gemAttr &&
     a.req === b.req &&
     a.point === b.point &&
@@ -112,4 +167,26 @@ export function isSameArkGridGem(a: ArkGridGem | undefined, b: ArkGridGem | unde
 
 function isSameOption(a: ArkGridGemOption, b: ArkGridGemOption): boolean {
   return a.optionType === b.optionType && a.value === b.value;
+}
+
+const MapGemNameImage: Record<ArkGridGemName, string> = {
+  '질서의 젬 : 안정': 'order_0',
+  '질서의 젬 : 견고': 'order_1',
+  '질서의 젬 : 불변': 'order_2',
+  '혼돈의 젬 : 침식': 'chaos_0',
+  '혼돈의 젬 : 왜곡': 'chaos_1',
+  '혼돈의 젬 : 붕괴': 'chaos_2',
+};
+const gemImages = import.meta.glob<string>('/src/assets/gems/*.png', {
+  eager: true,
+  import: 'default',
+});
+
+export function getGemImage(gemAttr?: ArkGridAttr, gemName?: ArkGridGemName): string {
+  if (!gemName) {
+    return gemAttr == ArkGridAttrs.Order
+      ? gemImages['/src/assets/gems/order_0.png']
+      : gemImages['/src/assets/gems/chaos_0.png'];
+  }
+  return gemImages[`/src/assets/gems/${MapGemNameImage[gemName] ?? 'order_0'}.png`];
 }
