@@ -119,10 +119,6 @@ export function toggleUI(optionName: keyof UIConfig) {
   appConfig.current.uiConfig[optionName] = !appConfig.current.uiConfig[optionName];
 }
 
-// (window as any).debug = () => {
-//   toggleUI('debugMode');
-// };
-
 export function updateOpenApiJWT(jwtInput: string) {
   if (jwtInput.length > 0) {
     const jwtTrimed = jwtInput.trim();

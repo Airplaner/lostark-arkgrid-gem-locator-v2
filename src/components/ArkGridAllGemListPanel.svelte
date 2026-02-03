@@ -3,8 +3,7 @@
   import { tick } from 'svelte';
 
   import { type ArkGridAttr, ArkGridAttrs } from '../lib/constants/enums';
-  import { appConfig } from '../lib/state/appConfig.state.svelte';
-  import { type AllGems, addGem, clearGems } from '../lib/state/profile.state.svelte';
+  import { type AllGems, clearGems } from '../lib/state/profile.state.svelte';
   import ArkGridGemAddPanel from './ArkGridGemAddPanel.svelte';
   import ArkGridGemList from './ArkGridGemList.svelte';
 
@@ -13,6 +12,12 @@
   }
 
   let { gems }: Props = $props();
+  let showDeleteButton = $state(false);
+
+  $effect(() => {
+    gems;
+    showDeleteButton = false;
+  });
 
   // 탭 상태
   let activeTab = $state(0);
@@ -67,17 +72,27 @@
       </button>
     {/each}
   </div>
-  <ArkGridGemList gems={currentGems} bind:this={container}></ArkGridGemList>
+  <ArkGridGemList gems={currentGems} bind:this={container} {showDeleteButton}></ArkGridGemList>
   <div class="gem-count">
     젬 보유 수량 {gems.orderGems.length + gems.chaosGems.length} / 100<br />(질서 {gems.orderGems
       .length}개, 혼돈 {gems.chaosGems.length}개 보유 중)
   </div>
   <div class="buttons">
-    <ArkGridGemAddPanel gemAttr={currentAttr}></ArkGridGemAddPanel>
-    <button
-      disabled={gems.orderGems.length == 0 && gems.chaosGems.length == 0}
-      onclick={() => clearGemWithConfirm()}>초기화</button
-    >
+    <div class="left">
+      <ArkGridGemAddPanel gemAttr={currentAttr}></ArkGridGemAddPanel>
+    </div>
+    <div class="right">
+      <button
+        disabled={gems.orderGems.length == 0 && gems.chaosGems.length == 0}
+        onclick={() => (showDeleteButton = !showDeleteButton)}
+      >
+        개별 젬 삭제 {showDeleteButton ? '끄기' : '켜기'}
+      </button>
+      <button
+        disabled={gems.orderGems.length == 0 && gems.chaosGems.length == 0}
+        onclick={() => clearGemWithConfirm()}>전체 초기화</button
+      >
+    </div>
   </div>
 </div>
 
@@ -107,7 +122,7 @@
     gap: 0.4rem;
     justify-content: space-between;
   }
-  .buttons > button {
+  .buttons button {
     /* 너비는 자동이지만 최소 5em */
     width: auto;
     min-width: 5em;
