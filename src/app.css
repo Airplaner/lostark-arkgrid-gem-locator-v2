@@ -76,6 +76,8 @@ option {
 dialog {
   color: var(--text);
   background-color: var(--card);
+  border-radius: 8px;
+  border: 1px var(--border) solid;
 }
 
 html {
