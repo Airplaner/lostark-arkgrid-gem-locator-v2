@@ -1,17 +1,31 @@
-import {
-  type ArkGridAttr,
-  ArkGridAttrs,
-  type LostArkGrade,
-  LostArkGrades,
-} from '../constants/enums';
+import { type ArkGridAttr, type LocalizationName, type LostArkGrade } from '../constants/enums';
 import type { WeaponInfo } from '../state/profile.state.svelte';
 
-export const ArkGridCoreTypes = {
-  SUN: '해',
-  MOON: '달',
-  STAR: '별',
-} as const;
-export type ArkGridCoreType = (typeof ArkGridCoreTypes)[keyof typeof ArkGridCoreTypes];
+export type ArkGridCoreTypeType = {
+  name: LocalizationName;
+};
+export const ArkGridCoreTypeTypes = {
+  해: {
+    name: {
+      ko_kr: '해',
+      en_us: 'Sun',
+    },
+  },
+  달: {
+    name: {
+      ko_kr: '달',
+      en_us: 'Moon',
+    },
+  },
+  별: {
+    name: {
+      ko_kr: '별',
+      en_us: 'Star',
+    },
+  },
+} as const satisfies Record<string, ArkGridCoreTypeType>;
+export type ArkGridCoreType = keyof typeof ArkGridCoreTypeTypes;
+export const ArkGridCoreTypes = Object.keys(ArkGridCoreTypeTypes) as ArkGridCoreType[];
 
 export const ArkGridCoreNameTierMap: Record<string, number> = {
   '현란한 공격': 0,
@@ -72,14 +86,14 @@ export function resetCoreCoeff(
 }
 function cutoffCoeff(core: ArkGridCore) {
   // 코어 영웅, 전설 등급이면 계수 조정
-  if (core.grade === LostArkGrades.EPIC) {
+  if (core.grade === '영웅') {
     // 영웅 등급: 10P 옵션까지만 존재
     core.coeffs.p14 = core.coeffs.p10;
     core.coeffs.p17 = core.coeffs.p10;
     core.coeffs.p18 = core.coeffs.p10;
     core.coeffs.p19 = core.coeffs.p10;
     core.coeffs.p20 = core.coeffs.p10;
-  } else if (core.grade === LostArkGrades.LEGENDARY) {
+  } else if (core.grade === '전설') {
     // 전설 등급 : 14P 옵션까지만 존재
     core.coeffs.p17 = core.coeffs.p14;
     core.coeffs.p18 = core.coeffs.p14;
@@ -93,9 +107,9 @@ function adjustCoeff(core: ArkGridCore, isSupporter: boolean) {
   // getDefaultCoreCoeff에서 이미 처리를 하는 경우 생략
   if (
     !isSupporter &&
-    core.grade == LostArkGrades.ANCIENT &&
-    core.attr == ArkGridAttrs.Chaos &&
-    core.type == ArkGridCoreTypes.STAR &&
+    core.grade == '고대' &&
+    core.attr == '혼돈' &&
+    core.type == '별' &&
     core.tier == 1
   )
     // 딜러 - 고대 혼돈의 별 무기의 경우 고대 적용x
@@ -103,15 +117,15 @@ function adjustCoeff(core: ArkGridCore, isSupporter: boolean) {
 
   if (
     isSupporter &&
-    core.grade == LostArkGrades.ANCIENT &&
-    core.attr == ArkGridAttrs.Order &&
-    core.type == ArkGridCoreTypes.STAR &&
+    core.grade == '고대' &&
+    core.attr == '질서' &&
+    core.type == '별' &&
     core.tier == 0
   )
     // 서폿 - 고대 혼돈의 별 무기의 경우 고대 적용x
     return;
 
-  if (core.grade === LostArkGrades.ANCIENT && core.coeffs.p17) {
+  if (core.grade === '고대' && core.coeffs.p17) {
     /*
       고대 등급 17-20P 옵션 추가 계수
       딜러:  +100
@@ -125,26 +139,26 @@ function adjustCoeff(core: ArkGridCore, isSupporter: boolean) {
     let additionalCoeff = 100; // 딜러 100
     if (isSupporter) {
       switch (core.attr) {
-        case ArkGridAttrs.Order:
+        case '질서':
           switch (core.type) {
-            case ArkGridCoreTypes.SUN:
-            case ArkGridCoreTypes.MOON:
+            case '해':
+            case '달':
               additionalCoeff = 120; // 폿 질서 해달  +120
               break;
-            case ArkGridCoreTypes.STAR:
+            case '별':
               additionalCoeff = 90; // 폿 질서 별 +90
               break;
             default:
               throw Error('additionalCoeff is not set');
           }
           break;
-        case ArkGridAttrs.Chaos:
+        case '혼돈':
           switch (core.type) {
-            case ArkGridCoreTypes.SUN: // 폿 혼돈 1티어 해달 +180
-            case ArkGridCoreTypes.MOON: // 폿 혼돈 2티어 해달 +120
+            case '해': // 폿 혼돈 1티어 해달 +180
+            case '달': // 폿 혼돈 2티어 해달 +120
               additionalCoeff = core.tier == 0 ? 180 : 120;
               break;
-            case ArkGridCoreTypes.STAR:
+            case '별':
               additionalCoeff = 100; // 무기 +100 맞나?
               break;
             default:
@@ -181,8 +195,8 @@ export function getDefaultCoreCoeff(
 
   if (!isSupporter) {
     // 딜러
-    if (attr == ArkGridAttrs.Order) {
-      if (type == ArkGridCoreTypes.SUN || type == ArkGridCoreTypes.MOON) {
+    if (attr == '질서') {
+      if (type == '해' || type == '달') {
         // 질서의 해, 달
         return {
           p10: 150,
@@ -192,7 +206,7 @@ export function getDefaultCoreCoeff(
           p19: 783,
           p20: 800,
         };
-      } else if (type == ArkGridCoreTypes.STAR) {
+      } else if (type == '별') {
         // 질서의 별
         return {
           p10: 100,
@@ -203,8 +217,8 @@ export function getDefaultCoreCoeff(
           p20: 500,
         };
       }
-    } else if (attr == ArkGridAttrs.Chaos) {
-      if (type == ArkGridCoreTypes.SUN || type == ArkGridCoreTypes.MOON) {
+    } else if (attr == '혼돈') {
+      if (type == '해' || type == '달') {
         // 혼돈의 해, 달
         if (tier == 0) {
           // 현란한 공격, 불타는 일격
@@ -227,7 +241,7 @@ export function getDefaultCoreCoeff(
             p20: 200,
           };
         }
-      } else if (type == ArkGridCoreTypes.STAR) {
+      } else if (type == '별') {
         // 혼돈의 별
         if (tier == 0) {
           // 공격
@@ -246,20 +260,20 @@ export function getDefaultCoreCoeff(
             p10: getWeaponCoeff(weapon, { fixed: 1300, percent: 0 }), // 무공 +1300
             p14: getWeaponCoeff(weapon, { fixed: 1300, percent: 0.75 }), // 무공 +0.75%
             p17: getWeaponCoeff(weapon, {
-              fixed: core.grade == LostArkGrades.ANCIENT ? 5200 : 3900,
-              percent: core.grade == LostArkGrades.ANCIENT ? 3 : 2.25,
+              fixed: core.grade === '고대' ? 5200 : 3900,
+              percent: core.grade === '고대' ? 3 : 2.25,
             }), // 무공 +1.5/2.25%, 무공+2600/3900
             p18: getWeaponCoeff(weapon, {
-              fixed: core.grade == LostArkGrades.ANCIENT ? 5200 : 3900,
-              percent: (core.grade == LostArkGrades.ANCIENT ? 3 : 2.25) + 0.23,
+              fixed: core.grade === '고대' ? 5200 : 3900,
+              percent: (core.grade === '고대' ? 3 : 2.25) + 0.23,
             }), // 무공 +0.23%
             p19: getWeaponCoeff(weapon, {
-              fixed: core.grade == LostArkGrades.ANCIENT ? 5200 : 3900,
-              percent: (core.grade == LostArkGrades.ANCIENT ? 3 : 2.25) + 0.23 * 2,
+              fixed: core.grade === '고대' ? 5200 : 3900,
+              percent: (core.grade === '고대' ? 3 : 2.25) + 0.23 * 2,
             }), // 무공 +0.23%
             p20: getWeaponCoeff(weapon, {
-              fixed: core.grade == LostArkGrades.ANCIENT ? 5200 : 3900,
-              percent: (core.grade == LostArkGrades.ANCIENT ? 3 : 2.25) + 0.23 * 3,
+              fixed: core.grade === '고대' ? 5200 : 3900,
+              percent: (core.grade === '고대' ? 3 : 2.25) + 0.23 * 3,
             }), // 무공 +0.23%
           };
         }
@@ -267,8 +281,8 @@ export function getDefaultCoreCoeff(
     }
   } else {
     // 서폿
-    if (attr == ArkGridAttrs.Order) {
-      if (type == ArkGridCoreTypes.SUN || type == ArkGridCoreTypes.MOON) {
+    if (attr === '질서') {
+      if (type == '해' || type == '달') {
         // 질서의 해, 달
         return {
           p10: 120,
@@ -278,7 +292,7 @@ export function getDefaultCoreCoeff(
           p19: 810,
           p20: 822,
         };
-      } else if (type == ArkGridCoreTypes.STAR) {
+      } else if (type == '별') {
         // 질서의 별
         return {
           p10: 0,
@@ -289,8 +303,8 @@ export function getDefaultCoreCoeff(
           p20: 240,
         };
       }
-    } else if (attr == ArkGridAttrs.Chaos) {
-      if (type == ArkGridCoreTypes.SUN || type == ArkGridCoreTypes.MOON) {
+    } else if (attr === '혼돈') {
+      if (type == '해' || type == '달') {
         // 혼돈의 해, 혼돈의 달
         if (tier == 0) {
           // 혼돈의 해, 달
@@ -305,7 +319,7 @@ export function getDefaultCoreCoeff(
           };
         } else if (tier == 1) {
           // 2티어
-          if (type == ArkGridCoreTypes.SUN) {
+          if (type == '해') {
             // 해 - 흐르는 마나, 불굴의 강화
             return {
               p10: 0,
@@ -315,7 +329,7 @@ export function getDefaultCoreCoeff(
               p19: 164,
               p20: 180,
             };
-          } else if (type == ArkGridCoreTypes.MOON) {
+          } else if (type == '달') {
             // 달 - 강철의 흔적, 치명적인 흔적
             return {
               p10: 60,
@@ -327,7 +341,7 @@ export function getDefaultCoreCoeff(
             };
           }
         }
-      } else if (type == ArkGridCoreTypes.STAR) {
+      } else if (type == '별') {
         // 혼돈의 별
         if (tier == 0) {
           // 무기 TODO 무공
@@ -335,20 +349,20 @@ export function getDefaultCoreCoeff(
             p10: getWeaponCoeff(weapon, { fixed: 1300, percent: 0 }), // 무공 +1300
             p14: getWeaponCoeff(weapon, { fixed: 1300, percent: 0.75 }), // 무공 +0.75%
             p17: getWeaponCoeff(weapon, {
-              fixed: core.grade == LostArkGrades.ANCIENT ? 5200 : 3900,
-              percent: core.grade == LostArkGrades.ANCIENT ? 3 : 2.25,
+              fixed: core.grade === '고대' ? 5200 : 3900,
+              percent: core.grade === '고대' ? 3 : 2.25,
             }), // 무공 +1.5/2.25%, 무공+2600/3900
             p18: getWeaponCoeff(weapon, {
-              fixed: core.grade == LostArkGrades.ANCIENT ? 5200 : 3900,
-              percent: (core.grade == LostArkGrades.ANCIENT ? 3 : 2.25) + 0.23,
+              fixed: core.grade === '고대' ? 5200 : 3900,
+              percent: (core.grade === '고대' ? 3 : 2.25) + 0.23,
             }), // 무공 +0.23%
             p19: getWeaponCoeff(weapon, {
-              fixed: core.grade == LostArkGrades.ANCIENT ? 5200 : 3900,
-              percent: (core.grade == LostArkGrades.ANCIENT ? 3 : 2.25) + 0.23 * 2,
+              fixed: core.grade === '고대' ? 5200 : 3900,
+              percent: (core.grade === '고대' ? 3 : 2.25) + 0.23 * 2,
             }), // 무공 +0.23%
             p20: getWeaponCoeff(weapon, {
-              fixed: core.grade == LostArkGrades.ANCIENT ? 5200 : 3900,
-              percent: (core.grade == LostArkGrades.ANCIENT ? 3 : 2.25) + 0.23 * 3,
+              fixed: core.grade === '고대' ? 5200 : 3900,
+              percent: (core.grade === '고대' ? 3 : 2.25) + 0.23 * 3,
             }), // 무공 +0.23%
           };
         } // TODO 생명
@@ -368,13 +382,13 @@ export function getDefaultCoreCoeff(
 export function getDefaultCoreEnergy(core: ArkGridCore | undefined | null): number {
   if (!core) return 0;
   switch (core.grade) {
-    case LostArkGrades.EPIC:
+    case '영웅':
       return 9;
-    case LostArkGrades.LEGENDARY:
+    case '전설':
       return 12;
-    case LostArkGrades.RELIC:
+    case '유물':
       return 15;
-    case LostArkGrades.ANCIENT:
+    case '고대':
       return 17;
     default:
       return 0;
@@ -383,13 +397,13 @@ export function getDefaultCoreEnergy(core: ArkGridCore | undefined | null): numb
 export function getDefaultCoreGoalPoint(core: ArkGridCore | undefined | null): number {
   if (!core) return 0;
   switch (core.grade) {
-    case LostArkGrades.EPIC:
+    case '영웅':
       return 10;
-    case LostArkGrades.LEGENDARY:
+    case '전설':
       return 14;
-    case LostArkGrades.RELIC:
+    case '유물':
       return 17;
-    case LostArkGrades.ANCIENT:
+    case '고대':
       return 17;
     default:
       return 0;
@@ -398,13 +412,13 @@ export function getDefaultCoreGoalPoint(core: ArkGridCore | undefined | null): n
 export function getMaxCorePoint(core: ArkGridCore | undefined | null): number {
   if (!core) return 0;
   switch (core.grade) {
-    case LostArkGrades.EPIC:
+    case '영웅':
       return 10;
-    case LostArkGrades.LEGENDARY:
+    case '전설':
       return 14;
-    case LostArkGrades.RELIC:
+    case '유물':
       return 20;
-    case LostArkGrades.ANCIENT:
+    case '고대':
       return 20;
     default:
       return 0;
@@ -445,13 +459,13 @@ export const coreImages = import.meta.glob<string>('/src/assets/cores/*.png', {
 
 export function getCoreImage(attr: ArkGridAttr, ctype: ArkGridCoreType) {
   const attrMap = {
-    [ArkGridAttrs.Order]: 'order',
-    [ArkGridAttrs.Chaos]: 'chaos',
+    ['질서']: 'order',
+    ['혼돈']: 'chaos',
   };
   const typeMap = {
-    [ArkGridCoreTypes.SUN]: 'sun',
-    [ArkGridCoreTypes.MOON]: 'moon',
-    [ArkGridCoreTypes.STAR]: 'star',
+    해: 'sun',
+    달: 'moon',
+    별: 'star',
   };
   const key = `/src/assets/cores/${attrMap[attr]}_${typeMap[ctype]}.png`;
   return coreImages[key];

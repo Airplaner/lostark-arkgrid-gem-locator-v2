@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { type ArkGridAttr, ArkGridAttrs, LostArkGrades } from '../lib/constants/enums';
+  import { type ArkGridAttr, LostArkGrades } from '../lib/constants/enums';
   import {
     type ArkGridCoreType,
-    ArkGridCoreTypes,
     getCoreImage,
     getMaxCorePoint,
     resetCoreCoeff,
@@ -24,14 +23,14 @@
   let arkGridCoreTierName: Record<ArkGridCoreType, Array<string>> = $derived.by(() => {
     return !isSupporter
       ? {
-          [ArkGridCoreTypes.SUN]: ['현란한 공격', '안정적인/재빠른 공격', '그 외'],
-          [ArkGridCoreTypes.MOON]: ['불타는 일격', '흡수의/부수는 일격', '그 외'],
-          [ArkGridCoreTypes.STAR]: ['공격', '무기', '그 외'],
+          해: ['현란한 공격', '안정적인/재빠른 공격', '그 외'],
+          달: ['불타는 일격', '흡수의/부수는 일격', '그 외'],
+          별: ['공격', '무기', '그 외'],
         }
       : {
-          [ArkGridCoreTypes.SUN]: ['신념의 강화', '흐르는 마나/불굴의 강화', '그 외'],
-          [ArkGridCoreTypes.MOON]: ['낙인의 흔적', '강철의/치명적인 흔적', '그 외'],
-          [ArkGridCoreTypes.STAR]: ['무기', '생명', '그 외'],
+          해: ['신념의 강화', '흐르는 마나/불굴의 강화', '그 외'],
+          달: ['낙인의 흔적', '강철의/치명적인 흔적', '그 외'],
+          별: ['무기', '생명', '그 외'],
         };
   });
   let maxCorePoint = $derived(getMaxCorePoint(core));
@@ -70,7 +69,7 @@
       </div>
     </div>
 
-    {#if attr == ArkGridAttrs.Chaos}
+    {#if attr == '혼돈'}
       <div class="row core-tier">
         <span class="title">종류</span>
         <div class="input-title-tuples">
@@ -84,10 +83,7 @@
                   resetCoreCoeff(core, isSupporter, weapon);
                 }}
                 value={tier}
-                disabled={isSupporter &&
-                  attr == ArkGridAttrs.Chaos &&
-                  ctype == ArkGridCoreTypes.STAR &&
-                  tier == 1}
+                disabled={isSupporter && attr == '혼돈' && ctype == '별' && tier == 1}
               />
               {tierName}
             </label>

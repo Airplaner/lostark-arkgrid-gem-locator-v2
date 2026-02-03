@@ -1,11 +1,4 @@
-import {
-  type AppLocale,
-  type ArkGridAttr,
-  ArkGridAttrs,
-  type LocalizationName,
-  type LostArkGrade,
-  LostArkGrades,
-} from '../constants/enums';
+import { type ArkGridAttr, type LocalizationName, type LostArkGrade } from '../constants/enums';
 
 export type ArkGridGemOptionType = {
   name: LocalizationName;
@@ -59,7 +52,7 @@ export type ArkGridGemSpec = {
 };
 export const ArkGridGemSpecs = {
   '질서의 젬 : 안정': {
-    attr: ArkGridAttrs.Order,
+    attr: '질서',
     name: {
       ko_kr: '질서의 젬 : 안정',
       en_us: 'Order Astrogem: Stability',
@@ -68,7 +61,7 @@ export const ArkGridGemSpecs = {
     availableOptions: ['공격력', '추가 피해', '낙인력', '아군 피해 강화'],
   },
   '질서의 젬 : 견고': {
-    attr: ArkGridAttrs.Order,
+    attr: '질서',
     name: {
       ko_kr: '질서의 젬 : 견고',
       en_us: 'Order Astrogem: Solidity',
@@ -77,7 +70,7 @@ export const ArkGridGemSpecs = {
     availableOptions: ['공격력', '보스 피해', '아군 피해 강화', '아군 공격 강화'],
   },
   '질서의 젬 : 불변': {
-    attr: ArkGridAttrs.Order,
+    attr: '질서',
     name: {
       ko_kr: '질서의 젬 : 불변',
       en_us: 'Order Astrogem: Immutability',
@@ -86,7 +79,7 @@ export const ArkGridGemSpecs = {
     availableOptions: ['추가 피해', '보스 피해', '낙인력', '아군 공격 강화'],
   },
   '혼돈의 젬 : 침식': {
-    attr: ArkGridAttrs.Chaos,
+    attr: '혼돈',
     name: {
       ko_kr: '혼돈의 젬 : 침식',
       en_us: 'Chaos Astrogem: Corrosion',
@@ -95,7 +88,7 @@ export const ArkGridGemSpecs = {
     availableOptions: ['공격력', '추가 피해', '낙인력', '아군 피해 강화'],
   },
   '혼돈의 젬 : 왜곡': {
-    attr: ArkGridAttrs.Chaos,
+    attr: '혼돈',
     name: {
       ko_kr: '혼돈의 젬 : 왜곡',
       en_us: 'Chaos Astrogem: Distortion',
@@ -104,7 +97,7 @@ export const ArkGridGemSpecs = {
     availableOptions: ['공격력', '보스 피해', '아군 피해 강화', '아군 공격 강화'],
   },
   '혼돈의 젬 : 붕괴': {
-    attr: ArkGridAttrs.Chaos,
+    attr: '혼돈',
     name: {
       ko_kr: '혼돈의 젬 : 붕괴',
       en_us: 'Chaos Astrogem: Destruction',
@@ -141,20 +134,12 @@ export function determineGemGrade(
 ) {
   let basePoint = name ? ArkGridGemSpecs[name].req : 8;
   const totalPoint = basePoint - req + point + option1.value + option2.value;
-  return totalPoint < 16
-    ? LostArkGrades.LEGENDARY
-    : totalPoint < 19
-      ? LostArkGrades.RELIC
-      : LostArkGrades.ANCIENT;
+  return totalPoint < 16 ? '전설' : totalPoint < 19 ? '유물' : '고대';
 }
 export function determineGemGradeByGem(gem: ArkGridGem) {
   let basePoint = gem.name ? ArkGridGemSpecs[gem.name].req : 8;
   const totalPoint = basePoint - gem.req + gem.point + gem.option1.value + gem.option2.value;
-  return totalPoint < 16
-    ? LostArkGrades.LEGENDARY
-    : totalPoint < 19
-      ? LostArkGrades.RELIC
-      : LostArkGrades.ANCIENT;
+  return totalPoint < 16 ? '전설' : totalPoint < 19 ? '유물' : '고대';
 }
 
 export function isSameArkGridGem(a: ArkGridGem | undefined, b: ArkGridGem | undefined): boolean {
@@ -188,7 +173,7 @@ const gemImages = import.meta.glob<string>('/src/assets/gems/*.png', {
 
 export function getGemImage(gemAttr?: ArkGridAttr, gemName?: ArkGridGemName): string {
   if (!gemName) {
-    return gemAttr == ArkGridAttrs.Order
+    return gemAttr == '질서'
       ? gemImages['/src/assets/gems/order_0.png']
       : gemImages['/src/assets/gems/chaos_0.png'];
   }

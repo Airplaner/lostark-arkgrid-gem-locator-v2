@@ -365,7 +365,7 @@ class FrameProcessor {
               value: Number(optionBLevel.key),
             },
           };
-          determineGemGradeByGem(gem);
+          gem.grade = determineGemGradeByGem(gem);
           currentGems.push(gem);
         }
       }

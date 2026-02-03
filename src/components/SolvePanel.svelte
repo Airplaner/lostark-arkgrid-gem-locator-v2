@@ -123,9 +123,9 @@
 
       // 코어가 애초에 없으면 실패를 안 함
       const allOrderCoresNull =
-        !answerCores || Object.values(answerCores[ArkGridAttrs.Order]).every((v) => v == null);
+        !answerCores || Object.values(answerCores['질서']).every((v) => v == null);
       const allChaosCoresNull =
-        !answerCores || Object.values(answerCores[ArkGridAttrs.Chaos]).every((v) => v == null);
+        !answerCores || Object.values(answerCores['혼돈']).every((v) => v == null);
 
       return {
         order: solveAnswer?.gemSetPackTuple.gsp1 === null && !allOrderCoresNull,
@@ -219,7 +219,7 @@
       for (const ctype of Object.values(ArkGridCoreTypes)) {
         const core = coreComponents[attr][ctype];
         if (!core) continue;
-        const targetCores = attr === ArkGridAttrs.Order ? orderCores : chaosCores;
+        const targetCores = attr === '질서' ? orderCores : chaosCores;
         if (!profile.cores[attr][ctype]) {
           targetCores.push(new Core(0, 0, [0]));
         } else {
@@ -370,8 +370,8 @@
     const perfectChaosGems: ArkGridGem[] = [];
     for (const gem of !isSupporter ? perfectGems : perfectGemsSupporter) {
       for (let i = 0; i < 4; i++) {
-        perfectOrderGems.push({ gemAttr: ArkGridAttrs.Order, ...gem });
-        perfectChaosGems.push({ gemAttr: ArkGridAttrs.Chaos, ...gem });
+        perfectOrderGems.push({ gemAttr: '질서', ...gem });
+        perfectChaosGems.push({ gemAttr: '혼돈', ...gem });
       }
     }
     const score = (solve(orderGems, chaosGems, isSupporter, false).score - 1) * 100; // 내 최고 점수

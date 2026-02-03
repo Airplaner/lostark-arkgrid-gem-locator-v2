@@ -96,14 +96,14 @@
     // 현재 수집한 젬을 현재 프로필에 덮어 씌우기
     let done = false;
     if (orderGems.length > 0) {
-      if (overrideGem) clearGems(ArkGridAttrs.Order);
+      if (overrideGem) clearGems('질서');
       for (const gem of orderGems) {
         addGem(gem);
       }
       done = true;
     }
     if (chaosGems.length > 0) {
-      if (overrideGem) clearGems(ArkGridAttrs.Chaos);
+      if (overrideGem) clearGems('혼돈');
       for (const gem of chaosGems) {
         addGem(gem);
       }

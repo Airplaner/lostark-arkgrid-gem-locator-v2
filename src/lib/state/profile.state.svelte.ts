@@ -184,7 +184,7 @@ export function deleteProfile(name: string) {
 
 export function addGem(gem: ArkGridGem) {
   const gems = getCurrentProfile().gems;
-  const targetGems = gem.gemAttr == ArkGridAttrs.Order ? gems.orderGems : gems.chaosGems;
+  const targetGems = gem.gemAttr == '질서' ? gems.orderGems : gems.chaosGems;
   gem.grade = determineGemGrade(gem.req, gem.point, gem.option1, gem.option2, gem.name);
   // validate gem (안정인데 옵션 등)
   targetGems.push(gem);
@@ -193,10 +193,10 @@ export function addGem(gem: ArkGridGem) {
 export function clearGems(gemAttr?: ArkGridAttr) {
   const gems = getCurrentProfile().gems;
   switch (gemAttr) {
-    case ArkGridAttrs.Order:
+    case '질서':
       gems.orderGems.length = 0;
       break;
-    case ArkGridAttrs.Chaos:
+    case '혼돈':
       gems.chaosGems.length = 0;
       break;
     default:
@@ -207,7 +207,7 @@ export function clearGems(gemAttr?: ArkGridAttr) {
 
 export function deleteGem(gem: ArkGridGem) {
   const gems = getCurrentProfile().gems;
-  const targetGems = gem.gemAttr === ArkGridAttrs.Order ? gems.orderGems : gems.chaosGems;
+  const targetGems = gem.gemAttr === '질서' ? gems.orderGems : gems.chaosGems;
 
   // 배열에서 gem 제거
   const index = targetGems.indexOf(gem);
@@ -232,7 +232,7 @@ export function getCore(attr: ArkGridAttr, ctype: ArkGridCoreType) {
 export function addCore(attr: ArkGridAttr, ctype: ArkGridCoreType, isSupporter: boolean) {
   const profile = getCurrentProfile();
   const cores = profile.cores;
-  cores[attr][ctype] = createCore(attr, ctype, LostArkGrades.EPIC, isSupporter, profile.weapon);
+  cores[attr][ctype] = createCore(attr, ctype, '영웅', isSupporter, profile.weapon);
 }
 export function resetCore(attr: ArkGridAttr, ctype: ArkGridCoreType) {
   const cores = getCurrentProfile().cores;

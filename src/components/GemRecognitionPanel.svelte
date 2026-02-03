@@ -55,7 +55,7 @@
   }
 
   function applyCurrentGems(gemAttr: ArkGridAttr, currentGems: ArkGridGem[]) {
-    const totalGems = gemAttr == ArkGridAttrs.Order ? totalOrderGems : totalChaosGems;
+    const totalGems = gemAttr == '질서' ? totalOrderGems : totalChaosGems;
     // 젬 추가
     const SAME_COUNT_THRESHOLD = 4;
     if (totalGems.length == 0 && currentGems.length > 0) {
@@ -64,7 +64,7 @@
       for (const gem of currentGems) {
         totalGems.push(gem);
       }
-      gemListElem?.selectTab(gemAttr == ArkGridAttrs.Order ? 0 : 1);
+      gemListElem?.selectTab(gemAttr == '질서' ? 0 : 1);
       gemListElem?.scroll('bottom');
       // console.log($state.snapshot(totalGems));
     } else {
@@ -103,7 +103,7 @@
               totalGems.push(currentGems[i]);
               // console.log('추가:', currentGems[i]);
             }
-            gemListElem?.selectTab(gemAttr == ArkGridAttrs.Order ? 0 : 1);
+            gemListElem?.selectTab(gemAttr == '질서' ? 0 : 1);
             gemListElem?.scroll('bottom');
             // console.log($state.snapshot(totalGems));
           }
@@ -136,7 +136,7 @@
                 totalGems.unshift(currentGems[i]);
                 // console.log('추가:', currentGems[i]);
               }
-              gemListElem?.selectTab(gemAttr == ArkGridAttrs.Order ? 0 : 1);
+              gemListElem?.selectTab(gemAttr == '질서' ? 0 : 1);
               gemListElem?.scroll('top');
               // console.log($state.snapshot(totalGems));
             }

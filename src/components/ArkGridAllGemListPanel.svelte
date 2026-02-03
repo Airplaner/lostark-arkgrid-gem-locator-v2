@@ -51,7 +51,7 @@
         return [];
     }
   });
-  let currentAttr: ArkGridAttr = $derived(activeTab == 0 ? ArkGridAttrs.Order : ArkGridAttrs.Chaos);
+  let currentAttr: ArkGridAttr = $derived(activeTab == 0 ? '질서' : '혼돈');
 
   function clearGemWithConfirm() {
     if (!window.confirm(`현재 프로필의 모든 젬을 삭제합니다. 진행하시겠습니까?`)) return;

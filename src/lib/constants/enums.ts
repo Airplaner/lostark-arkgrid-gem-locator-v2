@@ -1,23 +1,42 @@
-export const ArkGridAttrs = {
-  Order: '질서',
-  Chaos: '혼돈',
+export type ArkGridAttrType = {
+  name: LocalizationName;
+};
+export const ArkGridAttrTypes = {
+  질서: {
+    ko_kr: '질서',
+    en_us: 'Order',
+  },
+  혼돈: {
+    ko_kr: '혼돈',
+    en_us: 'Chaos',
+  },
 } as const;
-export type ArkGridAttr = (typeof ArkGridAttrs)[keyof typeof ArkGridAttrs];
+export type ArkGridAttr = keyof typeof ArkGridAttrTypes;
+export const ArkGridAttrs = Object.keys(ArkGridAttrTypes) as ArkGridAttr[];
 
-export const LostArkGrades = {
-  EPIC: '영웅',
-  LEGENDARY: '전설',
-  RELIC: '유물',
-  ANCIENT: '고대',
+export type LostArkGradeType = {
+  name: LocalizationName;
+};
+export const LostArkGradeTypes = {
+  영웅: {
+    ko_kr: '영웅',
+    en_us: 'Epic',
+  },
+  전설: {
+    ko_kr: '전설',
+    en_us: 'Legendary',
+  },
+  유물: {
+    ko_kr: '유물',
+    en_us: 'Relic',
+  },
+  고대: {
+    ko_kr: '고대',
+    en_us: 'Ancient',
+  },
 } as const;
-export type LostArkGrade = (typeof LostArkGrades)[keyof typeof LostArkGrades];
-
-export function reverseLookup<const T extends Record<string, string>>(
-  obj: T,
-  input: string
-): T[keyof T] | undefined {
-  return Object.values(obj).find((v) => v === input) as T[keyof T] | undefined;
-}
+export type LostArkGrade = keyof typeof LostArkGradeTypes;
+export const LostArkGrades = Object.keys(LostArkGradeTypes) as LostArkGrade[];
 
 export const L_DEFAULT_PROFILE_NAME: LocalizationName = {
   ko_kr: '기본',

@@ -79,8 +79,8 @@ export async function loadGemAsset() {
     (acc, locale) => {
       const mats = gt[locale];
       acc[locale] = generateMatchingAtlas({
-        [ArkGridAttrs.Order]: mats['질서.png'],
-        [ArkGridAttrs.Chaos]: mats['혼돈.png'],
+        질서: mats['질서.png'],
+        혼돈: mats['혼돈.png'],
       });
       return acc;
     },

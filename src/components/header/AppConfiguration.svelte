@@ -7,9 +7,7 @@
     DEFAULT_PROFILE_NAME,
     type LocalizationName,
     LostArkGrades,
-    reverseLookup,
   } from '../../lib/constants/enums';
-  import { loadGemAsset } from '../../lib/cv/matStore';
   import {
     ArkGridCoreNameTierMap,
     ArkGridCoreTypes,
@@ -120,12 +118,13 @@
     if (gemOptions.length < 2) {
       throw Error('공용 옵션의 수가 부족합니다.');
     }
+    const gemGrade = LostArkGrades.find((v) => gem.Grade === v);
     return {
       name: gemName,
-      grade: gem.Grade
-        ? reverseLookup(LostArkGrades, gem.Grade)
+      grade: gemGrade
+        ? gemGrade
         : determineGemGrade(req, point, gemOptions[0], gemOptions[1], gemName),
-      gemAttr: isOrder ? ArkGridAttrs.Order : ArkGridAttrs.Chaos,
+      gemAttr: isOrder ? '질서' : '혼돈',
       req,
       point,
       option1: gemOptions[0],
@@ -267,9 +266,10 @@
           }
 
           // OpenAPI 응답 -> 내부 데이터로 변환
-          const attr = reverseLookup(ArkGridAttrs, coreSlot.Name.slice(0, 2));
-          const ctype = reverseLookup(ArkGridCoreTypes, coreSlot.Name[4]);
-          const grade = reverseLookup(LostArkGrades, coreSlot.Grade);
+          const coreName = coreSlot.Name;
+          const attr = ArkGridAttrs.find((v) => coreName.slice(0, 2) === v);
+          const ctype = ArkGridCoreTypes.find((v) => coreName[4] == v);
+          const grade = LostArkGrades.find((v) => coreSlot.Grade === v);
 
           if (!attr || !ctype || !grade) {
             window.alert(`${coreSlot.Grade} ${coreSlot.Name} 파싱 실패`);
@@ -284,7 +284,7 @@
             tier = 0;
           }
           // 질서는 tier 없음
-          if (attr == ArkGridAttrs.Order) {
+          if (attr == '질서') {
             tier = 0;
           }
 
