@@ -29,3 +29,5 @@ export const KAKAOTALK_URL = 'https://open.kakao.com/o/s5bTYodi';
 // XXX BCP 47에 따르면 ko-kr이 맞다... (https://www.rfc-editor.org/rfc/bcp/bcp47.txt)
 export type AppLocale = 'ko_kr' | 'en_us';
 export const supportedLocales: AppLocale[] = ['ko_kr', 'en_us'];
+
+export type LocalizationName = Record<AppLocale, string>;

@@ -1,7 +1,9 @@
 <script lang="ts">
   import imgCorePoint from '../assets/corepoint.png';
   import imgWillPower from '../assets/willpower.png';
-  import { type ArkGridGem, getGemImage } from '../lib/models/arkGridGems';
+  import type { AppLocale } from '../lib/constants/enums';
+  import { type ArkGridGem, ArkGridGemOptionTypes, getGemImage } from '../lib/models/arkGridGems';
+  import { appConfig } from '../lib/state/appConfig.state.svelte';
   import { deleteGem } from '../lib/state/profile.state.svelte';
 
   interface Props {
@@ -10,6 +12,7 @@
   }
 
   let { gem, showDeleteButton = true }: Props = $props();
+  let locale: AppLocale = $derived(appConfig.current.locale);
 </script>
 
 <div class="gem-box">
@@ -30,7 +33,7 @@
     <div class="col sub-options">
       <div class="sub-option">
         <span class="option-type">
-          {gem.option1.optionType}
+          {ArkGridGemOptionTypes[gem.option1.optionType].name[locale]}
         </span>
         <span class="option-level">
           Lv.{gem.option1.value}
@@ -38,7 +41,7 @@
       </div>
       <div class="sub-option">
         <span class="option-type">
-          {gem.option2.optionType}
+          {ArkGridGemOptionTypes[gem.option2.optionType].name[locale]}
         </span>
         <span class="option-level">
           Lv.{gem.option2.value}
@@ -78,9 +81,6 @@
     display: flex;
     /* justify-content: space-between; */
     align-items: center;
-
-    overflow: hidden;
-    overflow-y: hidden;
 
     flex-grow: 1;
     flex-shrink: 0;

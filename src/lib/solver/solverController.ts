@@ -6,18 +6,18 @@ const perfectGems = [
   {
     req: 3,
     point: 5,
-    option1: { optionType: ArkGridGemOptionTypes.ATTACK, value: 5 },
+    option1: { optionType: '공격력', value: 5 },
     option2: {
-      optionType: ArkGridGemOptionTypes.SKILL_DAMAGE,
+      optionType: '추가 피해',
       value: 5,
     },
   },
   {
     req: 4,
     point: 5,
-    option1: { optionType: ArkGridGemOptionTypes.ATTACK, value: 5 },
+    option1: { optionType: '공격력', value: 5 },
     option2: {
-      optionType: ArkGridGemOptionTypes.BOSS_DAMAGE,
+      optionType: '보스 피해',
       value: 5,
     },
   },
@@ -25,11 +25,11 @@ const perfectGems = [
     req: 5,
     point: 5,
     option1: {
-      optionType: ArkGridGemOptionTypes.SKILL_DAMAGE,
+      optionType: '추가 피해',
       value: 5,
     },
     option2: {
-      optionType: ArkGridGemOptionTypes.BOSS_DAMAGE,
+      optionType: '보스 피해',
       value: 5,
     },
   },
@@ -39,18 +39,18 @@ const perfectGemsSupporter = [
   {
     req: 3,
     point: 5,
-    option1: { optionType: ArkGridGemOptionTypes.STIGMA, value: 5 },
+    option1: { optionType: '낙인력', value: 5 },
     option2: {
-      optionType: ArkGridGemOptionTypes.PARTY_DAMAGE,
+      optionType: '아군 피해 강화',
       value: 5,
     },
   },
   {
     req: 4,
     point: 5,
-    option1: { optionType: ArkGridGemOptionTypes.PARTY_DAMAGE, value: 5 },
+    option1: { optionType: '아군 피해 강화', value: 5 },
     option2: {
-      optionType: ArkGridGemOptionTypes.PARTY_ATTACK,
+      optionType: '아군 공격 강화',
       value: 5,
     },
   },
@@ -58,11 +58,11 @@ const perfectGemsSupporter = [
     req: 5,
     point: 5,
     option1: {
-      optionType: ArkGridGemOptionTypes.STIGMA,
+      optionType: '낙인력',
       value: 5,
     },
     option2: {
-      optionType: ArkGridGemOptionTypes.PARTY_ATTACK,
+      optionType: '아군 공격 강화',
       value: 5,
     },
   },

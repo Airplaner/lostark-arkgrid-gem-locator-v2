@@ -31,33 +31,6 @@
       return sum + gem.req;
     }, 0);
   });
-  let totalAtt = $derived.by(() => {
-    return gems.reduce((sum, gem) => {
-      return (
-        sum +
-        (gem.option1.optionType == ArkGridGemOptionTypes.ATTACK ? gem.option1.value : 0) +
-        (gem.option2.optionType == ArkGridGemOptionTypes.ATTACK ? gem.option2.value : 0)
-      );
-    }, 0);
-  });
-  let totalSkill = $derived.by(() => {
-    return gems.reduce((sum, gem) => {
-      return (
-        sum +
-        (gem.option1.optionType == ArkGridGemOptionTypes.SKILL_DAMAGE ? gem.option1.value : 0) +
-        (gem.option2.optionType == ArkGridGemOptionTypes.SKILL_DAMAGE ? gem.option2.value : 0)
-      );
-    }, 0);
-  });
-  let totalBoss = $derived.by(() => {
-    return gems.reduce((sum, gem) => {
-      return (
-        sum +
-        (gem.option1.optionType == ArkGridGemOptionTypes.BOSS_DAMAGE ? gem.option1.value : 0) +
-        (gem.option2.optionType == ArkGridGemOptionTypes.BOSS_DAMAGE ? gem.option2.value : 0)
-      );
-    }, 0);
-  });
 </script>
 
 <div class="root">

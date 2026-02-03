@@ -1,19 +1,25 @@
 <script lang="ts">
-  import { type ArkGridGemOptionType, ArkGridGemOptionTypes } from '../../lib/models/arkGridGems';
+  import type { AppLocale } from '../../lib/constants/enums';
+  import {
+    type ArkGridGemOptionName,
+    ArkGridGemOptionNames,
+    ArkGridGemOptionTypes,
+  } from '../../lib/models/arkGridGems';
+  import { appConfig } from '../../lib/state/appConfig.state.svelte';
   import type { SolveAnswer } from '../../lib/state/profile.state.svelte';
 
   type Props = {
     solveAnswer: SolveAnswer;
   };
   let { solveAnswer }: Props = $props();
-  let answerStatistics: Record<ArkGridGemOptionType, number> = $derived.by(() => {
+  let answerStatistics: Record<ArkGridGemOptionName, number> = $derived.by(() => {
     let statistics = {
-      [ArkGridGemOptionTypes.ATTACK]: 0,
-      [ArkGridGemOptionTypes.BOSS_DAMAGE]: 0,
-      [ArkGridGemOptionTypes.SKILL_DAMAGE]: 0,
-      [ArkGridGemOptionTypes.STIGMA]: 0,
-      [ArkGridGemOptionTypes.PARTY_ATTACK]: 0,
-      [ArkGridGemOptionTypes.PARTY_DAMAGE]: 0,
+      공격력: 0,
+      '보스 피해': 0,
+      '추가 피해': 0,
+      낙인력: 0,
+      '아군 공격 강화': 0,
+      '아군 피해 강화': 0,
     };
     if (!solveAnswer) return statistics;
     for (const gems of solveAnswer.assignedGems) {
@@ -24,14 +30,15 @@
     }
     return statistics;
   });
+  let locale: AppLocale = $derived(appConfig.current.locale);
 </script>
 
 <div class="root">
   <div class="title">젬 옵션</div>
   <div class="container">
-    {#each Object.values(ArkGridGemOptionTypes) as optionType}
+    {#each Object.entries(ArkGridGemOptionTypes) as [optionName, optionType]}
       <div class="item">
-        {optionType} Lv. {answerStatistics[optionType]}
+        {optionType.name[locale]} Lv. {answerStatistics[optionName as ArkGridGemOptionName]}
       </div>
     {/each}
   </div>

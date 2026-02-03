@@ -2,8 +2,12 @@
   import { toast } from '@zerodevx/svelte-toast';
   import { onMount } from 'svelte';
 
-  import { ArkGridAttrs, DEFAULT_PROFILE_NAME, LostArkGrades } from '../../lib/constants/enums';
-  import { reverseLookup } from '../../lib/constants/enums';
+  import {
+    ArkGridAttrs,
+    DEFAULT_PROFILE_NAME,
+    LostArkGrades,
+    reverseLookup,
+  } from '../../lib/constants/enums';
   import {
     ArkGridCoreNameTierMap,
     ArkGridCoreTypes,
@@ -12,7 +16,7 @@
   import {
     ArkGridGemNames,
     type ArkGridGemOption,
-    ArkGridGemOptionTypes,
+    ArkGridGemOptionNames,
     determineGemGrade,
   } from '../../lib/models/arkGridGems';
   import { type ArkGridGem } from '../../lib/models/arkGridGems';
@@ -89,7 +93,7 @@
     while ((match = keyLevelRegex.exec(textOnly)) !== null) {
       const key = match[1].trim();
       const value = parseInt(match[2], 10);
-      const optionType = reverseLookup(ArkGridGemOptionTypes, key);
+      const optionType = ArkGridGemOptionNames.find((v) => v === key);
       if (!optionType) {
         throw Error('옵션 파싱 실패!');
       }

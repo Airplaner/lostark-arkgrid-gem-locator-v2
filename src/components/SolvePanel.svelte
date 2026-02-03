@@ -47,18 +47,18 @@
     {
       req: 3,
       point: 5,
-      option1: { optionType: ArkGridGemOptionTypes.ATTACK, value: 5 },
+      option1: { optionType: '공격력', value: 5 },
       option2: {
-        optionType: ArkGridGemOptionTypes.SKILL_DAMAGE,
+        optionType: '추가 피해',
         value: 5,
       },
     },
     {
       req: 4,
       point: 5,
-      option1: { optionType: ArkGridGemOptionTypes.ATTACK, value: 5 },
+      option1: { optionType: '공격력', value: 5 },
       option2: {
-        optionType: ArkGridGemOptionTypes.BOSS_DAMAGE,
+        optionType: '보스 피해',
         value: 5,
       },
     },
@@ -66,31 +66,31 @@
       req: 5,
       point: 5,
       option1: {
-        optionType: ArkGridGemOptionTypes.SKILL_DAMAGE,
+        optionType: '추가 피해',
         value: 5,
       },
       option2: {
-        optionType: ArkGridGemOptionTypes.BOSS_DAMAGE,
+        optionType: '보스 피해',
         value: 5,
       },
     },
-  ];
+  ] satisfies Partial<ArkGridGem>[];
   const perfectGemsSupporter = [
     {
       req: 3,
       point: 5,
-      option1: { optionType: ArkGridGemOptionTypes.STIGMA, value: 5 },
+      option1: { optionType: '낙인력', value: 5 },
       option2: {
-        optionType: ArkGridGemOptionTypes.PARTY_DAMAGE,
+        optionType: '아군 피해 강화',
         value: 5,
       },
     },
     {
       req: 4,
       point: 5,
-      option1: { optionType: ArkGridGemOptionTypes.PARTY_DAMAGE, value: 5 },
+      option1: { optionType: '아군 피해 강화', value: 5 },
       option2: {
-        optionType: ArkGridGemOptionTypes.PARTY_ATTACK,
+        optionType: '아군 공격 강화',
         value: 5,
       },
     },
@@ -98,15 +98,15 @@
       req: 5,
       point: 5,
       option1: {
-        optionType: ArkGridGemOptionTypes.STIGMA,
+        optionType: '낙인력',
         value: 5,
       },
       option2: {
-        optionType: ArkGridGemOptionTypes.PARTY_ATTACK,
+        optionType: '아군 공격 강화',
         value: 5,
       },
     },
-  ];
+  ] satisfies Partial<ArkGridGem>[];
 
   let failedSign = $derived.by(() => {
     // 배치 실패 여부 반환
@@ -146,16 +146,8 @@
     // Svelte에서 사용하는 ArkGridGem을 solver가 사용하는 형태로 변경
     const reverseMap: ArkGridGem[] = [];
     const optionIndexMap = !isSupporter
-      ? [
-          ArkGridGemOptionTypes.ATTACK,
-          ArkGridGemOptionTypes.SKILL_DAMAGE,
-          ArkGridGemOptionTypes.BOSS_DAMAGE,
-        ]
-      : [
-          ArkGridGemOptionTypes.PARTY_DAMAGE,
-          ArkGridGemOptionTypes.STIGMA,
-          ArkGridGemOptionTypes.PARTY_ATTACK,
-        ]; // 수집할 옵션들
+      ? ['공격력', '추가 피해', '보스 피해']
+      : ['아군 피해 강화', '낙인력', '아군 공격 강화']; // 수집할 옵션들
     const gems = gem.map((g, index) => {
       let coeff = [0, 0, 0];
 

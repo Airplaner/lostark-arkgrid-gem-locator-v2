@@ -3,11 +3,12 @@
 
   import imgCorePoint from '../assets/corepoint.png';
   import imgWillPower from '../assets/willpower.png';
-  import type { AppLocale, ArkGridAttr } from '../lib/constants/enums';
+  import type { AppLocale, ArkGridAttr, LocalizationName } from '../lib/constants/enums';
+  import { LCancel, LConfirm } from '../lib/constants/localization';
   import {
     type ArkGridGemName,
-    ArkGridGemNames,
     type ArkGridGemOption,
+    ArkGridGemOptionNames,
     ArkGridGemOptionTypes,
     ArkGridGemSpecs,
     getGemImage,
@@ -20,6 +21,14 @@
   };
   let { gemAttr }: Props = $props();
 
+  const Ltitle: LocalizationName = {
+    ko_kr: '젬 추가',
+    en_us: 'Add Gem',
+  };
+  const LGemAddResult: LocalizationName = {
+    ko_kr: '젬 추가 완료',
+    en_us: 'Gem Added',
+  };
   let dialog: HTMLDialogElement;
 
   function open() {
@@ -42,7 +51,7 @@
       )
     );
     dialog.close();
-    toast.push('젬 추가 완료');
+    toast.push(LGemAddResult[locale]);
   }
 
   function enforceSingleDigit(v: number, minimum: number, maximum: number) {
@@ -119,10 +128,10 @@
   }
 </script>
 
-<button onclick={open}>젬 추가</button>
+<button onclick={open}>{Ltitle[locale]}</button>
 <dialog bind:this={dialog}>
   <div class="root">
-    <div class="title">젬 추가</div>
+    <div class="title">{Ltitle[locale]}</div>
     <div class="content">
       <div class="col">
         <div class="image-wrapper">
@@ -176,10 +185,11 @@
           <div class="row">
             <label>
               <select bind:value={gemOption.optionType}>
-                {#each Object.values(ArkGridGemOptionTypes) as option}
+                {#each Object.values(ArkGridGemOptionNames) as option}
                   <option
                     value={option}
-                    disabled={!availableGemOptionTypes.some((v) => v === option)}>{option}</option
+                    disabled={!availableGemOptionTypes.some((v) => v === option)}
+                    >{ArkGridGemOptionTypes[option].name[locale]}</option
                   >
                 {/each}
               </select>
@@ -201,8 +211,8 @@
     </div>
 
     <div class="buttons">
-      <button onclick={close}>취소</button>
-      <button onclick={confirm} disabled={isInvalidGemInput()}>확인</button>
+      <button onclick={close}>{LCancel[locale]}</button>
+      <button onclick={confirm} disabled={isInvalidGemInput()}>{LConfirm[locale]}</button>
     </div>
   </div>
 </dialog>

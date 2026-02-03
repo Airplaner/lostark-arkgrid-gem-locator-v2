@@ -2,26 +2,60 @@ import {
   type AppLocale,
   type ArkGridAttr,
   ArkGridAttrs,
+  type LocalizationName,
   type LostArkGrade,
   LostArkGrades,
 } from '../constants/enums';
 
+export type ArkGridGemOptionType = {
+  name: LocalizationName;
+};
 export const ArkGridGemOptionTypes = {
-  ATTACK: '공격력',
-  BOSS_DAMAGE: '보스 피해',
-  SKILL_DAMAGE: '추가 피해',
-  STIGMA: '낙인력',
-  PARTY_ATTACK: '아군 공격 강화',
-  PARTY_DAMAGE: '아군 피해 강화',
-} as const;
-export type ArkGridGemOptionType =
-  (typeof ArkGridGemOptionTypes)[keyof typeof ArkGridGemOptionTypes];
+  공격력: {
+    name: {
+      ko_kr: '공격력',
+      en_us: 'Atk. Power',
+    },
+  },
+  '보스 피해': {
+    name: {
+      ko_kr: '보스 피해',
+      en_us: 'Boss Damage',
+    },
+  },
+  '추가 피해': {
+    name: {
+      ko_kr: '추가 피해',
+      en_us: 'Additional Damage',
+    },
+  },
+  낙인력: {
+    name: {
+      ko_kr: '낙인력',
+      en_us: 'Brand Power',
+    },
+  },
+  '아군 공격 강화': {
+    name: {
+      ko_kr: '아군 공격 강화',
+      en_us: 'Ally Attack Enh.',
+    },
+  },
+  '아군 피해 강화': {
+    name: {
+      ko_kr: '아군 피해 강화',
+      en_us: 'Ally Power Enh.',
+    },
+  },
+} as const satisfies Record<string, ArkGridGemOptionType>;
+export type ArkGridGemOptionName = keyof typeof ArkGridGemOptionTypes;
+export const ArkGridGemOptionNames = Object.keys(ArkGridGemOptionTypes) as ArkGridGemOptionName[];
 
 export type ArkGridGemSpec = {
   attr: ArkGridAttr;
-  name: Record<AppLocale, string>;
+  name: LocalizationName;
   req: Number;
-  availableOptions: ArkGridGemOptionType[];
+  availableOptions: ArkGridGemOptionName[];
 };
 export const ArkGridGemSpecs = {
   '질서의 젬 : 안정': {
@@ -31,12 +65,7 @@ export const ArkGridGemSpecs = {
       en_us: 'Order Astrogem: Stability',
     },
     req: 8,
-    availableOptions: [
-      ArkGridGemOptionTypes.ATTACK,
-      ArkGridGemOptionTypes.SKILL_DAMAGE,
-      ArkGridGemOptionTypes.STIGMA,
-      ArkGridGemOptionTypes.PARTY_DAMAGE,
-    ],
+    availableOptions: ['공격력', '추가 피해', '낙인력', '아군 피해 강화'],
   },
   '질서의 젬 : 견고': {
     attr: ArkGridAttrs.Order,
@@ -45,12 +74,7 @@ export const ArkGridGemSpecs = {
       en_us: 'Order Astrogem: Solidity',
     },
     req: 9,
-    availableOptions: [
-      ArkGridGemOptionTypes.ATTACK,
-      ArkGridGemOptionTypes.BOSS_DAMAGE,
-      ArkGridGemOptionTypes.PARTY_DAMAGE,
-      ArkGridGemOptionTypes.PARTY_ATTACK,
-    ],
+    availableOptions: ['공격력', '보스 피해', '아군 피해 강화', '아군 공격 강화'],
   },
   '질서의 젬 : 불변': {
     attr: ArkGridAttrs.Order,
@@ -59,12 +83,7 @@ export const ArkGridGemSpecs = {
       en_us: 'Order Astrogem: Immutability',
     },
     req: 10,
-    availableOptions: [
-      ArkGridGemOptionTypes.SKILL_DAMAGE,
-      ArkGridGemOptionTypes.BOSS_DAMAGE,
-      ArkGridGemOptionTypes.STIGMA,
-      ArkGridGemOptionTypes.PARTY_ATTACK,
-    ],
+    availableOptions: ['추가 피해', '보스 피해', '낙인력', '아군 공격 강화'],
   },
   '혼돈의 젬 : 침식': {
     attr: ArkGridAttrs.Chaos,
@@ -73,12 +92,7 @@ export const ArkGridGemSpecs = {
       en_us: 'Chaos Astrogem: Corrosion',
     },
     req: 8,
-    availableOptions: [
-      ArkGridGemOptionTypes.ATTACK,
-      ArkGridGemOptionTypes.SKILL_DAMAGE,
-      ArkGridGemOptionTypes.STIGMA,
-      ArkGridGemOptionTypes.PARTY_DAMAGE,
-    ],
+    availableOptions: ['공격력', '추가 피해', '낙인력', '아군 피해 강화'],
   },
   '혼돈의 젬 : 왜곡': {
     attr: ArkGridAttrs.Chaos,
@@ -87,12 +101,7 @@ export const ArkGridGemSpecs = {
       en_us: 'Chaos Astrogem: Distortion',
     },
     req: 9,
-    availableOptions: [
-      ArkGridGemOptionTypes.ATTACK,
-      ArkGridGemOptionTypes.BOSS_DAMAGE,
-      ArkGridGemOptionTypes.PARTY_DAMAGE,
-      ArkGridGemOptionTypes.PARTY_ATTACK,
-    ],
+    availableOptions: ['공격력', '보스 피해', '아군 피해 강화', '아군 공격 강화'],
   },
   '혼돈의 젬 : 붕괴': {
     attr: ArkGridAttrs.Chaos,
@@ -101,19 +110,14 @@ export const ArkGridGemSpecs = {
       en_us: 'Chaos Astrogem: Destruction',
     },
     req: 10,
-    availableOptions: [
-      ArkGridGemOptionTypes.SKILL_DAMAGE,
-      ArkGridGemOptionTypes.BOSS_DAMAGE,
-      ArkGridGemOptionTypes.STIGMA,
-      ArkGridGemOptionTypes.PARTY_ATTACK,
-    ],
+    availableOptions: ['추가 피해', '보스 피해', '낙인력', '아군 공격 강화'],
   },
 } as const satisfies Record<string, ArkGridGemSpec>;
 export type ArkGridGemName = keyof typeof ArkGridGemSpecs;
 export const ArkGridGemNames = Object.keys(ArkGridGemSpecs) as ArkGridGemName[];
 
 export type ArkGridGemOption = {
-  optionType: ArkGridGemOptionType;
+  optionType: ArkGridGemOptionName;
   value: number;
 };
 
