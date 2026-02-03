@@ -72,7 +72,17 @@ option {
   color: var(--text);
   background-color: var(--card-inner);
   border: 1px solid var(--border);
+  font-family: inherit;
 }
+
+input,
+select,
+option,
+img,
+button {
+  user-select: none;
+}
+
 dialog {
   color: var(--text);
   background-color: var(--card);
@@ -153,6 +163,7 @@ button {
   font-weight: 500;
   word-break: keep-all;
   overflow-wrap: break-word;
+  user-select: none;
 }
 
 button:hover {
