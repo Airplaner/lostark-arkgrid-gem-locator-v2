@@ -68,6 +68,10 @@
     {/each}
   </div>
   <ArkGridGemList gems={currentGems} bind:this={container}></ArkGridGemList>
+  <div class="gem-count">
+    젬 보유 수량 {gems.orderGems.length + gems.chaosGems.length} / 100<br />(질서 {gems.orderGems
+      .length}개, 혼돈 {gems.chaosGems.length}개 보유 중)
+  </div>
   <div class="buttons">
     <ArkGridGemAddPanel gemAttr={currentAttr}></ArkGridGemAddPanel>
     <button
@@ -91,6 +95,10 @@
   .tab.active {
     background-color: var(--card);
     font-weight: bold;
+  }
+  .gem-count {
+    align-self: center;
+    text-align: center;
   }
 
   /* 버튼 모음 */
