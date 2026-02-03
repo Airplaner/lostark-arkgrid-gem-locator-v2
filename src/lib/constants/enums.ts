@@ -19,6 +19,10 @@ export function reverseLookup<const T extends Record<string, string>>(
   return Object.values(obj).find((v) => v === input) as T[keyof T] | undefined;
 }
 
+export const L_DEFAULT_PROFILE_NAME: LocalizationName = {
+  ko_kr: '기본',
+  en_us: 'Default',
+};
 export const DEFAULT_PROFILE_NAME = '기본';
 
 export type ScrollCommand = 'top' | 'bottom' | null;

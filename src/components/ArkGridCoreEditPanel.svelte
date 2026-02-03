@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { ArkGridAttrs } from '../lib/constants/enums';
+  import { ArkGridAttrs, type LocalizationName } from '../lib/constants/enums';
+  import { LDealeer, LSupporter } from '../lib/constants/localization';
   import { ArkGridCoreTypes, resetCoreCoeff } from '../lib/models/arkGridCores';
   import { appConfig, toggleUI } from '../lib/state/appConfig.state.svelte';
   import {
@@ -14,8 +15,27 @@
     profile: CharacterProfile;
   }
   let { profile }: Props = $props();
+
+  let locale = $derived(appConfig.current.locale);
+  const Ltitle: LocalizationName = {
+    ko_kr: '코어 설정',
+    en_us: 'Core Setting',
+  };
+
   let cores = $derived(profile.cores);
   let isSupporter = $derived(profile.isSupporter);
+  const LSwitchRole = $derived({
+    ko_kr: `${isSupporter ? LDealeer.ko_kr : LSupporter.ko_kr}로 전환`,
+    en_us: `Switch to ${isSupporter ? LDealeer.en_us : LSupporter.en_us}`,
+  });
+  const LShowCoeff: LocalizationName = {
+    ko_kr: '전투력 계수 보기',
+    en_us: 'Display Core Coeff.',
+  };
+  const LHideCoeff: LocalizationName = {
+    ko_kr: '전투력 계수 숨김',
+    en_us: 'Hide Core Coeff.',
+  };
 
   const attrs = Object.values(ArkGridAttrs);
   const ctypes = Object.values(ArkGridCoreTypes);
@@ -39,10 +59,10 @@
 <div class="panel">
   <div class="title-and-button">
     <div class="title">
-      코어 설정 - {isSupporter ? '서포터' : '딜러'}
+      {Ltitle[locale]} - {isSupporter ? LSupporter[locale] : LDealeer[locale]}
       <img src={profile.isSupporter ? imgRoleSupporter : imgRoleCombat} alt="role" />
     </div>
-    <button onclick={toggleIsSupporter}>{isSupporter ? '딜러' : '서포터'}로 전환</button>
+    <button onclick={toggleIsSupporter}>{LSwitchRole[locale]}</button>
   </div>
   {#each attrs as attr}
     {#each ctypes as ctype}
@@ -56,7 +76,7 @@
         toggleUI('showCoreCoeff');
       }}
     >
-      전투력 계수 {appConfig.current.uiConfig.showCoreCoeff ? '숨김' : '수정'}
+      {appConfig.current.uiConfig.showCoreCoeff ? LHideCoeff[locale] : LShowCoeff[locale]}
     </button>
   </div>
 </div>

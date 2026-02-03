@@ -1,11 +1,14 @@
 <script lang="ts">
-  import { DEFAULT_PROFILE_NAME } from '../../lib/constants/enums';
+  import {
+    DEFAULT_PROFILE_NAME,
+    L_DEFAULT_PROFILE_NAME,
+    type LocalizationName,
+  } from '../../lib/constants/enums';
   import {
     addNewProfile,
     appConfig,
     bigIntSerializer,
     getProfile,
-    migrateAppConfig,
   } from '../../lib/state/appConfig.state.svelte';
   import {
     type CharacterProfile,
@@ -17,10 +20,24 @@
     migrateProfile,
     setCurrentProfileName,
   } from '../../lib/state/profile.state.svelte';
+
+  let locale = $derived(appConfig.current.locale);
+  const Ltitle: LocalizationName = {
+    ko_kr: '프로필',
+    en_us: 'Profile',
+  };
+  const LAddNewProfile: LocalizationName = {
+    ko_kr: '새 프로필에 사용할 캐릭터명을 입력해주세요',
+    en_us: 'Enter new profile name',
+  };
+  const LConfirmDeleteProfile: Record<string, (profileName: string) => string> = {
+    ko_kr: (name) => `"${name}" 프로필을 삭제하시겠습니까?`,
+    en_us: (name) => `Are you sure you want to delete the "${name}" profile?`,
+  };
 </script>
 
 <div class="root">
-  <div class="title">👤 프로필</div>
+  <div class="title">👤 {Ltitle[locale]}</div>
   <div class="buttons">
     {#each appConfig.current.characterProfiles as profile}
       <button
@@ -28,7 +45,9 @@
         onclick={() => setCurrentProfileName(profile.characterName)}
         class:active={profile.characterName === currentProfileName.current}
       >
-        {profile.characterName}
+        {profile.characterName === DEFAULT_PROFILE_NAME
+          ? L_DEFAULT_PROFILE_NAME[locale]
+          : profile.characterName}
         {#if profile.characterName !== DEFAULT_PROFILE_NAME}
           <img src={profile.isSupporter ? imgRoleSupporter : imgRoleCombat} alt="role" />
         {/if}
@@ -37,7 +56,7 @@
     <button
       title="새 프로필"
       onclick={() => {
-        const profileName = window.prompt('새 프로필에 사용할 캐릭터명을 입력해주세요.');
+        const profileName = window.prompt(LAddNewProfile[locale]);
         if (profileName === null || profileName.length == 0) return;
         addNewProfile(initNewProfile(profileName));
         setCurrentProfileName(profileName);
@@ -47,7 +66,7 @@
     <button
       title="현재 프로필 삭제"
       onclick={() => {
-        if (window.confirm(`"${currentProfileName.current}" 프로필을 삭제하시겠습니까?`)) {
+        if (window.confirm(LConfirmDeleteProfile[locale](currentProfileName.current))) {
           deleteProfile(currentProfileName.current);
         }
       }}

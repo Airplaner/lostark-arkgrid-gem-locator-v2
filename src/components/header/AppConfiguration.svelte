@@ -5,9 +5,11 @@
   import {
     ArkGridAttrs,
     DEFAULT_PROFILE_NAME,
+    type LocalizationName,
     LostArkGrades,
     reverseLookup,
   } from '../../lib/constants/enums';
+  import { loadGemAsset } from '../../lib/cv/matStore';
   import {
     ArkGridCoreNameTierMap,
     ArkGridCoreTypes,
@@ -40,6 +42,19 @@
   } from '../../lib/state/profile.state.svelte';
 
   let importing: boolean = $state(false);
+  let locale = $derived(appConfig.current.locale);
+  const LDarkMode: LocalizationName = {
+    ko_kr: '다크 모드',
+    en_us: 'Dark Mode',
+  };
+  const LOpenAPIConfig: LocalizationName = {
+    ko_kr: 'OpenAPI 설정',
+    en_us: 'Config OpenAPI',
+  };
+  const LOpenAPIApply: LocalizationName = {
+    ko_kr: 'OpenAPI 데이터 반영',
+    en_us: 'Fetch from OpenAPI',
+  };
 
   function parseOpenApiGem(gem: LostArkOpenAPI.ArkGridGem): ArkGridGem {
     // OpenAPI Gem의 tooltip 파싱
@@ -321,13 +336,17 @@
 </script>
 
 <div class="buttons">
-  <button onclick={updateOpenApiConfig}>OpenAPI 설정</button>
-  <button onclick={importFromOpenAPI} data-track="import-from-openapi">OpenAPI 데이터 반영</button>
+  <button onclick={updateOpenApiConfig} disabled={locale !== 'ko_kr'}
+    >{LOpenAPIConfig[locale]}</button
+  >
+  <button onclick={importFromOpenAPI} disabled={locale !== 'ko_kr'} data-track="import-from-openapi"
+    >{LOpenAPIApply[locale]}</button
+  >
   <button hidden={!appConfig.current.uiConfig.debugMode} onclick={() => toggleUI('debugMode')}
     >개발자 모드 {appConfig.current.uiConfig.debugMode ? '끄기' : '켜기'}</button
   >
   <button onclick={toggleDarkMode} style="">
-    다크 모드
+    {LDarkMode[locale]}
     <i
       class="fa-solid"
       class:fa-toggle-on={appConfig.current.uiConfig.darkMode}

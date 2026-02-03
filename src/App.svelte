@@ -9,7 +9,7 @@
   import Terms from './components/footer/Terms.svelte';
   import AppConfiguration from './components/header/AppConfiguration.svelte';
   import ProfileEdit from './components/header/ProfileEditor.svelte';
-  import { DISCORD_URL, KAKAOTALK_URL } from './lib/constants/enums';
+  import { DISCORD_URL, KAKAOTALK_URL, type LocalizationName } from './lib/constants/enums';
   import {
     appConfig,
     enableDarkMode,
@@ -18,6 +18,11 @@
   } from './lib/state/appConfig.state.svelte';
   import { type CharacterProfile, getCurrentProfile } from './lib/state/profile.state.svelte';
 
+  let locale = $derived(appConfig.current.locale);
+  const Ltitle: LocalizationName = {
+    ko_kr: '아크 그리드 전투력 최적화',
+    en_us: 'Ark Grid Combat Power Optimizer',
+  };
   let currentProfile = $state<CharacterProfile>(getCurrentProfile());
   $effect(() => {
     currentProfile = getCurrentProfile();
@@ -80,7 +85,7 @@
 <main>
   <SvelteToast options={{ reversed: true, intro: { y: 192 } }} />
   <div class="contents">
-    <div class="title">아크 그리드 전투력 최적화</div>
+    <div class="title">{Ltitle[locale]}</div>
     <AppConfiguration></AppConfiguration>
     <ProfileEdit></ProfileEdit>
     <GemRecognitionPanel></GemRecognitionPanel>

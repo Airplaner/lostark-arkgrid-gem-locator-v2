@@ -2,7 +2,8 @@
   import { toast } from '@zerodevx/svelte-toast';
   import { tick } from 'svelte';
 
-  import { ArkGridAttrs } from '../lib/constants/enums';
+  import { ArkGridAttrs, type LocalizationName } from '../lib/constants/enums';
+  import { LChaos, LOrder } from '../lib/constants/localization';
   import { appConfig } from '../lib/state/appConfig.state.svelte';
   import {
     type AllGems,
@@ -17,14 +18,51 @@
   }
 
   let { gems }: Props = $props();
+
+  let locale = $derived(appConfig.current.locale);
+  const Ltitle: LocalizationName = {
+    ko_kr: '인식된 젬 목록',
+    en_us: 'Recognized Astrogems',
+  };
+  const LEmpty: LocalizationName = {
+    ko_kr: '인식된 젬이 없습니다.',
+    en_us: 'No astrogems detected',
+  };
+  const LApply: LocalizationName = {
+    ko_kr: '현재 프로필에 반영',
+    en_us: 'Apply to Current Profile',
+  };
+  const LReset: LocalizationName = {
+    ko_kr: '초기화',
+    en_us: 'Reset',
+  };
+  const LConfirm: LocalizationName = {
+    ko_kr: '반영 완료',
+    en_us: 'Gems are applied',
+  };
+  const LWarning: LocalizationName = {
+    ko_kr:
+      '⚠️현재 프로필에 젬이 존재합니다.\n' +
+      '해당 젬을 모두 삭제하고 덮어 씌우시겠습니까?\n' +
+      '취소할 경우 인식된 젬이 추가만 됩니다.',
+    en_us:
+      '⚠️ Gems already exist in the current profile.\n' +
+      'Do you want to delete all existing gems and overwrite them?\n' +
+      'If you cancel, the recognized gems will only be added.',
+  };
   let container: ArkGridGemList;
   let orderGems = $derived(gems.orderGems);
   let chaosGems = $derived(gems.chaosGems);
   let scrollPositions = $state<number[]>([0, 0]);
 
+  const LGemTotalCount = $derived({
+    ko_kr: `젬 보유 수량 ${orderGems.length + chaosGems.length} / 100<br>(질서 ${orderGems.length}개, 혼돈 ${chaosGems.length}개
+    보유 중)`,
+    en_us: `Astrogems Owned: ${orderGems.length + chaosGems.length} / 100<br>(Order ${orderGems.length}, Chaos ${chaosGems.length} owned)`,
+  });
   // 탭 상태
   let activeTab = $state(0);
-  const tabs = ['질서', '혼돈'];
+  let tabs = $derived([LOrder[locale], LChaos[locale]]);
   let currentGems = $derived.by(() => {
     switch (activeTab) {
       case 0:
@@ -76,7 +114,7 @@
 </script>
 
 <div class="panel">
-  <div class="title">인식된 젬 목록</div>
+  <div class="title">{Ltitle[locale]}</div>
   <div class="tab-container">
     {#each tabs as tab, i}
       <button class="tab {activeTab === i ? 'active' : ''}" onclick={() => selectTab(i)}>
@@ -90,12 +128,11 @@
   <ArkGridGemList
     gems={currentGems}
     showDeleteButton={false}
-    emptyDescription="인식된 젬이 없습니다."
+    emptyDescription={LEmpty[locale]}
     bind:this={container}
   ></ArkGridGemList>
   <div class="gem-count">
-    젬 보유 수량 {orderGems.length + chaosGems.length} / 100<br />(질서 {orderGems.length}개, 혼돈 {chaosGems.length}개
-    보유 중)
+    {@html LGemTotalCount[locale]}
   </div>
   <div class="buttons">
     <div>
@@ -117,16 +154,12 @@
           let overrideGem = true;
 
           if (profile.gems.orderGems.length > 0 || profile.gems.chaosGems.length > 0) {
-            overrideGem = window.confirm(
-              '⚠️현재 프로필에 젬이 존재합니다.\n' +
-                '해당 젬을 모두 삭제하고 덮어 씌우시겠습니까?\n' +
-                '취소할 경우 인식된 젬이 추가만 됩니다.'
-            );
+            overrideGem = window.confirm(LWarning[locale]);
           }
-          if (applyGemList(overrideGem)) toast.push('반영 완료!');
+          if (applyGemList(overrideGem)) toast.push(LConfirm[locale]);
         }}
       >
-        ✅ 현재 프로필에 반영
+        ✅ {LApply[locale]}
       </button>
     </div>
     <div>
@@ -135,7 +168,7 @@
         onclick={() => {
           orderGems.length = 0;
           chaosGems.length = 0;
-        }}>초기화</button
+        }}>{LReset[locale]}</button
       >
     </div>
   </div>

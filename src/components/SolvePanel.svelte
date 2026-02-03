@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type ArkGridAttr, ArkGridAttrs } from '../lib/constants/enums';
+  import { type ArkGridAttr, ArkGridAttrs, type LocalizationName } from '../lib/constants/enums';
   import {
     type ArkGridCore,
     type ArkGridCoreType,
@@ -17,6 +17,7 @@
     gemOptionLevelCoeffsSupporter,
   } from '../lib/solver/models';
   import { getBestGemSetPacks, getPossibleGemSets } from '../lib/solver/solver';
+  import { appConfig } from '../lib/state/appConfig.state.svelte';
   import {
     type CharacterProfile,
     getCurrentProfile,
@@ -32,6 +33,12 @@
     profile: CharacterProfile;
   };
   let { profile = $bindable() }: Props = $props();
+
+  let locale = $derived(appConfig.current.locale);
+  const Ltitle: LocalizationName = {
+    ko_kr: '젬 화면 인식',
+    en_us: 'Screen Recognition For Adding Gem',
+  };
 
   const coreComponents: Record<ArkGridAttr, Record<ArkGridCoreType, SolveCoreEdit | null>> = $state(
     Object.fromEntries(

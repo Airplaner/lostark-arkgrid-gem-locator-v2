@@ -35,6 +35,8 @@
         };
   });
   let maxCorePoint = $derived(getMaxCorePoint(core));
+
+  let locale = $derived(appConfig.current.locale);
 </script>
 
 <fieldset class="core-slot">
