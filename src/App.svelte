@@ -10,7 +10,7 @@
   import AppConfiguration from './components/header/AppConfiguration.svelte';
   import ProfileEdit from './components/header/ProfileEditor.svelte';
   import { DISCORD_URL, KAKAOTALK_URL } from './lib/constants/enums';
-  import { appConfig, enableDarkMode } from './lib/state/appConfig.state.svelte';
+  import { appConfig, enableDarkMode, toggleUI } from './lib/state/appConfig.state.svelte';
   import { type CharacterProfile, getCurrentProfile } from './lib/state/profile.state.svelte';
 
   let currentProfile = $state<CharacterProfile>(getCurrentProfile());
@@ -55,6 +55,11 @@
     if (prefersDark) {
       enableDarkMode();
     }
+    // debug
+    (window as any).debug = () => {
+      toggleUI('debugMode');
+      console.log('현재 디버그 모드:', appConfig.current.uiConfig.debugMode);
+    };
   });
 </script>
 
