@@ -220,10 +220,8 @@
     </div>
   {/if}
   <div class="title">
-    <div class="title-with-dot">
-      <span>{LTitle[locale]}</span>
-      <div class="status-dot" class:online={isRecording} class:offline={!isRecording}></div>
-    </div>
+    <span>{LTitle[locale]}</span>
+    <div class="status-dot" class:online={isRecording} class:offline={!isRecording}></div>
     <button
       class="fold-button"
       onclick={() => toggleUI('showGemRecognitionPanel')}
@@ -289,6 +287,24 @@
   .panel {
     position: relative;
   }
+
+  .panel > .title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  /* .panel > .title > .title-with-dot {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  } */
+  .panel > .title > .fold-button {
+    flex-grow: 1;
+    text-align: right;
+    border: none;
+    background: none;
+  }
+
   .status-dot {
     width: 12px;
     height: 12px;
@@ -303,23 +319,6 @@
     background-color: #9ca3af; /* 회색 */
   }
 
-  .fold-button {
-    flex: 1;
-    text-align: right;
-    border: none;
-    background: none;
-  }
-
-  .panel > .title {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .panel > .title > .title-with-dot {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
   .panel > .content {
     /* 내부 요소들은 상하 정렬 */
     display: flex;
@@ -339,6 +338,10 @@
     display: flex;
     align-items: stretch;
     gap: 8px;
+    flex-wrap: wrap;
+  }
+  .buttons > div > button {
+    flex-basis: auto;
   }
   .debug-screen {
     display: flex;
