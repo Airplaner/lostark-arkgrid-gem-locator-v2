@@ -101,11 +101,20 @@
   .title-and-button {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    /* justify-content: space-between; */
+    /* 이거 대신 button에게 margin-left를 사용함 */
+    flex-wrap: wrap;
+    gap: 0.7rem;
   }
   .title-and-button .title {
+    /* flex 기본 크기를 내용물(auto)대로 설정 */
+    /* 이게 없이 wrap만 설정하면, 좁아져도 줄바꿈을 해야하는 이유를 모름 */
+    flex-basis: auto;
     font-size: 1.4rem;
     font-weight: 700;
+  }
+  .title-and-button button {
+    margin-left: auto; /* 남는 공간을 밀어 버튼을 오른쪽으로 */
   }
   .title {
     display: flex;
