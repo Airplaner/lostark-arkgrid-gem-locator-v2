@@ -4,7 +4,7 @@
 
   import { type LocalizationName } from '../lib/constants/enums';
   import { LChaos, LOrder } from '../lib/constants/localization';
-  import { appConfig } from '../lib/state/appConfig.state.svelte';
+  import { appLocale } from '../lib/state/locale.state.svelte';
   import {
     type AllGems,
     addGem,
@@ -19,7 +19,7 @@
 
   let { gems }: Props = $props();
 
-  let locale = $derived(appConfig.current.locale);
+  let locale = $derived(appLocale.current);
   const LTitle: LocalizationName = {
     ko_kr: '인식된 젬 목록',
     en_us: 'Recognized Astrogems',

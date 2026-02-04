@@ -3,7 +3,7 @@
   import imgWillPower from '../assets/willpower.png';
   import type { AppLocale } from '../lib/constants/enums';
   import { type ArkGridGem, ArkGridGemOptionTypes, getGemImage } from '../lib/models/arkGridGems';
-  import { appConfig } from '../lib/state/appConfig.state.svelte';
+  import { appLocale } from '../lib/state/locale.state.svelte';
   import { deleteGem } from '../lib/state/profile.state.svelte';
 
   interface Props {
@@ -12,7 +12,7 @@
   }
 
   let { gem, showDeleteButton = true }: Props = $props();
-  let locale: AppLocale = $derived(appConfig.current.locale);
+  let locale: AppLocale = $derived(appLocale.current);
 </script>
 
 <div class="gem-box">

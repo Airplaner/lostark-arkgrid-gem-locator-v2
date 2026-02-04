@@ -4,21 +4,15 @@
 
   import CharacterProfileEditor from './components/CharacterProfileEditor.svelte';
   import GemRecognitionPanel from './components/GemRecognitionPanel.svelte';
-  import Credit from './components/footer/Credit.svelte';
-  import Policy from './components/footer/Policy.svelte';
-  import Terms from './components/footer/Terms.svelte';
+  import Footer from './components/footer/Footer.svelte';
   import AppConfiguration from './components/header/AppConfiguration.svelte';
   import ProfileEdit from './components/header/ProfileEditor.svelte';
-  import { DISCORD_URL, KAKAOTALK_URL, type LocalizationName } from './lib/constants/enums';
-  import {
-    appConfig,
-    enableDarkMode,
-    setLocale,
-    toggleUI,
-  } from './lib/state/appConfig.state.svelte';
+  import { type LocalizationName } from './lib/constants/enums';
+  import { appConfig, enableDarkMode, toggleUI } from './lib/state/appConfig.state.svelte';
+  import { appLocale, setLocale } from './lib/state/locale.state.svelte';
   import { type CharacterProfile, getCurrentProfile } from './lib/state/profile.state.svelte';
 
-  let locale = $derived(appConfig.current.locale);
+  let locale = $derived(appLocale.current);
   const LTitle: LocalizationName = {
     ko_kr: '아크 그리드 전투력 최적화',
     en_us: 'Ark Grid Combat Power Optimizer',
@@ -27,19 +21,6 @@
   $effect(() => {
     currentProfile = getCurrentProfile();
   });
-  let dialog = $state<HTMLDialogElement>();
-  type Footers = 'credit' | 'policy' | 'terms';
-  let currentFooter = $state<Footers | null>(null);
-
-  const openDialong = (component: Footers) => {
-    currentFooter = component;
-    if (dialog) dialog.showModal();
-  };
-
-  const closeDialog = () => {
-    if (dialog) dialog.close();
-    currentFooter = null;
-  };
 
   $effect(() => {
     document.documentElement.classList.toggle('dark-mode', appConfig.current.uiConfig.darkMode);
@@ -92,38 +73,9 @@
     <CharacterProfileEditor bind:profile={currentProfile}></CharacterProfileEditor>
   </div>
 </main>
-
 <footer>
-  <a class="footer-link" href="#credits" onclick={() => openDialong('credit')}>Credits</a>
-
-  <a class="footer-link" href="#privacy" onclick={() => openDialong('policy')}>Privacy Policy</a>
-
-  <a class="footer-link" href="#terms" onclick={() => openDialong('terms')}>Terms</a>
-  <a href={DISCORD_URL} target="_blank" rel="noopener noreferrer" class="footer-link">
-    <i class="fa-brands fa-discord"></i>
-    Discord
-  </a>
-  <a href={KAKAOTALK_URL} target="_blank" rel="noopener noreferrer" class="footer-link">
-    <i class="fa-brands fa-kakao-talk"></i>
-    KakaoTalk
-  </a>
+  <Footer></Footer>
 </footer>
-
-<dialog
-  class="footer-dialog"
-  bind:this={dialog}
-  onclick={(e) => {
-    if (e.target === dialog) closeDialog();
-  }}
->
-  {#if currentFooter === 'credit'}
-    <Credit />
-  {:else if currentFooter === 'policy'}
-    <Policy />
-  {:else if currentFooter === 'terms'}
-    <Terms />
-  {/if}
-</dialog>
 
 <style>
   .contents {
@@ -145,22 +97,5 @@
     --toastContainerRight: auto;
     --toastContainerBottom: 8rem;
     --toastContainerLeft: calc(50vw - 8rem);
-  }
-  footer {
-    font-size: 0.8rem;
-    display: flex;
-    flex-direction: row;
-    text-align: center;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
-  }
-  .footer-dialog {
-    width: 20rem;
-  }
-  .footer-link {
-    color: #9ca3af; /* 은은한 회색 */
-    text-decoration: none; /* 밑줄 제거 */
-    cursor: pointer;
   }
 </style>

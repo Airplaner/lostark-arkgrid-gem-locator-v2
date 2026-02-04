@@ -32,7 +32,6 @@ interface AppConfig {
   characterProfiles: CharacterProfile[];
   openApiConfig: OpenApiConfig;
   uiConfig: UIConfig;
-  locale: AppLocale;
 }
 
 // serializer object for svelte-persisted-state
@@ -53,13 +52,13 @@ export const bigIntSerializer = {
   },
 };
 export function migrateAppConfig(appConfig: Partial<AppConfig>) {
-  // locale 없으면 ko_kr로 추가
-  if (appConfig.locale === undefined) {
-    appConfig.locale = 'ko_kr';
-  }
   // uiConfig.darkMode 추가
   if (appConfig.uiConfig && appConfig.uiConfig.darkMode === undefined) {
     appConfig.uiConfig.darkMode = false;
+  }
+  // appLocale 제거
+  if ('appLocale' in appConfig) {
+    delete appConfig.appLocale;
   }
 }
 
@@ -69,7 +68,6 @@ export const appConfig = persistedState<AppConfig>(
     characterProfiles: [initNewProfile(DEFAULT_PROFILE_NAME)],
     openApiConfig: {},
     uiConfig: defaultUIConfig,
-    locale: 'ko_kr',
   },
   {
     serializer: bigIntSerializer,
@@ -127,17 +125,6 @@ export function updateOpenApiJWT(jwtInput: string) {
       jwt: jwtTrimed,
     });
   }
-}
-
-export function toggleLocale() {
-  if (appConfig.current.locale == 'ko_kr') {
-    appConfig.current.locale = 'en_us';
-  } else {
-    appConfig.current.locale = 'ko_kr';
-  }
-}
-export function setLocale(locale: AppLocale) {
-  appConfig.current.locale = locale;
 }
 
 export function toggleDarkMode() {

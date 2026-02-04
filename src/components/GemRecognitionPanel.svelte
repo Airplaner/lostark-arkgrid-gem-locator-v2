@@ -1,14 +1,15 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
 
-  import { type ArkGridAttr, ArkGridAttrs, type LocalizationName } from '../lib/constants/enums';
+  import { type ArkGridAttr, type LocalizationName } from '../lib/constants/enums';
   import { CaptureController } from '../lib/cv/captureController';
   import { type ArkGridGem, isSameArkGridGem } from '../lib/models/arkGridGems';
   import { appConfig, toggleUI } from '../lib/state/appConfig.state.svelte';
+  import { appLocale } from '../lib/state/locale.state.svelte';
   import GemRecognitionGemList from './GemRecognitionGemList.svelte';
   import GemRecognitionGuide from './GemRecognitionGuide.svelte';
 
-  let locale = $derived(appConfig.current.locale);
+  let locale = $derived(appLocale.current);
   const LTitle: LocalizationName = {
     ko_kr: '젬 화면 인식',
     en_us: 'Astrogem Recognition Screen',

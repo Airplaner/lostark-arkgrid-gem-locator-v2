@@ -3,6 +3,7 @@
   import { LDealeer, LSupporter } from '../lib/constants/localization';
   import { ArkGridCoreTypes, resetCoreCoeff } from '../lib/models/arkGridCores';
   import { appConfig, toggleUI } from '../lib/state/appConfig.state.svelte';
+  import { appLocale } from '../lib/state/locale.state.svelte';
   import {
     type CharacterProfile,
     imgRoleCombat,
@@ -16,7 +17,7 @@
   }
   let { profile }: Props = $props();
 
-  let locale = $derived(appConfig.current.locale);
+  let locale = $derived(appLocale.current);
   const LTitle: LocalizationName = {
     ko_kr: '코어 설정',
     en_us: 'Core Setting',
@@ -62,7 +63,7 @@
       {LTitle[locale]} - {isSupporter ? LSupporter[locale] : LDealeer[locale]}
       <img src={profile.isSupporter ? imgRoleSupporter : imgRoleCombat} alt="role" />
     </div>
-    <button onclick={toggleIsSupporter}>{LSwitchRole[locale]}</button>
+    <button onclick={toggleIsSupporter}>⇆ {LSwitchRole[locale]}</button>
   </div>
   {#each attrs as attr}
     {#each ctypes as ctype}

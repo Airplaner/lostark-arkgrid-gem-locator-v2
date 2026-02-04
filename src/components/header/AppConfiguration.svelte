@@ -25,10 +25,10 @@
   import {
     appConfig,
     toggleDarkMode,
-    toggleLocale,
     toggleUI,
     updateOpenApiJWT,
   } from '../../lib/state/appConfig.state.svelte';
+  import { appLocale, toggleLocale } from '../../lib/state/locale.state.svelte';
   import {
     type WeaponInfo,
     addGem,
@@ -40,7 +40,7 @@
   } from '../../lib/state/profile.state.svelte';
 
   let importing: boolean = $state(false);
-  let locale = $derived(appConfig.current.locale);
+  let locale = $derived(appLocale.current);
   const LDarkMode: LocalizationName = {
     ko_kr: '다크 모드',
     en_us: 'Dark Mode',
@@ -353,7 +353,7 @@
       class:fa-toggle-off={!appConfig.current.uiConfig.darkMode}
     ></i>
   </button>
-  <button onclick={toggleLocale}>Locale: {appConfig.current.locale}</button>
+  <button onclick={toggleLocale}>Locale {locale}</button>
 </div>
 
 <style>

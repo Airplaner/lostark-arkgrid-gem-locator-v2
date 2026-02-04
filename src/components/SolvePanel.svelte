@@ -13,7 +13,7 @@
     gemOptionLevelCoeffsSupporter,
   } from '../lib/solver/models';
   import { getBestGemSetPacks, getPossibleGemSets } from '../lib/solver/solver';
-  import { appConfig } from '../lib/state/appConfig.state.svelte';
+  import { appLocale } from '../lib/state/locale.state.svelte';
   import {
     type CharacterProfile,
     getCurrentProfile,
@@ -30,7 +30,7 @@
   };
   let { profile = $bindable() }: Props = $props();
 
-  let locale = $derived(appConfig.current.locale);
+  let locale = $derived(appLocale.current);
   const LTitle = $derived(
     {
       ko_kr: '최적화 설정',

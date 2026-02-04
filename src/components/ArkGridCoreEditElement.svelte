@@ -1,18 +1,14 @@
 <script lang="ts">
-  import {
-    type ArkGridAttr,
-    ArkGridAttrTypes,
-    LostArkGradeTypes,
-    LostArkGrades,
-  } from '../lib/constants/enums';
+  import { type ArkGridAttr, LostArkGradeTypes, LostArkGrades } from '../lib/constants/enums';
+  import { formatCoreType } from '../lib/constants/localization';
   import {
     type ArkGridCoreType,
-    ArkGridCoreTypeTypes,
     getCoreImage,
     getMaxCorePoint,
     resetCoreCoeff,
   } from '../lib/models/arkGridCores';
   import { appConfig } from '../lib/state/appConfig.state.svelte';
+  import { appLocale } from '../lib/state/locale.state.svelte';
   import { type WeaponInfo, addCore, getCore, resetCore } from '../lib/state/profile.state.svelte';
 
   type Props = {
@@ -55,12 +51,8 @@
   });
   let maxCorePoint = $derived(getMaxCorePoint(core));
 
-  let locale = $derived(appConfig.current.locale);
-  const LTitle = $derived(
-    locale == 'ko_kr'
-      ? `${attr}의 ${ctype}`
-      : `${ArkGridAttrTypes[attr].name[locale]} of the ${ArkGridCoreTypeTypes[ctype].name[locale]}`
-  );
+  let locale = $derived(appLocale.current);
+  const LTitle = $derived(formatCoreType(attr, ctype, locale));
   const LRarity = $derived(
     {
       ko_kr: '등급',
@@ -71,6 +63,12 @@
     {
       ko_kr: '종류',
       en_us: 'Type',
+    }[locale]
+  );
+  const LCoeff = $derived(
+    {
+      ko_kr: '계수',
+      en_us: 'Coeff.',
     }[locale]
   );
 </script>
@@ -132,7 +130,7 @@
     {#if appConfig.current.uiConfig.showCoreCoeff}
       <!-- 계수 숨기면 보이지 않음 -->
       <div class="row core-coeffs">
-        <span class="title">계수</span>
+        <span class="title">{LCoeff}</span>
         <div class="input-title-tuples">
           {#each coeffKeys as coeffKey}
             {#if Number(coeffKey.slice(1)) <= maxCorePoint}

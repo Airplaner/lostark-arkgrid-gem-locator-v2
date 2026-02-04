@@ -1,5 +1,6 @@
 <script lang="ts">
   import { appConfig } from '../../lib/state/appConfig.state.svelte';
+  import { appLocale } from '../../lib/state/locale.state.svelte';
   import SolvePanel from '../SolvePanel.svelte';
 
   type ScoreSet = {
@@ -12,7 +13,7 @@
 
   let scoreRatio = $derived(Math.min(scoreSet.score / scoreSet.perfectScore, 1));
   let bestRatio = $derived(Math.min(scoreSet.bestScore / scoreSet.perfectScore, 1));
-  let locale = $derived(appConfig.current.locale);
+  let locale = $derived(appLocale.current);
   const LTitle = $derived(
     {
       ko_kr: '아크 그리드 전투력',

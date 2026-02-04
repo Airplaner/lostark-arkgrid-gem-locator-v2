@@ -10,6 +10,7 @@
     bigIntSerializer,
     getProfile,
   } from '../../lib/state/appConfig.state.svelte';
+  import { appLocale } from '../../lib/state/locale.state.svelte';
   import {
     type CharacterProfile,
     currentProfileName,
@@ -21,23 +22,39 @@
     setCurrentProfileName,
   } from '../../lib/state/profile.state.svelte';
 
-  let locale = $derived(appConfig.current.locale);
-  const LTitle: LocalizationName = {
-    ko_kr: '프로필',
-    en_us: 'Profile',
-  };
-  const LAddNewProfile: LocalizationName = {
-    ko_kr: '새 프로필에 사용할 캐릭터명을 입력해주세요',
-    en_us: 'Enter new profile name',
-  };
+  let locale = $derived(appLocale.current);
+  const LTitle = $derived(
+    {
+      ko_kr: '프로필',
+      en_us: 'Profile',
+    }[locale]
+  );
+  const LAddNewProfile = $derived(
+    {
+      ko_kr: '새 프로필에 사용할 캐릭터명을 입력해주세요',
+      en_us: 'Enter new profile name',
+    }[locale]
+  );
+  const LNewProfile = $derived(
+    {
+      ko_kr: '새 프로필',
+      en_us: 'New profile',
+    }[locale]
+  );
   const LConfirmDeleteProfile: Record<string, (profileName: string) => string> = {
     ko_kr: (name) => `"${name}" 프로필을 삭제하시겠습니까?`,
     en_us: (name) => `Are you sure you want to delete the "${name}" profile?`,
   };
+  const LDeleteProfile = $derived(
+    {
+      ko_kr: '현재 프로필 삭제',
+      en_us: 'Delete current profile',
+    }[locale]
+  );
 </script>
 
 <div class="root">
-  <div class="title">👤 {LTitle[locale]}</div>
+  <div class="title">👤 {LTitle}</div>
   <div class="buttons">
     {#each appConfig.current.characterProfiles as profile}
       <button
@@ -54,9 +71,9 @@
       </button>
     {/each}
     <button
-      title="새 프로필"
+      title={LNewProfile}
       onclick={() => {
-        const profileName = window.prompt(LAddNewProfile[locale]);
+        const profileName = window.prompt(LAddNewProfile);
         if (profileName === null || profileName.length == 0) return;
         addNewProfile(initNewProfile(profileName));
         setCurrentProfileName(profileName);
@@ -64,7 +81,7 @@
       data-track="add-profile">📄</button
     >
     <button
-      title="현재 프로필 삭제"
+      title={LDeleteProfile}
       onclick={() => {
         if (window.confirm(LConfirmDeleteProfile[locale](currentProfileName.current))) {
           deleteProfile(currentProfileName.current);

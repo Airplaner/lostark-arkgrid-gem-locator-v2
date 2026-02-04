@@ -13,7 +13,7 @@
     ArkGridGemSpecs,
     getGemImage,
   } from '../lib/models/arkGridGems';
-  import { appConfig } from '../lib/state/appConfig.state.svelte';
+  import { appLocale } from '../lib/state/locale.state.svelte';
   import { addGem } from '../lib/state/profile.state.svelte';
 
   type Props = {
@@ -81,7 +81,7 @@
       value: 1,
     },
   });
-  let locale: AppLocale = $derived(appConfig.current.locale);
+  let locale: AppLocale = $derived(appLocale.current);
 
   // 현재 gemAttr에서 가능한 gemSpec들을 가져옴
   let availableGemSpecs = $derived(

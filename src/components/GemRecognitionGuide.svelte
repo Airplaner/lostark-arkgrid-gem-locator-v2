@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { LocalizationName } from '../lib/constants/enums';
   import { appConfig, toggleUI } from '../lib/state/appConfig.state.svelte';
+  import { appLocale } from '../lib/state/locale.state.svelte';
 
   const guideImages = import.meta.glob<string>('../assets/guide/*.png', {
     eager: true,
@@ -10,7 +11,7 @@
     ko_kr: '가이드',
     en_us: 'Guide',
   };
-  let locale = $derived(appConfig.current.locale);
+  let locale = $derived(appLocale.current);
 </script>
 
 <div class="guide">

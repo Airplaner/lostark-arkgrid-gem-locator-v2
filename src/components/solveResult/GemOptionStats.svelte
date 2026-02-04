@@ -1,7 +1,6 @@
 <script lang="ts">
-  import type { AppLocale } from '../../lib/constants/enums';
   import { type ArkGridGemOptionName, ArkGridGemOptionTypes } from '../../lib/models/arkGridGems';
-  import { appConfig } from '../../lib/state/appConfig.state.svelte';
+  import { appLocale } from '../../lib/state/locale.state.svelte';
   import type { SolveAnswer } from '../../lib/state/profile.state.svelte';
 
   type Props = {
@@ -26,7 +25,7 @@
     }
     return statistics;
   });
-  let locale: AppLocale = $derived(appConfig.current.locale);
+  let locale = $derived(appLocale.current);
   const LTitle = $derived(
     {
       ko_kr: '젬 옵션',

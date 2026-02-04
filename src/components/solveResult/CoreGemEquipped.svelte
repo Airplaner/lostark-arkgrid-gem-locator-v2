@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { type ArkGridAttr, ArkGridAttrTypes } from '../../lib/constants/enums';
+  import { type ArkGridAttr } from '../../lib/constants/enums';
+  import { formatCoreType } from '../../lib/constants/localization';
   import {
     type ArkGridCore,
     type ArkGridCoreType,
-    ArkGridCoreTypeTypes,
     getDefaultCoreEnergy,
   } from '../../lib/models/arkGridCores';
-  import { type ArkGridGem, ArkGridGemOptionTypes } from '../../lib/models/arkGridGems';
-  import { appConfig } from '../../lib/state/appConfig.state.svelte';
+  import { type ArkGridGem } from '../../lib/models/arkGridGems';
+  import { appLocale } from '../../lib/state/locale.state.svelte';
   import ArkGridGemDetail from '../ArkGridGemDetail.svelte';
 
   let {
@@ -32,12 +32,8 @@
       return sum + gem.req;
     }, 0);
   });
-  let locale = $derived(appConfig.current.locale);
-  const LTitle = $derived(
-    locale == 'ko_kr'
-      ? `${attr}의 ${ctype}`
-      : `${ArkGridAttrTypes[attr].name[locale]} of the ${ArkGridCoreTypeTypes[ctype].name[locale]}`
-  );
+  let locale = $derived(appLocale.current);
+  const LTitle = $derived(formatCoreType(attr, ctype, locale));
   const LPoint = $derived(
     {
       ko_kr: '포인트',

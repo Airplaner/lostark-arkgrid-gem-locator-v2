@@ -2,9 +2,9 @@
   import { toast } from '@zerodevx/svelte-toast';
   import { tick } from 'svelte';
 
-  import { type ArkGridAttr, ArkGridAttrs } from '../lib/constants/enums';
+  import { type ArkGridAttr } from '../lib/constants/enums';
   import { LChaos, LOrder } from '../lib/constants/localization';
-  import { appConfig } from '../lib/state/appConfig.state.svelte';
+  import { appLocale } from '../lib/state/locale.state.svelte';
   import { type AllGems, clearGems } from '../lib/state/profile.state.svelte';
   import ArkGridGemAddPanel from './ArkGridGemAddPanel.svelte';
   import ArkGridGemList from './ArkGridGemList.svelte';
@@ -22,7 +22,7 @@
   });
 
   // 탭 상태
-  let locale = $derived(appConfig.current.locale);
+  let locale = $derived(appLocale.current);
   let activeTab = $state(0);
   let tabs = $derived([LOrder[locale], LChaos[locale]]);
   let container: ArkGridGemList;

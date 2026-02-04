@@ -1,5 +1,6 @@
 <script lang="ts">
   import { type ArkGridAttr, ArkGridAttrTypes } from '../lib/constants/enums';
+  import { formatCoreType } from '../lib/constants/localization';
   import {
     type ArkGridCore,
     type ArkGridCoreCoeffs,
@@ -9,7 +10,7 @@
     getMaxCorePoint,
   } from '../lib/models/arkGridCores';
   import { Core } from '../lib/solver/models';
-  import { appConfig } from '../lib/state/appConfig.state.svelte';
+  import { appLocale } from '../lib/state/locale.state.svelte';
 
   interface Props {
     attr: ArkGridAttr;
@@ -25,12 +26,8 @@
       core.goalPoint = maxPoint;
     }
   });
-  let locale = $derived(appConfig.current.locale);
-  const LTitle = $derived(
-    locale == 'ko_kr'
-      ? `${attr}의 ${ctype}`
-      : `${ArkGridAttrTypes[attr].name[locale]} of the ${ArkGridCoreTypeTypes[ctype].name[locale]}`
-  );
+  let locale = $derived(appLocale.current);
+  const LTitle = $derived(formatCoreType(attr, ctype, locale));
   let maxCorePoint = $derived(getMaxCorePoint(core));
 
   function buildCoreArray(coeffs: ArkGridCoreCoeffs): number[] {
