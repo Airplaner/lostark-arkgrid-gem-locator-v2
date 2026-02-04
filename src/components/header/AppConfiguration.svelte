@@ -362,6 +362,7 @@
     flex-direction: row;
     gap: 10px;
     justify-content: right;
+    flex-wrap: wrap;
   }
   button {
     background-color: var(--card);
