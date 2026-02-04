@@ -58,6 +58,7 @@
 
 <style>
   .gem-box {
+    /* scroll-snap-align: start; */
     border: 1px solid var(--border);
     border-radius: 0.4rem;
     display: inline-flex;

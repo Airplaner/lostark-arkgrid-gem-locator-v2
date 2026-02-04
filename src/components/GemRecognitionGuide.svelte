@@ -125,6 +125,8 @@
     align-items: center;
     gap: 0.4rem;
   }
+  .guide > .content {
+  }
   .guide img {
     max-width: 100%;
     height: auto;

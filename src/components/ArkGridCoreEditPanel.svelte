@@ -89,6 +89,8 @@
 
   /* 버튼 모음 */
   .buttons {
+    /* 버튼 모음은 panel 가장 하단 */
+    margin-top: auto;
     display: flex;
     gap: 0.4rem;
     justify-content: right;

@@ -171,6 +171,8 @@
     display: flex;
     gap: 0.4rem;
     justify-content: space-between;
+    /* 버튼 모음은 panel 가장 하단 */
+    margin-top: auto;
   }
   .buttons button {
     /* 너비는 자동이지만 최소 5em */

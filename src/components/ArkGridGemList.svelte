@@ -87,6 +87,8 @@
     flex-direction: column;
     overflow-y: auto;
     gap: 0.5rem;
+    /* 괜찮아 보이는데 나중에 추가... */
+    /* scroll-snap-type: y proximity;  */
   }
   .gems > .epmty-description {
     align-self: center;
