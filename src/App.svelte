@@ -85,6 +85,11 @@
     /* 넓을 땐 20px 패딩, 960px 이후 (세로 레아이웃) 점점 좁아짐 */
     padding: clamp(8px, 2.083vw, 20px);
   }
+  @media (max-width: 767px) {
+    .contents {
+      padding: 0rem;
+    }
+  }
   .contents .title {
     font-weight: 700;
     font-size: 3rem;

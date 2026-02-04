@@ -139,6 +139,12 @@ body {
   /* 드래그 불가능 */
   user-select: none;
 }
+@media (max-width: 767px) {
+  .panel {
+    padding: 0.5rem;
+    border: none;
+  }
+}
 
 .dual-panel {
   gap: var(--global-gap);
