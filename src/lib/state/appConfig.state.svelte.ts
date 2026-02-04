@@ -1,11 +1,6 @@
 import { persistedState } from 'svelte-persisted-state';
 
-import {
-  type AppLocale,
-  type ArkGridAttr,
-  ArkGridAttrs,
-  DEFAULT_PROFILE_NAME,
-} from '../constants/enums';
+import { type ArkGridAttr, ArkGridAttrs, DEFAULT_PROFILE_NAME } from '../constants/enums';
 import { type ArkGridCore, type ArkGridCoreType, ArkGridCoreTypes } from '../models/arkGridCores';
 import { apiClient } from '../openapi/openapi';
 import { type CharacterProfile, initNewProfile, migrateProfile } from './profile.state.svelte';

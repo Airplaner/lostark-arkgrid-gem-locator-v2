@@ -74,9 +74,8 @@
 
 <style>
   .gems {
-    /* 남은 공간을 최대한 차지 */
-    flex: 1;
-    max-height: 60rem; /* 모바일 모드일때 너무 길어지는 걸 방지 */
+    /* 인게임이랑 똑같이 9개 보여주게 */
+    height: 39rem;
 
     /* 테두리 */
     border-top: 1px solid var(--border);

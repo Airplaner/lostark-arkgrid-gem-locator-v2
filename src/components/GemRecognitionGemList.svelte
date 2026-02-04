@@ -175,10 +175,6 @@
 </div>
 
 <style>
-  .panel {
-    min-height: 46rem;
-    max-height: 46rem;
-  }
   .tab-container {
     display: flex;
     gap: 0.3em;
