@@ -270,7 +270,9 @@
       </div>
     </div>
     <div class="dual-panel">
-      <GemRecognitionGuide></GemRecognitionGuide>
+      <div>
+        <GemRecognitionGuide></GemRecognitionGuide>
+      </div>
       <GemRecognitionGemList
         gems={{
           orderGems: totalOrderGems,
