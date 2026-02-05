@@ -76,9 +76,11 @@ $$
 ## Explored Approaches
 ### 1. Naive DFS (Depth First Search)
 각 질서 및 혼돈 코어의 12개의 젬 슬롯에 대한 경우의 수를 계산하면 아래와 같다.
+
 $$
-{50\choose 12} \cdot {50\choose 12} = 1.4\times10^{23}
+{50\choose 12} \cdot {50\choose 12} \approx 1.4\times10^{23}
 $$
+
 젬이 20개 내외로 적을 때는 성공적이었으나, 젬의 수가 많아지는 경우에는 유한 시간 내에 불가능하였다.
 
 ### 2. Linear Optimization Attempt (Google OR-Tools)
