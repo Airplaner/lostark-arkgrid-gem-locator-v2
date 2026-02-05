@@ -74,7 +74,7 @@
     display: flex;
     flex-direction: column;
     padding: 0.5rem;
-    height: 22rem;
+    height: 21rem;
 
     border: 1px solid var(--border);
     border-radius: 0.4rem;

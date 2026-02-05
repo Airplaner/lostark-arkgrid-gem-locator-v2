@@ -17,35 +17,39 @@
 
 <div class="gem-box">
   <div class="gem">
-    <div class="col gemImage" data-grade={gem.grade}>
+    <div class="gem-image" data-grade={gem.grade}>
       <img src={getGemImage(gem.gemAttr, gem.name)} alt={gem.name} />
     </div>
-    <div class="col main-options">
-      <div class="main-option">
-        <span> {gem.req}</span>
-        <img src={imgWillPower} alt="W" />
+
+    <div class="willPower gem-spec">
+      <div>{gem.req}</div>
+      <img src={imgWillPower} alt="W" />
+    </div>
+
+    <div class="vl"></div>
+
+    <div class="option1 gem-spec">
+      <div class="shrinkable">
+        {ArkGridGemOptionTypes[gem.option1.optionType].name[locale]}
       </div>
-      <div class="main-option">
-        {gem.point}<img src={imgCorePoint} alt="P" />
+      <div>
+        Lv.{gem.option1.value}
       </div>
     </div>
-    <div class="vl"></div>
-    <div class="col sub-options">
-      <div class="sub-option">
-        <span class="option-type">
-          {ArkGridGemOptionTypes[gem.option1.optionType].name[locale]}
-        </span>
-        <span class="option-level">
-          Lv.{gem.option1.value}
-        </span>
+
+    <div class="corePoint gem-spec">
+      <div>
+        {gem.point}
       </div>
-      <div class="sub-option">
-        <span class="option-type">
-          {ArkGridGemOptionTypes[gem.option2.optionType].name[locale]}
-        </span>
-        <span class="option-level">
-          Lv.{gem.option2.value}
-        </span>
+      <img src={imgCorePoint} alt="P" />
+    </div>
+
+    <div class="option2 gem-spec">
+      <div class="shrinkable">
+        {ArkGridGemOptionTypes[gem.option2.optionType].name[locale]}
+      </div>
+      <div>
+        Lv.{gem.option2.value}
       </div>
     </div>
   </div>
@@ -61,91 +65,80 @@
     /* scroll-snap-align: start; */
     border: 1px solid var(--border);
     border-radius: 0.4rem;
-    display: inline-flex;
+
+    min-width: 15rem;
+    max-width: 40rem;
+    overflow-x: hidden;
+
     height: 3rem;
+    min-height: 3rem;
+    max-height: 3rem;
+
+    display: flex;
+    align-items: stretch;
     padding: 0.4rem;
-    justify-content: space-between;
-    align-items: center;
+    overflow-y: hidden;
   }
-  .gem-box .edit-button {
-    flex: 0 0 auto;
+  .gem-box > .edit-button {
+    margin-left: auto;
   }
+
+  /* Grid 배치 */
   .gem {
-    /* min-width: 12rem; */
-    max-width: 30rem;
-    height: 100%;
-
-    /* 디버깅 */
-    /* border: 1px solid blue; */
-
     /* 내부 요소 */
-    display: flex;
-    /* justify-content: space-between; */
-    align-items: center;
-
-    flex-grow: 1;
-    flex-shrink: 0;
-    /* 외관 */
-  }
-  .gem > .col.main-options > .main-option {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-  }
-  .gem > .col.main-options img {
-    display: block;
-    height: 80%;
-
-    /* 살짝 올라가보이는 것을 보정 */
-    transform: translateY(1px);
-  }
-  .gem > .col.gemImage {
-    flex: 1;
-    min-width: 1.5rem;
-    max-width: 2.5rem;
-  }
-  .gem > .col > img {
+    display: grid;
+    /* 이미지(2.5rem) 의지력(2rem) 세로줄(1px) 공격력 Lv.5 (auto)*/
+    grid-template-columns: 2.5rem 2rem min-content auto;
+    grid-template-rows: 1fr 1fr;
+    gap: 0 1rem;
     height: 100%;
-    object-fit: contain;
-    transform: translateX(1px);
   }
-
-  .gem > .col.main-options {
-    flex: 1;
-    min-width: 1.5rem;
-    max-width: 2.5rem;
+  /* 두 칸씩 먹는 이미지와 세로선 */
+  .gem-image {
+    grid-column: 1;
+    grid-row: 1 / span 2;
   }
-
   .gem > .vl {
-    width: 0px;
-    border-left: 1px solid rgb(156, 156, 156);
+    grid-column: 3;
+    grid-row: 1 / span 2;
     height: 80%;
-    justify-content: center;
+    margin: auto 0;
+    border-left: 1px solid rgb(156, 156, 156);
   }
 
-  .gem > .col.sub-options {
-    flex: 4;
-    min-width: 2rem;
+  /* 모든 젬 내부 div는 flex box */
+  .gem > .gem-spec,
+  .gem-image {
+    display: flex;
+    flex-direction: row;
+    gap: 0.3rem;
+    /* 상하는 중앙 정렬, 좌측으로 붙여서 */
+    align-items: center;
+    justify-content: flex-start;
+    white-space: nowrap;
+    overflow: hidden;
   }
-  .gem > .col.sub-options > .sub-option {
-    /* 아군 공격 강화 Lv.3  이런 문구는 반드시 한 줄 */
+
+  img {
+    object-fit: contain;
+  }
+  .gem-image > img {
+    /* 젬 이미지 우측으로 1px */
+    width: 100%;
+    transform: translateX(0.05rem);
+  }
+  .gem-spec > img {
+    /* corepoint, willpower는 아래로 1px */
+    height: 80%;
+    transform: translateY(0.05rem);
+  }
+
+  .shrinkable {
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .gem > .col {
-    /* 디버깅 */
-    /* border: 1px solid red; */
-    /* 외관 */
-    height: 100%;
-    margin: 0.5rem;
-
-    /* 내부 요소들은 중앙 정렬 */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 0.1em;
-    flex-wrap: nowrap;
-  }
   div[data-grade] {
     border-radius: 20%;
   }
