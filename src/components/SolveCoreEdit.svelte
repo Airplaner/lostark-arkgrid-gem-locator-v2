@@ -26,7 +26,7 @@
     }
   });
   let locale = $derived(appLocale.current);
-  const LTitle = $derived(formatCoreType(attr, ctype, locale));
+  const LTitle = $derived(formatCoreType(attr, ctype, locale, true));
   let maxCorePoint = $derived(getMaxCorePoint(core));
 
   function buildCoreArray(coeffs: ArkGridCoreCoeffs): number[] {

@@ -37,7 +37,7 @@ export const ArkGridGemOptionTypes = {
   '아군 피해 강화': {
     name: {
       ko_kr: '아군 피해 강화',
-      en_us: 'Ally Power Enh.',
+      en_us: 'Ally Damage Enh.',
     },
   },
 } as const satisfies Record<string, ArkGridGemOptionType>;

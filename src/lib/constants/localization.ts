@@ -26,14 +26,24 @@ export const LSupporter: LocalizationName = {
   en_us: 'Support',
 };
 
-export function formatCoreType(attr: ArkGridAttr, ctype: ArkGridCoreType, locale: AppLocale) {
+export function formatCoreType(
+  attr: ArkGridAttr,
+  ctype: ArkGridCoreType,
+  locale: AppLocale,
+  noSuffix?: boolean
+) {
   // 질서의 별
   //  {attr}의 {ctype}
   //
   if (locale === 'ko_kr') {
     return `${attr}의 ${ctype}`;
   } else {
-    return `${ArkGridCoreTypeTypes[ctype].name[locale]} ${ArkGridAttrTypes[attr].name[locale]}`;
+    if (noSuffix) {
+      return `${ArkGridAttrTypes[attr].name[locale]} ${ArkGridCoreTypeTypes[ctype].name[locale]}`;
+    } else {
+      return `${ArkGridAttrTypes[attr].name[locale]} ${ArkGridCoreTypeTypes[ctype].name[locale]} Core`;
+    }
+
     // return `${ArkGridAttrTypes[attr].name[locale]} of the ${ArkGridCoreTypeTypes[ctype].name[locale]}`;
     // maxroll 표기
   }

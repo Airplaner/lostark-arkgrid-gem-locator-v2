@@ -38,7 +38,7 @@
     } else {
       return !isSupporter
         ? {
-            해: ['Flash Attack', 'Stable/Swift Attack', 'Others'],
+            해: ['Flashy Attack', 'Stable/Swift Attack', 'Others'],
             달: ['Smoldering Strike', 'Abosrbing/Crushing Strike', 'Others'],
             별: ['Attack', 'Weapon', 'Others'],
           }
