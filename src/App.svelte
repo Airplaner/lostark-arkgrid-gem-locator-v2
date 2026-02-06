@@ -3,10 +3,10 @@
   import { onMount } from 'svelte';
 
   import CharacterProfileEditor from './components/CharacterProfileEditor.svelte';
+  import Footer from './components/Footer/Footer.svelte';
   import GemRecognitionPanel from './components/GemRecognition/Panel.svelte';
-  import Footer from './components/footer/Footer.svelte';
-  import AppConfiguration from './components/header/AppConfiguration.svelte';
-  import ProfileEdit from './components/header/ProfileEditor.svelte';
+  import AppConfiguration from './components/Header/AppConfiguration.svelte';
+  import ProfileEdit from './components/Header/ProfileEditor.svelte';
   import { type LocalizationName } from './lib/constants/enums';
   import { appConfig, enableDarkMode, toggleUI } from './lib/state/appConfig.state.svelte';
   import { appLocale, setLocale } from './lib/state/locale.state.svelte';

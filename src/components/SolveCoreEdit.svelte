@@ -1,11 +1,10 @@
 <script lang="ts">
-  import { type ArkGridAttr, ArkGridAttrTypes } from '../lib/constants/enums';
+  import { type ArkGridAttr } from '../lib/constants/enums';
   import { formatCoreType } from '../lib/constants/localization';
   import {
     type ArkGridCore,
     type ArkGridCoreCoeffs,
     type ArkGridCoreType,
-    ArkGridCoreTypeTypes,
     getDefaultCoreEnergy,
     getMaxCorePoint,
   } from '../lib/models/arkGridCores';

@@ -23,7 +23,7 @@
     updateSolveAnswer,
   } from '../lib/state/profile.state.svelte';
   import SolveCoreEdit from './SolveCoreEdit.svelte';
-  import SolveResult from './solveResult/SolveResult.svelte';
+  import SolveResult from './SolveResult/SolveResult.svelte';
 
   type Props = {
     profile: CharacterProfile;
