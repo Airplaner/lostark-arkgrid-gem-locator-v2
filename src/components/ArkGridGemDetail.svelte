@@ -16,7 +16,7 @@
 </script>
 
 <div class="gem-box">
-  <div class="gem">
+  <div class="gem" data-locale={locale}>
     <div class="gem-image" data-grade={gem.grade}>
       <img src={getGemImage(gem.gemAttr, gem.name)} alt={gem.name} />
     </div>
@@ -33,7 +33,7 @@
         {ArkGridGemOptionTypes[gem.option1.optionType].name[locale]}
       </div>
       <div>
-        Lv.{gem.option1.value}
+        Lv. {gem.option1.value}
       </div>
     </div>
 
@@ -49,7 +49,7 @@
         {ArkGridGemOptionTypes[gem.option2.optionType].name[locale]}
       </div>
       <div>
-        Lv.{gem.option2.value}
+        Lv. {gem.option2.value}
       </div>
     </div>
   </div>
@@ -62,6 +62,7 @@
 
 <style>
   .gem-box {
+    container-type: inline-size;
     /* scroll-snap-align: start; */
     border: 1px solid var(--border);
     border-radius: 0.4rem;
@@ -90,8 +91,13 @@
     /* 이미지(2.5rem) 의지력(2rem) 세로줄(1px) 공격력 Lv.5 (auto)*/
     grid-template-columns: 2.5rem 2rem min-content auto;
     grid-template-rows: 1fr 1fr;
-    gap: 0 1rem;
+    gap: 0 0.7rem;
     height: 100%;
+  }
+  @container (max-width: 300px) {
+    .gem[data-locale='en_us'] {
+      column-gap: 0.3rem;
+    }
   }
   /* 두 칸씩 먹는 이미지와 세로선 */
   .gem-image {
