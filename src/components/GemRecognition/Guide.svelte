@@ -3,7 +3,7 @@
   import { appConfig, toggleUI } from '../../lib/state/appConfig.state.svelte';
   import { appLocale } from '../../lib/state/locale.state.svelte';
 
-  const guideImages = import.meta.glob<string>('../assets/guide/*.png', {
+  const guideAssets = import.meta.glob<string>('/src/assets/guide/*', {
     eager: true,
     import: 'default',
   });
@@ -24,17 +24,13 @@
   <div class="content" hidden={!appConfig.current.uiConfig.showGemRecognitionGuide}>
     {#if locale === 'ko_kr'}
       <p>
-        1. 게임에서 젬 목록 화면을 연 뒤 모든 젬을 장착 해제해주세요.<br />
+        1. 게임에서 젬 목록 화면을 연 뒤 <b>모든 젬을 장착 해제</b>해주세요.<br />
         안 쓰는 아크 그리드 프리셋으로 전환하는 것으로 손쉽게 젬을 해제할 수 있습니다.
       </p>
       <p>2. [🖥️ 화면 공유 시작] 버튼을 통해 로스트아크 게임 화면을 공유해주세요</p>
-      <img src={guideImages['../assets/guide/2.png']} alt="guide-img2" />
+      <p>3. 스크롤을 내리면서 인식된 젬이 목록에 추가되는 것을 확인해주세요.</p>
       <p>
-        2. 마우스가 젬을 건드리지 않도록 스크롤바 위에 위치시키는 것을 추천드립니다. 스크롤을
-        내리면서 인식된 젬이 목록에 추가되는 것을 확인해주세요.
-      </p>
-      <p>
-        3. 수집된 젬의 개수를 확인하고, <b>질서와 혼돈 모든 젬</b>이 수집되었으면 [✅ 현재 프로필에
+        4. 수집된 젬의 개수를 확인하고, <b>질서와 혼돈 모든 젬</b>이 수집되었으면 [✅ 현재 프로필에
         반영] 버튼을 눌러 프로필에 저장해주세요.
       </p>
       <br />
@@ -51,14 +47,16 @@
         <li>게임 화면이 올바르게 갱신 중인지 확인해주세요.</li>
         <li>
           젬 옵션을 추출하는 영역이 실제 위치와 일치하지 않는다면 게임 해상도를 "1920x1080 (16:9)"로
-          화면을 "창 모드"로 변경해주세요.
+          화면을 "창 모드"로 변경해주세요. "21:9 강제 설정"을 사용 중이라면 해제해주세요.
         </li>
         <li>
-          젬 옵션을 추출하는 영역 중 일부가 빨갛게 되어 있다면 상단 '허용 오차 범위' 슬라이더를
-          높혀서 시도해주세요.
+          젬 옵션을 추출하는 영역이 빨갛게 되어 있다면 상단 '허용 오차 범위' 슬라이더를 높혀서
+          시도해주세요.
         </li>
+        <li>마우스가 젬과 상호작용하지 않도록 스크롤 위에 위치시킨 채로 스크롤을 조작해주세요.</li>
         <br />
       </ol>
+      <p>혹은 사이트 하단 카카오톡을 통해 문의 부탁드립니다.</p>
     {/if}{#if locale === 'en_us'}
       <div class="content">
         <p>
@@ -66,14 +64,12 @@
           You can switch to an unused Ark Grid preset to quickly unequip all astrogems.
         </p>
         <p>2. Press the [🖥️ Start Screen Sharing] button to share your Lost Ark game screen.</p>
-        <img src={guideImages['../assets/guide/2.png']} alt="guide-img2" />
+        <p>3. Scroll down and check that recognized astrogems are being added to the list.</p>
         <p>
-          3. Keep the mouse above the scrollbar so it does not touch the astrogems. Scroll down and
-          verify that recognized astrogems are being added to the list.
-        </p>
-        <p>
-          4. Check the number of collected astrogems. Once <b>all Order and Chaos astrogems</b> are collected,
-          press the [✅ Apply to Current Profile] button to save them to your profile.
+          4. Verify the total number of collected astrogems. Once <b
+            >all Order and Chaos astrogems</b
+          >
+          have been collected, click the [✅ Apply to Current Profile] button to save them to your profile.
         </p>
         <br />
         <h2>FAQ</h2>
@@ -89,14 +85,19 @@
           <li>Make sure the game screen is updating properly.</li>
           <li>
             If the area used to extract astrogem options does not match the actual screen, set the
-            game resolution to "1920x1080 (16:9)" and switch to "windowed mode".
+            game resolution to "1920x1080 (16:9)" and switch to "windowed mode". If you are using
+            "Force 21:9 Aspect Ratio", please disable it.
           </li>
           <li>
             If parts of the extraction area are highlighted in red, try increasing the “Recognition
             Tolerance Range” slider at the top.
           </li>
+          <li>
+            Scroll while keeping the mouse cursor positioned over the scrollbar, so it does not
+            interact with the astrogems.
+          </li>
         </ol>
-        <p>Or contact the developer on Discord DM via the site footer</p>
+        <p>Alternatively, you can contact us via Discord in the site footer.</p>
       </div>
     {/if}
   </div>
