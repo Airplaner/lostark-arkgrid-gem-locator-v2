@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { LocalizationName } from '../lib/constants/enums';
-  import { appConfig, toggleUI } from '../lib/state/appConfig.state.svelte';
-  import { appLocale } from '../lib/state/locale.state.svelte';
+  import type { LocalizationName } from '../../lib/constants/enums';
+  import { appConfig, toggleUI } from '../../lib/state/appConfig.state.svelte';
+  import { appLocale } from '../../lib/state/locale.state.svelte';
 
   const guideImages = import.meta.glob<string>('../assets/guide/*.png', {
     eager: true,

@@ -3,7 +3,7 @@
   import { onMount } from 'svelte';
 
   import CharacterProfileEditor from './components/CharacterProfileEditor.svelte';
-  import GemRecognitionPanel from './components/GemRecognitionPanel.svelte';
+  import GemRecognitionPanel from './components/GemRecognition/Panel.svelte';
   import Footer from './components/footer/Footer.svelte';
   import AppConfiguration from './components/header/AppConfiguration.svelte';
   import ProfileEdit from './components/header/ProfileEditor.svelte';

@@ -2,16 +2,16 @@
   import { toast } from '@zerodevx/svelte-toast';
   import { tick } from 'svelte';
 
-  import { type LocalizationName } from '../lib/constants/enums';
-  import { LChaos, LOrder } from '../lib/constants/localization';
-  import { appLocale } from '../lib/state/locale.state.svelte';
+  import { type LocalizationName } from '../../lib/constants/enums';
+  import { LChaos, LOrder } from '../../lib/constants/localization';
+  import { appLocale } from '../../lib/state/locale.state.svelte';
   import {
     type AllGems,
     addGem,
     clearGems,
     getCurrentProfile,
-  } from '../lib/state/profile.state.svelte';
-  import ArkGridGemList from './ArkGridGemList.svelte';
+  } from '../../lib/state/profile.state.svelte';
+  import ArkGridGemList from '../ArkGridGemList.svelte';
 
   interface Props {
     gems: AllGems;
