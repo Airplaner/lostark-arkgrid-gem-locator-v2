@@ -48,7 +48,7 @@
       <div class="text shrinkable">
         {ArkGridGemOptionTypes[gem.option2.optionType].name[locale]}
       </div>
-      <div>
+      <div class="text">
         Lv. {gem.option2.value}
       </div>
     </div>
