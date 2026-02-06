@@ -353,7 +353,7 @@
           boss: gsp.boss,
           coreScore: gsp.coreScore,
         };
-        const key = JSON.stringify(signature);
+        const key = `${signature.att}|${signature.skill}|${signature.boss}|${signature.coreScore}`;
         if (!seen.has(key)) {
           seen.add(key);
           gemSetPackSet[i].push(gsp);
