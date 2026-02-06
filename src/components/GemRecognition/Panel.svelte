@@ -38,6 +38,12 @@
     ko_kr: ['일반', '여유', '최대'],
     en_us: ['Normal', 'Sparse', 'Maximum'],
   };
+  const LFirefoxNotSupported = $derived(
+    {
+      ko_kr: '파이어폭스 브라우저는 지원하지 않습니다. 크롬 혹은 엣지 브라우저를 이용해주세요.',
+      en_us: 'Sorry, Firefox broswer is not supported. Please use Chromium browser.',
+    }[locale]
+  );
   let debugCanvas: HTMLCanvasElement | null;
   let totalOrderGems = $state<ArkGridGem[]>([]);
   let totalChaosGems = $state<ArkGridGem[]>([]);
@@ -158,6 +164,11 @@
   }
 
   async function startGemCapture() {
+    const isFirefox = typeof (window as any).InstallTrigger !== 'undefined';
+    if (isFirefox) {
+      window.alert(LFirefoxNotSupported);
+      return;
+    }
     // 젬 캡쳐 시작
     const controller = await getCaptureController();
     // UI 잠금
@@ -197,7 +208,7 @@
     controller.onStop = () => {
       isRecording = false;
     };
-    controller.startCapture();
+    await controller.startCapture();
   }
 
   async function stopGemCapture() {
