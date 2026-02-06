@@ -124,11 +124,11 @@
     align-items: center;
     gap: 0.4rem;
   }
-  .guide img {
+  /* .guide img {
     max-width: 100%;
     height: auto;
     display: block;
-  }
+  } */
   .fold-button {
     flex: 1;
     text-align: right;
