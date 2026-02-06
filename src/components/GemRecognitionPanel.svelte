@@ -48,6 +48,7 @@
   let gemListElem: GemRecognitionGemList | null = null;
 
   let _captureController: CaptureController | null = null;
+  let _prevGem: string | null = null;
 
   async function getCaptureController() {
     if (_captureController) return _captureController;
@@ -56,6 +57,15 @@
   }
 
   function applyCurrentGems(gemAttr: ArkGridAttr, currentGems: ArkGridGem[]) {
+    const gemKey = JSON.stringify(currentGems);
+    if (_prevGem === null) _prevGem = gemKey;
+    else {
+      if (_prevGem == gemKey) {
+        return;
+      } else {
+        _prevGem = gemKey;
+      }
+    }
     const totalGems = gemAttr == '질서' ? totalOrderGems : totalChaosGems;
     // 젬 추가
     const SAME_COUNT_THRESHOLD = 4;
