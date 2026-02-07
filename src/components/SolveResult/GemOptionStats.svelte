@@ -38,9 +38,11 @@
   <div class="title">{LTitle}</div>
   <div class="container">
     {#each Object.entries(ArkGridGemOptionTypes) as [optionName, optionType]}
-      <div class="item">
-        {optionType.name[locale]} Lv. {answerStatistics[optionName as ArkGridGemOptionName]}
-      </div>
+      {#if answerStatistics[optionName as ArkGridGemOptionName] != 0}
+        <div class="item">
+          {optionType.name[locale]} Lv {answerStatistics[optionName as ArkGridGemOptionName]}
+        </div>
+      {/if}
     {/each}
   </div>
 </div>
