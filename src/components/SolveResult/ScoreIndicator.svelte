@@ -22,14 +22,29 @@
   );
   const LCurrent = $derived(
     {
-      ko_kr: '현재 전투력 증가%',
-      en_us: 'Current Combat Power %',
+      ko_kr: '현재 전투력 증가량',
+      en_us: 'Current CP',
+    }[locale]
+  );
+  const LCurrentDesc = $derived(
+    {
+      ko_kr: '최적화된 젬 장착 상태에서 아크 그리드로 증가된 전투력 %입니다.',
+      en_us: 'This shows the Combat Power increase (%) from your cores and optimized astrogems.',
     }[locale]
   );
   const LMaximum = $derived(
     {
-      ko_kr: '현재 코어의 전투력 증가% 한계',
-      en_us: 'Maximum Combat Power % with current cores',
+      ko_kr: '전투력 증가 한계',
+      en_us: 'Maximum CP Potential',
+    }[locale]
+  );
+  const LMaxDesc = $derived(
+    {
+      ko_kr:
+        '현재 코어에 이상적인 젬을 장착할 때의 전투력 증가량입니다. 부옵작이 잘 되어 있을 수록 현재 전투력 증가량과 차이가 적습니다.',
+      en_us:
+        'This shows the Combat Power increase could reach with ideal astrogems using your current cores. ' +
+        'A smaller gap means you have more high-quality astrogems.',
     }[locale]
   );
 </script>
@@ -41,10 +56,10 @@
       <div class="indicator dot moving" style="--target-left:{scoreRatio * 100}%"></div>
       <div class="indicator bar moving" style="--target-left:{bestRatio * 100}%"></div>
       <div class="label top moving" style="--target-left:{scoreRatio * 100}%">
-        {scoreSet.score.toFixed(2)}%
+        +{scoreSet.score.toFixed(2)}%
       </div>
       <div class="label bottom moving" style="--target-left:{bestRatio * 100}%">
-        {scoreSet.bestScore.toFixed(2)}%
+        +{scoreSet.bestScore.toFixed(2)}%
       </div>
     </div>
   </div>
@@ -54,6 +69,12 @@
         <div class="dot"></div>
       </div>
       <div>{LCurrent}</div>
+      <span class="tooltip">
+        <i class="fa-solid fa-circle-info info-icon"></i>
+        <span class="tooltip-text">
+          {LCurrentDesc}
+        </span>
+      </span>
     </div>
 
     <div class="row">
@@ -61,6 +82,12 @@
         <div class="bar"></div>
       </div>
       <div>{LMaximum}</div>
+      <span class="tooltip">
+        <i class="fa-solid fa-circle-info info-icon"></i>
+        <span class="tooltip-text">
+          {LMaxDesc}
+        </span>
+      </span>
     </div>
   </div>
 </div>
@@ -69,7 +96,7 @@
   .root {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 2.5rem;
   }
   .root .title {
     font-weight: 500;
@@ -105,7 +132,7 @@
     top: -1.5rem;
   }
   .label.bottom {
-    top: 1.5rem;
+    top: 1.6rem;
   }
 
   .dot {
@@ -149,5 +176,41 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+  }
+  .tooltip {
+    position: relative;
+    display: inline-block;
+  }
+
+  /* info */
+  .info-icon {
+    cursor: pointer;
+    font-style: normal;
+  }
+
+  .tooltip-text {
+    width: 17rem;
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg);
+    color: var(--font);
+    padding: 0.5rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+
+    white-space: normal;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    transition: opacity 0.2s ease;
+    z-index: 1000;
+  }
+
+  .tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
   }
 </style>
