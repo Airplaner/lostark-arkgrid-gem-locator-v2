@@ -51,10 +51,22 @@ export type SolveAnswer = {
   assignedGems: ArkGridGem[][];
   gemSetPackTuple: GemSetPackTuple;
 };
+export type AdditionalGemResult = Record<
+  ArkGridAttr,
+  Record<
+    string,
+    {
+      corePointTuple: [number, number, number];
+      gems: ArkGridGem[];
+      score: number;
+    }
+  >
+>;
 export type SolveAfter = {
   solveAnswer?: SolveAnswer;
   scoreSet?: SolveAnswerScoreSet;
   answerCores?: Record<ArkGridAttr, Record<ArkGridCoreType, ArkGridCore | null>>;
+  additionalGemResult?: AdditionalGemResult;
 };
 export type SolveInfo = {
   before: SolveBefore;
@@ -97,6 +109,19 @@ export function updateAnswerCores(
     profile.solveInfo.after.answerCores = cores;
   }
 }
+
+export function updateAdditionalGemResult(additionalGemResult: AdditionalGemResult) {
+  // 현재 프로필의 solve after에 additionalGemResult 설정
+  const profile = getCurrentProfile();
+  if (!profile.solveInfo.after) {
+    profile.solveInfo.after = {
+      additionalGemResult: additionalGemResult,
+    };
+  } else {
+    profile.solveInfo.after.additionalGemResult = additionalGemResult;
+  }
+}
+
 export function initNewProfile(name: string): CharacterProfile {
   return {
     characterName: name,

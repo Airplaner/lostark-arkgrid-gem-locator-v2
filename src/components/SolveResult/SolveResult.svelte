@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { SolveAfter } from '../../lib/state/profile.state.svelte';
+  import AdditionalGemResult from './AdditionalGemResult.svelte';
   import CoreGemEquippedList from './CoreGemEquippedList.svelte';
   import GemOptionStats from './GemOptionStats.svelte';
   import ScoreIndicator from './ScoreIndicator.svelte';
@@ -19,6 +20,12 @@
       {/if}
       {#if solveAfter.solveAnswer}
         <GemOptionStats solveAnswer={solveAfter.solveAnswer}></GemOptionStats>
+      {/if}
+      {#if solveAfter.additionalGemResult && solveAfter.solveAnswer}
+        <AdditionalGemResult
+          additionalGemResult={solveAfter.additionalGemResult}
+          solveAnswer={solveAfter.solveAnswer}
+        ></AdditionalGemResult>
       {/if}
     </div>
     {#if solveAfter.answerCores && solveAfter.solveAnswer}
@@ -41,6 +48,7 @@
     display: flex;
     flex-direction: row;
     gap: 2rem;
+    align-items: flex-start;
   }
   .root .title {
     font-size: 1.5rem;
@@ -52,6 +60,7 @@
     /* justify-content: center; */
     align-items: center;
     gap: 2rem;
+    max-width: 20rem;
   }
   @media (max-width: 960px) {
     .container {

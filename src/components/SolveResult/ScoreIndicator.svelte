@@ -1,7 +1,5 @@
 <script lang="ts">
-  import { appConfig } from '../../lib/state/appConfig.state.svelte';
   import { appLocale } from '../../lib/state/locale.state.svelte';
-  import SolvePanel from '../SolvePanel.svelte';
 
   type ScoreSet = {
     score: number;
@@ -180,37 +178,5 @@
   .tooltip {
     position: relative;
     display: inline-block;
-  }
-
-  /* info */
-  .info-icon {
-    cursor: pointer;
-    font-style: normal;
-  }
-
-  .tooltip-text {
-    width: 17rem;
-    visibility: hidden;
-    opacity: 0;
-    position: absolute;
-    bottom: 125%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--bg);
-    color: var(--font);
-    padding: 0.5rem;
-    border-radius: 6px;
-    font-size: 0.9rem;
-
-    white-space: normal;
-    word-break: keep-all;
-    overflow-wrap: break-word;
-    transition: opacity 0.2s ease;
-    z-index: 1000;
-  }
-
-  .tooltip:hover .tooltip-text {
-    visibility: visible;
-    opacity: 1;
   }
 </style>

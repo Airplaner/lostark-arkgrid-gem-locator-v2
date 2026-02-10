@@ -13,11 +13,14 @@
     gemOptionLevelCoeffsSupporter,
   } from '../lib/solver/models';
   import { getBestGemSetPacks, getPossibleGemSets } from '../lib/solver/solver';
+  import { gemSetPackKey } from '../lib/solver/utils';
   import { appLocale } from '../lib/state/locale.state.svelte';
   import {
+    type AdditionalGemResult,
     type CharacterProfile,
     getCurrentProfile,
     unassignGems,
+    updateAdditionalGemResult,
     updateAnswerCores,
     updateScoreSet,
     updateSolveAnswer,
@@ -171,6 +174,14 @@
     !isSupporter ? gemOptionLevelCoeffs : gemOptionLevelCoeffsSupporter
   );
 
+  // 발사대용 젬 계산이 필요한지 판단
+  let needMoreGem = $derived<Record<ArkGridAttr, boolean>>({ 질서: false, 혼돈: false });
+  // 발사대용 젬 계산 결과 임시 보관
+  let additioanGem = $derived<AdditionalGemResult>({
+    질서: {},
+    혼돈: {},
+  });
+
   function convertToSolverGems(
     gem: ArkGridGem[],
     isSupporter: boolean
@@ -233,12 +244,44 @@
     }
     return result;
   }
+  function isGspNeedMoreGem(gsp: GemSetPack | null) {
+    /*
+    주어진 GemSetPack의 Core 중에 적절 포인트 (고대 유물은 17, 전설은 14, 영웅은 10)
+    을 못 채운 코어가 하나라도 있는가?
+
+    있으면 필요 젬 분석 로직 돌리게, 없으면 제외
+    */
+
+    if (!gsp) return false;
+    return [gsp?.gs1, gsp?.gs2, gsp?.gs3].some((p) => {
+      if (p == null) return false;
+
+      // core에 따로 grade넣기 보다는 energy로 구분
+      let maxPoint = 0;
+      switch (p.core.energy) {
+        case 9:
+          maxPoint = 10;
+          break;
+        case 12:
+          maxPoint = 14;
+          break;
+        case 15:
+        case 17:
+          maxPoint = 17;
+          break;
+      }
+      if (maxPoint === 0) return false; // something wrong
+
+      return p.point < maxPoint;
+    });
+  }
 
   function solve(
     inOrderGems: ArkGridGem[],
     inChaosGems: ArkGridGem[],
     isSupporter = false, // 서폿용?
-    perfectSolve = false // 중복 무시?
+    perfectSolve = false, // 중복 무시?
+    dryRun = false // 결과 업데이트 여부
   ) {
     /* sovler.Core로 변경 */
     const orderCores: Core[] = [];
@@ -330,10 +373,10 @@
     // 질서와 혼돈 코어에 대해서 중복을 고려한, 장착 가능한 GemSet들이 3개 모인 GemSetPack 계산
     let start = performance.now();
     const orderGspList = getBestGemSetPacks(orderGssList, scoreMaps, perfectSolve);
-    console.log(`질서 배치 실행 시간: ${performance.now() - start} ms`);
+    if (!dryRun) console.log(`질서 배치 실행 시간: ${performance.now() - start} ms`);
     start = performance.now();
     const chaosGspList = getBestGemSetPacks(chaosGssList, scoreMaps, perfectSolve);
-    console.log(`혼돈 배치 실행 시간: ${performance.now() - start} ms`);
+    if (!dryRun) console.log(`혼돈 배치 실행 시간: ${performance.now() - start} ms`);
 
     // gspList는 maxScore 기준으로 내림차순 정렬되어 있음
     // 서로의 영향력이 적을 수록 실제 전투력은 maxScore와 가까우니, 우선 각 첫 번째 원소를 대상으로 시작 설정
@@ -360,7 +403,7 @@
         }
       }
     }
-    console.log(`중복 제거 실행 시간: ${performance.now() - start} ms`);
+    if (!dryRun) console.log(`중복 제거 실행 시간: ${performance.now() - start} ms`);
     if (gemSetPackSet[0].length > 0 && gemSetPackSet[1].length > 0) {
       for (const gsp1 of gemSetPackSet[0]) {
         for (const gsp2 of gemSetPackSet[1]) {
@@ -371,7 +414,7 @@
         }
       }
     }
-    if (!perfectSolve) {
+    if (!dryRun) {
       // 진짜인 경우에만 결과 갱신
       unassignGems();
       updateSolveAnswer({
@@ -388,6 +431,10 @@
         gemSetPackTuple: answer,
       });
       unassignGems(); // gem들에 달린 assign 필드 삭제
+      needMoreGem = {
+        질서: isGspNeedMoreGem(answer.gsp1),
+        혼돈: isGspNeedMoreGem(answer.gsp2),
+      };
     }
     return answer;
   }
@@ -402,9 +449,10 @@
         perfectChaosGems.push({ gemAttr: '혼돈', ...gem });
       }
     }
-    const score = (solve(orderGems, chaosGems, isSupporter, false).score - 1) * 100; // 내 최고 점수
+    const answer = solve(orderGems, chaosGems, isSupporter, false, false);
+    const score = (answer.score - 1) * 100; // 내 최고 점수
     const bestScore =
-      (solve(perfectOrderGems, perfectChaosGems, isSupporter, true).score - 1) * 100; // 내 코어로 가능한 점수
+      (solve(perfectOrderGems, perfectChaosGems, isSupporter, true, true).score - 1) * 100; // 내 코어로 가능한 점수
 
     const perfectScore = // 이론상 최고 점수
       !isSupporter // 딜러
@@ -442,6 +490,67 @@
       perfectScore,
     });
     updateAnswerCores(JSON.parse(JSON.stringify(profile.cores)));
+
+    // 발사대 젬 시뮬레이션이 필요한 사람인지 확인
+    additioanGem = {
+      질서: {},
+      혼돈: {},
+    };
+    for (const { attr, gsp } of [
+      { attr: '질서', gsp: answer.gsp1 },
+      { attr: '혼돈', gsp: answer.gsp2 },
+    ] satisfies { attr: ArkGridAttr; gsp: GemSetPack | null }[]) {
+      // 발사대용 젬 계산이 필요한 attr에 대해서만 수행
+      if (needMoreGem[attr] && gsp) {
+        // 현재 달성 코어 포인트 확인
+        const currentKey = gemSetPackKey(gsp).join(',');
+
+        // 모든 젬을 한 개씩 추가해서 확인
+        // XXX 범위를 줄일까?
+        for (let gemReq = 3; gemReq < 10; gemReq++) {
+          for (let gemPoint = 5; gemPoint >= 1; gemPoint--) {
+            const newGem: ArkGridGem = {
+              gemAttr: attr,
+              req: gemReq,
+              point: gemPoint,
+              option1: { optionType: '공격력', value: 0 },
+              option2: { optionType: '추가 피해', value: 0 },
+            };
+            const newAnswer = solve(
+              attr === '질서' ? [...orderGems, newGem] : orderGems,
+              attr === '혼돈' ? [...chaosGems, newGem] : chaosGems,
+              isSupporter,
+              false,
+              true
+            );
+
+            const newGsp = attr === '질서' ? newAnswer.gsp1 : newAnswer.gsp2;
+            if (newGsp === null) continue;
+
+            const newKeyRaw = gemSetPackKey(newGsp);
+            const newKey = newKeyRaw.join(',');
+            const targetAdditionalGem = additioanGem[attr];
+            // 계산 후 갱신이 필요하면 수행
+            if (newKey !== currentKey && newAnswer.score > answer.score) {
+              // console.log(gemReq, gemPoint, '가 있으면', newKey, '달성 가능');
+              if (targetAdditionalGem[newKey]) {
+                targetAdditionalGem[newKey].gems.push(newGem);
+                if (targetAdditionalGem[newKey].score < newAnswer.score) {
+                  targetAdditionalGem[newKey].score = newAnswer.score;
+                }
+              } else {
+                targetAdditionalGem[newKey] = {
+                  corePointTuple: newKeyRaw,
+                  gems: [newGem],
+                  score: newAnswer.score,
+                };
+              }
+            }
+          }
+        }
+      }
+    }
+    updateAdditionalGemResult(additioanGem);
   }
 </script>
 
