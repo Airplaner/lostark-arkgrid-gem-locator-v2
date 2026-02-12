@@ -85,10 +85,6 @@ export function getBestGemSetPacks(
   if (gss2) gss2.sort((a, b) => b.maxScore - a.maxScore);
   if (gss3) gss3.sort((a, b) => b.maxScore - a.maxScore);
 
-  const cache = new Map<bigint, Map<number, GemSet[]>>();
-  let hitCount = 0;
-  let missCount = 0;
-
   // 이진 검색 헬퍼 함수
   function binarySearchThreshold(gss: GemSet[], threshold: number): number {
     let left = 0;
@@ -105,20 +101,22 @@ export function getBestGemSetPacks(
     return left;
   }
 
-  function getCandidates(
+  const cache = new Map<bigint, Map<number, GemSet[]>>();
+  let hitCount = 0;
+  let missCount = 0;
+
+  function getCandidatesCache(
     currentBitmask: bigint, // 현재 사용한 젬
     gemSetIndex: number, // 추출 대상 GemSet[], 반드시 0,1,2 중 하나
-    currentMaxScore: number, // 현재까지 선택한 GemSet들로 얻은 최대 점수
-    targetMinScore: number // 정답으로 유추하는 GemSetPack의 최소 점수
+    threshold: number
+    // threshold는 currentMaxScore에 maxScore를 곱했을 때 targetMinScore보다는 커야 후보가 될 수 있기에
+    // targetMinScore / currentMaxScore
   ): GemSet[] {
     const gss = gssList[gemSetIndex];
     // 주어진 Core가 가진 GemSet 중 currentBitmask와 충돌하지 않는 GemSet의 목록을 반환
     // assert gss는 반드시 MaxScore에 대해서 내림차순으로 정렬된 상태!
 
     const key = (currentBitmask << 3n) | BigInt(gemSetIndex);
-
-    // currentMaxScore에 maxScore를 곱했을 때 targetMinScore보다는 커야 후보가 될 수 있다.
-    const threshold = currentMaxScore === 0 ? 0 : targetMinScore / currentMaxScore;
 
     const cached = cache.get(key)?.get(threshold);
     if (cached) {
@@ -146,6 +144,29 @@ export function getBestGemSetPacks(
 
     return res;
   }
+
+  // ✅ Generator로 변경 - 메모리 효율적
+  function* getCandidatesGenerator(
+    currentBitmask: bigint,
+    gemSetIndex: number,
+    threshold: number
+  ): Generator<GemSet> {
+    const gss = gssList[gemSetIndex];
+
+    // 이진 검색으로 유효한 범위의 끝 찾기
+    const maxValidIdx = binarySearchThreshold(gss, threshold);
+
+    // 필요한 만큼만 lazy하게 yield
+    for (let i = 0; i < maxValidIdx; i++) {
+      const gs = gss[i];
+      if (ignoreDuplication || (gs.bitmask & currentBitmask) === 0n) {
+        yield gs;
+      }
+    }
+  }
+  // const getCandidates = getCandidatesCache;
+  const getCandidates = getCandidatesGenerator;
+
   /* 코어 0개 */
   if (gssList.length == 0) return [];
   /* 코어 1개 */
@@ -159,7 +180,7 @@ export function getBestGemSetPacks(
     for (const gs1 of gss1) {
       if (gs1.maxScore * gm2 < targetMin) break;
 
-      for (const gs2 of getCandidates(gs1.bitmask, 1, gs1.maxScore, targetMin)) {
+      for (const gs2 of getCandidates(gs1.bitmask, 1, targetMin / gs1.maxScore)) {
         const gsp = new GemSetPack(gs1, gs2, null, scoreMaps);
         if (gsp.maxScore > targetMin) {
           answer.push(gsp);
@@ -179,13 +200,12 @@ export function getBestGemSetPacks(
 
     for (const gs1 of gss1) {
       if (gs1.maxScore * gm2 * gm3 < targetMin) break;
-      for (const gs2 of getCandidates(gs1.bitmask, 1, gs1.maxScore * gm3, targetMin)) {
+      for (const gs2 of getCandidates(gs1.bitmask, 1, targetMin / (gs1.maxScore * gm3))) {
         if (gs1.maxScore * gs2.maxScore * gm3 < targetMin) break;
         for (const gs3 of getCandidates(
           gs1.bitmask | gs2.bitmask,
           2,
-          gs1.maxScore * gs2.maxScore,
-          targetMin
+          targetMin / (gs1.maxScore * gs2.maxScore)
         )) {
           if (gs1.maxScore * gs2.maxScore * gs3.maxScore < targetMin) break;
           // 세 개의 GemSet으로 얻을 수 있는 전투력 범위 구함
@@ -203,7 +223,7 @@ export function getBestGemSetPacks(
       }
     }
   }
-  console.log('캐시 hit', hitCount, 'miss', missCount, hitCount / (hitCount + missCount));
+  // console.log('캐시 hit', hitCount, 'miss', missCount, hitCount / (hitCount + missCount));
   // maxScore이 targetMin보다 작은 경우엔 아예 후보조차 아님
   answer = answer.filter((g) => g.maxScore >= targetMin);
   answer.sort((a, b) => b.maxScore - a.maxScore);
