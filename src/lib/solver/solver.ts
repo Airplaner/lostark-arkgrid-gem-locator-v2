@@ -91,9 +91,9 @@ export function getBestGemSetPacks(
 
   function getCandidates(
     currentBitmask: bigint, // 현재 사용한 젬
-    gemSetIndex: number, // 추출 대상 GemSet[]
-    currentMaxScore: number, // 현재까지 선택한 GemSet들로 얻은 최대 점수
-    targetMinScore: number // 정답으로 유추하는 GemSetPack의 최소 점수
+    gemSetIndex: number // 추출 대상 GemSet[]
+    // currentMaxScore: number, // 현재까지 선택한 GemSet들로 얻은 최대 점수
+    // targetMinScore: number // 정답으로 유추하는 GemSetPack의 최소 점수
   ): GemSet[] {
     // 주어진 Core가 가진 GemSet 중 currentBitmask와 충돌하지 않는 GemSet의 목록을 반환
     // assert gss는 반드시 MaxScore에 대해서 내림차순으로 정렬된 상태!
@@ -106,10 +106,10 @@ export function getBestGemSetPacks(
     // missCount++;
     const gss = gssList[gemSetIndex];
     // currentMaxScore에 maxScore를 곱했을 때 targetMinScore보다는 커야 후보가 될 수 있다.
-    const threshold = currentMaxScore === 0 ? 0 : targetMinScore / currentMaxScore;
+    // const threshold = currentMaxScore === 0 ? 0 : targetMinScore / currentMaxScore;
     const res: GemSet[] = [];
     for (const gs of gss) {
-      if (gs.maxScore < threshold) break;
+      // if (gs.maxScore < threshold) break;
       if (ignoreDuplication || (gs.bitmask & currentBitmask) === 0n) {
         res.push(gs);
       }
@@ -130,7 +130,12 @@ export function getBestGemSetPacks(
     for (const gs1 of gss1) {
       if (gs1.maxScore * gm2 < targetMin) break;
 
-      for (const gs2 of getCandidates(gs1.bitmask, 1, gs1.maxScore, targetMin)) {
+      for (const gs2 of getCandidates(
+        gs1.bitmask,
+        1
+        // gs1.maxScore,
+        // targetMin
+      )) {
         const gsp = new GemSetPack(gs1, gs2, null, scoreMaps);
         if (gsp.maxScore > targetMin) {
           answer.push(gsp);
@@ -150,13 +155,18 @@ export function getBestGemSetPacks(
 
     for (const gs1 of gss1) {
       if (gs1.maxScore * gm2 * gm3 < targetMin) break;
-      for (const gs2 of getCandidates(gs1.bitmask, 1, gs1.maxScore * gm3, targetMin)) {
+      for (const gs2 of getCandidates(
+        gs1.bitmask,
+        1
+        // gs1.maxScore * gm3,
+        // targetMin
+      )) {
         if (gs1.maxScore * gs2.maxScore * gm3 < targetMin) break;
         for (const gs3 of getCandidates(
           gs1.bitmask | gs2.bitmask,
-          2,
-          gs1.maxScore * gs2.maxScore,
-          targetMin
+          2
+          // gs1.maxScore * gs2.maxScore,
+          // targetMin
         )) {
           if (gs1.maxScore * gs2.maxScore * gs3.maxScore < targetMin) break;
           // 세 개의 GemSet으로 얻을 수 있는 전투력 범위 구함
