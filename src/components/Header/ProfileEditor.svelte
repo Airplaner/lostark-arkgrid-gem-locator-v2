@@ -1,9 +1,5 @@
 <script lang="ts">
-  import {
-    DEFAULT_PROFILE_NAME,
-    L_DEFAULT_PROFILE_NAME,
-    type LocalizationName,
-  } from '../../lib/constants/enums';
+  import { DEFAULT_PROFILE_NAME, L_DEFAULT_PROFILE_NAME } from '../../lib/constants/enums';
   import {
     addNewProfile,
     appConfig,
@@ -20,6 +16,7 @@
     initNewProfile,
     migrateProfile,
     setCurrentProfileName,
+    updateProfileCharacterName,
   } from '../../lib/state/profile.state.svelte';
 
   let locale = $derived(appLocale.current);
@@ -31,14 +28,14 @@
   );
   const LAddNewProfile = $derived(
     {
-      ko_kr: '새 프로필에 사용할 캐릭터명을 입력해주세요',
-      en_us: 'Enter new profile name',
+      ko_kr: '새 프로필에 사용할 캐릭터명을 입력해주세요.',
+      en_us: 'Enter a name for the new profile.',
     }[locale]
   );
   const LNewProfile = $derived(
     {
-      ko_kr: '새 프로필',
-      en_us: 'New profile',
+      ko_kr: '프로필 추가',
+      en_us: 'Create Profile',
     }[locale]
   );
   const LConfirmDeleteProfile: Record<string, (profileName: string) => string> = {
@@ -49,6 +46,48 @@
     {
       ko_kr: '현재 프로필 삭제',
       en_us: 'Delete current profile',
+    }[locale]
+  );
+  const LEditProfile = $derived(
+    {
+      ko_kr: '현재 프로필 수정',
+      en_us: 'Edit current profile',
+    }[locale]
+  );
+  const LEditProfileMsg = $derived(
+    {
+      ko_kr: '변경할 프로필 이름을 입력해주세요.',
+      en_us: 'Enter a new name for the profile.',
+    }[locale]
+  );
+  const LEditProfileFailedMsg = $derived(
+    {
+      ko_kr: '중복된 프로필 이름이 존재합니다.',
+      en_us: 'A profile with this name already exists.',
+    }[locale]
+  );
+  const LExportProfile = $derived(
+    {
+      ko_kr: '프로필 내보내기 (JSON)',
+      en_us: 'Export current profile as JSON',
+    }[locale]
+  );
+  const LImportProfile = $derived(
+    {
+      ko_kr: '프로필 불러오기 (JSON)',
+      en_us: 'Import profile from JSON',
+    }[locale]
+  );
+  const LImportProfileFailedMsgDuplicated = $derived(
+    {
+      ko_kr: '중복된 프로필 이름이 존재합니다.',
+      en_us: 'A profile with this name already exists.',
+    }[locale]
+  );
+  const LImportProfileFailedMsgWrongFormat = $derived(
+    {
+      ko_kr: '올바르지 않은 프로필 파일입니다.',
+      en_us: 'Failed to import the profile file due to an invalid file format.',
     }[locale]
   );
 </script>
@@ -78,7 +117,20 @@
         addNewProfile(initNewProfile(profileName));
         setCurrentProfileName(profileName);
       }}
-      data-track="add-profile">📄</button
+      data-track="add-profile">➕</button
+    >
+    <button
+      title={LEditProfile}
+      disabled={currentProfileName.current === DEFAULT_PROFILE_NAME}
+      onclick={() => {
+        const profileName = window.prompt(LEditProfileMsg)?.trim();
+        if (profileName === undefined || profileName.length == 0) return;
+        if (updateProfileCharacterName(profileName) === false) {
+          window.alert(LEditProfileFailedMsg);
+          return;
+        }
+        setCurrentProfileName(profileName);
+      }}>✏️</button
     >
     <button
       title={LDeleteProfile}
@@ -90,8 +142,8 @@
       disabled={currentProfileName.current === DEFAULT_PROFILE_NAME}>🗑️</button
     >
     <button
-      title="현재 프로필 내보내기"
-      hidden={!appConfig.current.uiConfig.debugMode}
+      title={LExportProfile}
+      disabled={currentProfileName.current === DEFAULT_PROFILE_NAME}
       onclick={() => {
         const jsonStr = bigIntSerializer.stringify(getProfile(currentProfileName.current));
 
@@ -112,8 +164,7 @@
       }}>💾</button
     >
     <button
-      title="프로필 불러오기"
-      hidden={!appConfig.current.uiConfig.debugMode}
+      title={LImportProfile}
       onclick={() => {
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
@@ -131,13 +182,12 @@
               const data: CharacterProfile = bigIntSerializer.parse(e.target?.result as string);
               migrateProfile(data);
               if (addNewProfile(data)) {
-                alert('✅ 프로필 추가 성공!');
                 currentProfileName.current = data.characterName;
               } else {
-                alert('❌ 프로필 추가 실패');
+                alert(LImportProfileFailedMsgDuplicated);
               }
             } catch (err) {
-              alert('❌ JSON 형식 오류');
+              alert(LImportProfileFailedMsgWrongFormat);
             }
           };
           reader.readAsText(file);

@@ -207,6 +207,16 @@ export function deleteProfile(name: string) {
   // 삭제한 프로필이 현재 선택된 프로필이면 초기화
 }
 
+export function updateProfileCharacterName(name: string) {
+  // 현재 프로필의 이름을 수정합니다.
+  const existProfile = appConfig.current.characterProfiles.findIndex(
+    (p) => p.characterName === name
+  );
+  if (existProfile != -1) return false;
+  const profile = getCurrentProfile();
+  profile.characterName = name;
+}
+
 export function addGem(gem: ArkGridGem) {
   const gems = getCurrentProfile().gems;
   const targetGems = gem.gemAttr == '질서' ? gems.orderGems : gems.chaosGems;
