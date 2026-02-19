@@ -85,10 +85,8 @@
   );
   const LCannotSucceedWithOneGem = $derived(
     {
-      ko_kr:
-        '한 개의 추가 젬만으로는 다음 단계를 달성할 수 없습니다. 최소한 두 개 이상의 젬을 가공해야 합니다.',
-      en_us:
-        'You cannot reach the next stage with only one additional astrogem. You must craft at least two astrogems to proceed.',
+      ko_kr: '한 개의 추가 젬만으로는 다음 단계를 달성할 수 없습니다.',
+      en_us: 'You cannot reach the next stage with only one additional astrogem.',
     }[locale]
   );
 </script>
