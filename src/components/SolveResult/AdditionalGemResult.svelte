@@ -58,8 +58,8 @@
   let locale = $derived(appLocale.current);
   const LTitle = $derived(
     {
-      ko_kr: '젬 가공 추천',
-      en_us: 'Recommended Astogrems',
+      ko_kr: '젬 추가 시뮬레이션',
+      en_us: 'Next Astrogem Preview',
     }[locale]
   );
   const LAttr = { 질서: LOrder, 혼돈: LChaos };
