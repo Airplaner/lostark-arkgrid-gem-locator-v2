@@ -3,13 +3,18 @@
   import { LChaos, LOrder } from '../../lib/constants/localization';
   import { gemSetPackKey } from '../../lib/solver/utils';
   import { appLocale } from '../../lib/state/locale.state.svelte';
-  import type { AdditionalGemResult, SolveAnswer } from '../../lib/state/profile.state.svelte';
+  import type {
+    AdditionalGemResult,
+    NeedLauncherGem,
+    SolveAnswer,
+  } from '../../lib/state/profile.state.svelte';
 
   type Props = {
     additionalGemResult: AdditionalGemResult;
     solveAnswer: SolveAnswer;
+    needLauncherGem: NeedLauncherGem;
   };
-  const { additionalGemResult, solveAnswer }: Props = $props();
+  const { additionalGemResult, solveAnswer, needLauncherGem }: Props = $props();
 
   let currentKey = $derived<Record<ArkGridAttr, [number, number, number]>>({
     질서: gemSetPackKey(solveAnswer.gemSetPackTuple.gsp1),
@@ -75,7 +80,15 @@
   const LMaximumPoint = $derived(
     {
       ko_kr: '최대 포인트에 도달하였습니다.',
-      en_us: 'Maximum Point Reached.',
+      en_us: 'Maximum Points Reached.',
+    }[locale]
+  );
+  const LCannotSucceedWithOneGem = $derived(
+    {
+      ko_kr:
+        '한 개의 추가 젬만으로는 다음 단계를 달성할 수 없습니다. 최소한 두 개 이상의 젬을 가공해야 합니다.',
+      en_us:
+        'You cannot reach the next stage with only one additional astrogem. You must craft at least two astrogems to proceed.',
     }[locale]
   );
 </script>
@@ -106,7 +119,12 @@
       </div>
       <div class="scenario-container">
         {#if isEmpty[attr]}
-          {LMaximumPoint}
+          <!-- 두 가지 이유로 empty일 수 있다. 1개 만으로는 다음 단계를 달성할 수 없거나, 발사대가 필요 없거나 -->
+          {#if needLauncherGem[attr]}
+            {LCannotSucceedWithOneGem}
+          {:else}
+            {LMaximumPoint}
+          {/if}
         {/if}
         {#each sortedAdditionalGemResult[attr] as value}
           <div class="scenario">

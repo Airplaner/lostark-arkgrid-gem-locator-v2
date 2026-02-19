@@ -21,10 +21,11 @@
       {#if solveAfter.solveAnswer}
         <GemOptionStats solveAnswer={solveAfter.solveAnswer}></GemOptionStats>
       {/if}
-      {#if solveAfter.additionalGemResult && solveAfter.solveAnswer}
+      {#if solveAfter.additionalGemResult && solveAfter.solveAnswer && solveAfter.needLauncherGem}
         <AdditionalGemResult
           additionalGemResult={solveAfter.additionalGemResult}
           solveAnswer={solveAfter.solveAnswer}
+          needLauncherGem={solveAfter.needLauncherGem}
         ></AdditionalGemResult>
       {/if}
     </div>
