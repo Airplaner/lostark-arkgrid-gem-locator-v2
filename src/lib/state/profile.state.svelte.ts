@@ -54,7 +54,7 @@ export type SolveAnswer = {
 export type AdditionalGemResult = Record<
   ArkGridAttr,
   Record<
-    string,
+    string, // 10,17,17와 같이 corePointTuple을 문자열로 만든 것
     {
       corePointTuple: [number, number, number];
       gems: ArkGridGem[];
@@ -62,11 +62,13 @@ export type AdditionalGemResult = Record<
     }
   >
 >;
+export type NeedLauncherGem = Record<ArkGridAttr, boolean>;
 export type SolveAfter = {
   solveAnswer?: SolveAnswer;
   scoreSet?: SolveAnswerScoreSet;
   answerCores?: Record<ArkGridAttr, Record<ArkGridCoreType, ArkGridCore | null>>;
   additionalGemResult?: AdditionalGemResult;
+  needLauncherGem?: NeedLauncherGem;
 };
 export type SolveInfo = {
   before: SolveBefore;
@@ -119,6 +121,18 @@ export function updateAdditionalGemResult(additionalGemResult: AdditionalGemResu
     };
   } else {
     profile.solveInfo.after.additionalGemResult = additionalGemResult;
+  }
+}
+
+export function updateNeedLauncherGem(needLauncherGem: NeedLauncherGem) {
+  // 현재 프로필의 solve after에 additionalGemResult 설정
+  const profile = getCurrentProfile();
+  if (!profile.solveInfo.after) {
+    profile.solveInfo.after = {
+      needLauncherGem: needLauncherGem,
+    };
+  } else {
+    profile.solveInfo.after.needLauncherGem = needLauncherGem;
   }
 }
 
@@ -205,6 +219,16 @@ export function deleteProfile(name: string) {
   }
   profiles.splice(index, 1);
   // 삭제한 프로필이 현재 선택된 프로필이면 초기화
+}
+
+export function updateProfileCharacterName(name: string) {
+  // 현재 프로필의 이름을 수정합니다.
+  const existProfile = appConfig.current.characterProfiles.findIndex(
+    (p) => p.characterName === name
+  );
+  if (existProfile != -1) return false;
+  const profile = getCurrentProfile();
+  profile.characterName = name;
 }
 
 export function addGem(gem: ArkGridGem) {

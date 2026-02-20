@@ -22,6 +22,7 @@
     unassignGems,
     updateAdditionalGemResult,
     updateAnswerCores,
+    updateNeedLauncherGem,
     updateScoreSet,
     updateSolveAnswer,
   } from '../lib/state/profile.state.svelte';
@@ -175,9 +176,9 @@
   );
 
   // 발사대용 젬 계산이 필요한지 판단
-  let needMoreGem = $derived<Record<ArkGridAttr, boolean>>({ 질서: false, 혼돈: false });
+  let needLauncherGem: Record<ArkGridAttr, boolean> = { 질서: false, 혼돈: false };
   // 발사대용 젬 계산 결과 임시 보관
-  let additioanGem = $derived<AdditionalGemResult>({
+  let additionalGem = $derived<AdditionalGemResult>({
     질서: {},
     혼돈: {},
   });
@@ -431,7 +432,7 @@
         gemSetPackTuple: answer,
       });
       unassignGems(); // gem들에 달린 assign 필드 삭제
-      needMoreGem = {
+      needLauncherGem = {
         질서: isGspNeedMoreGem(answer.gsp1),
         혼돈: isGspNeedMoreGem(answer.gsp2),
       };
@@ -492,7 +493,7 @@
     updateAnswerCores(JSON.parse(JSON.stringify(profile.cores)));
 
     // 발사대 젬 시뮬레이션이 필요한 사람인지 확인
-    additioanGem = {
+    additionalGem = {
       질서: {},
       혼돈: {},
     };
@@ -501,7 +502,7 @@
       { attr: '혼돈', gsp: answer.gsp2 },
     ] satisfies { attr: ArkGridAttr; gsp: GemSetPack | null }[]) {
       // 발사대용 젬 계산이 필요한 attr에 대해서만 수행
-      if (needMoreGem[attr] && gsp) {
+      if (needLauncherGem[attr] && gsp) {
         // 현재 달성 코어 포인트 확인
         const currentKey = gemSetPackKey(gsp).join(',');
 
@@ -529,7 +530,7 @@
 
             const newKeyRaw = gemSetPackKey(newGsp);
             const newKey = newKeyRaw.join(',');
-            const targetAdditionalGem = additioanGem[attr];
+            const targetAdditionalGem = additionalGem[attr];
             // 계산 후 갱신이 필요하면 수행
             if (newKey !== currentKey && newAnswer.score > answer.score) {
               // console.log(gemReq, gemPoint, '가 있으면', newKey, '달성 가능');
@@ -550,7 +551,8 @@
         }
       }
     }
-    updateAdditionalGemResult(additioanGem);
+    updateAdditionalGemResult(additionalGem);
+    updateNeedLauncherGem(needLauncherGem);
   }
 </script>
 

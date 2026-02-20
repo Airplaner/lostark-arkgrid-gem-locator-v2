@@ -3,13 +3,18 @@
   import { LChaos, LOrder } from '../../lib/constants/localization';
   import { gemSetPackKey } from '../../lib/solver/utils';
   import { appLocale } from '../../lib/state/locale.state.svelte';
-  import type { AdditionalGemResult, SolveAnswer } from '../../lib/state/profile.state.svelte';
+  import type {
+    AdditionalGemResult,
+    NeedLauncherGem,
+    SolveAnswer,
+  } from '../../lib/state/profile.state.svelte';
 
   type Props = {
     additionalGemResult: AdditionalGemResult;
     solveAnswer: SolveAnswer;
+    needLauncherGem: NeedLauncherGem;
   };
-  const { additionalGemResult, solveAnswer }: Props = $props();
+  const { additionalGemResult, solveAnswer, needLauncherGem }: Props = $props();
 
   let currentKey = $derived<Record<ArkGridAttr, [number, number, number]>>({
     질서: gemSetPackKey(solveAnswer.gemSetPackTuple.gsp1),
@@ -53,8 +58,8 @@
   let locale = $derived(appLocale.current);
   const LTitle = $derived(
     {
-      ko_kr: '젬 가공 추천',
-      en_us: 'Recommended Astogrems',
+      ko_kr: '젬 추가 시뮬레이션',
+      en_us: 'Next Astrogem Preview',
     }[locale]
   );
   const LAttr = { 질서: LOrder, 혼돈: LChaos };
@@ -75,7 +80,13 @@
   const LMaximumPoint = $derived(
     {
       ko_kr: '최대 포인트에 도달하였습니다.',
-      en_us: 'Maximum Point Reached.',
+      en_us: 'Maximum Points Reached.',
+    }[locale]
+  );
+  const LCannotSucceedWithOneGem = $derived(
+    {
+      ko_kr: '한 개의 추가 젬만으로는 다음 단계를 달성할 수 없습니다.',
+      en_us: 'You cannot reach the next stage with only one additional astrogem.',
     }[locale]
   );
 </script>
@@ -106,7 +117,12 @@
       </div>
       <div class="scenario-container">
         {#if isEmpty[attr]}
-          {LMaximumPoint}
+          <!-- 두 가지 이유로 empty일 수 있다. 1개 만으로는 다음 단계를 달성할 수 없거나, 발사대가 필요 없거나 -->
+          {#if needLauncherGem[attr]}
+            {LCannotSucceedWithOneGem}
+          {:else}
+            {LMaximumPoint}
+          {/if}
         {/if}
         {#each sortedAdditionalGemResult[attr] as value}
           <div class="scenario">

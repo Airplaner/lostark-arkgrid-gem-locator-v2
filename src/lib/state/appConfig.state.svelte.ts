@@ -100,7 +100,7 @@ export function addNewProfile(profile: CharacterProfile) {
   // 새 CharacterProfile을 appConfig에 등록합니다.
   // 등록에 성공했으면 true, 실패했으면 false를 반환합니다.
   const name = profile.characterName;
-  if (name.length == 0 || name.length > 12) return false;
+  if (name.length == 0 || name.length > 16) return false;
   const existProfile = appConfig.current.characterProfiles.findIndex(
     (p) => p.characterName === name
   );
