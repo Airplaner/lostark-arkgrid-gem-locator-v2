@@ -5,6 +5,7 @@ const Spritesmith = require('spritesmith');
 const templateFolders = [
   { folder: './opencv-templates/en_us', lang: 'en_us' },
   { folder: './opencv-templates/ko_kr', lang: 'ko_kr' },
+  { folder: './opencv-templates/ru_ru', lang: 'ru_ru' },
 ];
 
 const publicDir = './public';
@@ -50,9 +51,12 @@ templateFolders.forEach(({ folder, lang }) => {
     const tsPath = path.join(tsOutputDir, `${lang}.ts`);
     const tsContentLines = ['// THIS FILE IS AUTO-GENERATED. DO NOT MODIFY ITSELF'];
 
-    // 언어별 상수 이름: koKrCoords / enUsCoords
-    const langConstName = lang === 'ko_kr' ? 'koKrCoords' : 'enUsCoords';
-    tsContentLines.push(`export const ${langConstName} = {`);
+    // ko_kr을 변수명으로 쓰기 위해 koKr, KoKr로 변경
+    const [localeLang, localeRegion] = lang.split('_');
+    const prefix = localeLang + localeRegion.charAt(0).toUpperCase() + localeRegion.slice(1);
+    const upperPrefix = prefix.charAt(0).toUpperCase() + prefix.slice(1);
+
+    tsContentLines.push(`export const ${prefix}Coords = {`);
 
     Object.entries(result.coordinates).forEach(([filePath, rect]) => {
       const fileName = path.basename(filePath);
@@ -64,9 +68,8 @@ templateFolders.forEach(({ folder, lang }) => {
     tsContentLines.push('} as const;\n');
 
     // TemplateName 타입 추가
-    const prefix = lang === 'ko_kr' ? 'KoKr' : 'EnUs';
-    tsContentLines.push(`export type ${prefix}TemplateName = keyof typeof ${langConstName};\n`);
-    tsContentLines.push(`export const ${prefix}FileName = "${fileNameWithTimestamp}";\n`);
+    tsContentLines.push(`export type ${upperPrefix}TemplateName = keyof typeof ${prefix}Coords;\n`);
+    tsContentLines.push(`export const ${prefix}FileName = '${fileNameWithTimestamp}';\n`);
 
     fs.writeFileSync(tsPath, tsContentLines.join('\n'));
     console.log(`Saved TS coords with type: ${tsPath}`);

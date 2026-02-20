@@ -2,14 +2,14 @@
  * 스프라이트 이미지를 한 번 fetch → cv.Mat 생성
  */
 import {
-  type AppLocale,
   type ArkGridAttr,
-  ArkGridAttrs,
-  supportedLocales,
+  type GemRecognitionLocale,
+  supportedGemRecognitionLocales,
 } from '../constants/enums';
 import { type ArkGridGemName, type ArkGridGemOptionName } from '../models/arkGridGems';
-import { EnUsFileName, type EnUsTemplateName, enUsCoords } from '../opencv-template-coords/en_us';
-import { KoKrFileName, type KoKrTemplateName, koKrCoords } from '../opencv-template-coords/ko_kr';
+import { type EnUsTemplateName, enUsCoords, enUsFileName } from '../opencv-template-coords/en_us';
+import { type KoKrTemplateName, koKrCoords, koKrFileName } from '../opencv-template-coords/ko_kr';
+import { type RuRuTemplateName, ruRuCoords, ruRuFileName } from '../opencv-template-coords/ru_ru';
 import { type MatchingAtlas, generateMatchingAtlas } from './atlas';
 import { getCv } from './cvRuntime';
 import type { CvMat } from './types';
@@ -39,6 +39,7 @@ async function fetchSpriteMat(url: string): Promise<CvMat> {
 type GemTemplates = {
   ko_kr: Record<KoKrTemplateName, CvMat>;
   en_us: Record<EnUsTemplateName, CvMat>;
+  ru_ru: Record<RuRuTemplateName, CvMat>;
 };
 async function loadGemTemplates(): Promise<GemTemplates> {
   const cv = getCv();
@@ -46,19 +47,26 @@ async function loadGemTemplates(): Promise<GemTemplates> {
   const result = {
     ko_kr: {} as any,
     en_us: {} as any,
+    ru_ru: {} as any,
   };
 
-  const koSprite = await fetchSpriteMat(`${import.meta.env.BASE_URL}/${KoKrFileName}`);
+  const koSprite = await fetchSpriteMat(`${import.meta.env.BASE_URL}/${koKrFileName}`);
   for (const [name, rect] of Object.entries(koKrCoords)) {
     result.ko_kr[name] = koSprite.roi(new cv.Rect(rect.x, rect.y, rect.w, rect.h));
   }
   koSprite.delete();
 
-  const enSprite = await fetchSpriteMat(`${import.meta.env.BASE_URL}/${EnUsFileName}`);
+  const enSprite = await fetchSpriteMat(`${import.meta.env.BASE_URL}/${enUsFileName}`);
   for (const [name, rect] of Object.entries(enUsCoords)) {
     result.en_us[name] = enSprite.roi(new cv.Rect(rect.x, rect.y, rect.w, rect.h));
   }
   enSprite.delete();
+
+  const ruSprite = await fetchSpriteMat(`${import.meta.env.BASE_URL}/${ruRuFileName}`);
+  for (const [name, rect] of Object.entries(ruRuCoords)) {
+    result.ru_ru[name] = ruSprite.roi(new cv.Rect(rect.x, rect.y, rect.w, rect.h));
+  }
+  ruSprite.delete();
 
   return result;
 }
@@ -66,16 +74,16 @@ async function loadGemTemplates(): Promise<GemTemplates> {
 export async function loadGemAsset() {
   const gt = await loadGemTemplates();
 
-  const matAnchors = supportedLocales.reduce(
+  const matAnchors = supportedGemRecognitionLocales.reduce(
     (acc, locale) => {
       acc[locale] = gt[locale]['anchor.png'];
       return acc;
     },
-    {} as Record<AppLocale, CvMat>
+    {} as Record<GemRecognitionLocale, CvMat>
   );
   const atlasAnchor = generateMatchingAtlas(matAnchors);
 
-  const atlasGemAttr = supportedLocales.reduce(
+  const atlasGemAttr = supportedGemRecognitionLocales.reduce(
     (acc, locale) => {
       const mats = gt[locale];
       acc[locale] = generateMatchingAtlas({
@@ -84,10 +92,10 @@ export async function loadGemAsset() {
       });
       return acc;
     },
-    {} as Record<AppLocale, MatchingAtlas<ArkGridAttr>>
+    {} as Record<GemRecognitionLocale, MatchingAtlas<ArkGridAttr>>
   );
 
-  const atlasWillPower = supportedLocales.reduce(
+  const atlasWillPower = supportedGemRecognitionLocales.reduce(
     (acc, locale) => {
       const mats = gt[locale];
       acc[locale] = generateMatchingAtlas({
@@ -101,10 +109,10 @@ export async function loadGemAsset() {
       });
       return acc;
     },
-    {} as Record<AppLocale, MatchingAtlas<KeyWillPower>>
+    {} as Record<GemRecognitionLocale, MatchingAtlas<KeyWillPower>>
   );
 
-  const atlasCorePoint = supportedLocales.reduce(
+  const atlasCorePoint = supportedGemRecognitionLocales.reduce(
     (acc, locale) => {
       const mats = gt[locale];
       acc[locale] = generateMatchingAtlas({
@@ -116,10 +124,10 @@ export async function loadGemAsset() {
       });
       return acc;
     },
-    {} as Record<AppLocale, MatchingAtlas<KeyCorePoint>>
+    {} as Record<GemRecognitionLocale, MatchingAtlas<KeyCorePoint>>
   );
 
-  const altasGemImage = supportedLocales.reduce(
+  const altasGemImage = supportedGemRecognitionLocales.reduce(
     (acc, locale) => {
       const mats = gt[locale];
       acc[locale] = generateMatchingAtlas({
@@ -132,10 +140,10 @@ export async function loadGemAsset() {
       });
       return acc;
     },
-    {} as Record<AppLocale, MatchingAtlas<KeyGemName>>
+    {} as Record<GemRecognitionLocale, MatchingAtlas<KeyGemName>>
   );
 
-  const atalsOptionString = supportedLocales.reduce(
+  const atalsOptionString = supportedGemRecognitionLocales.reduce(
     (acc, locale) => {
       const mats = gt[locale];
       acc[locale] = generateMatchingAtlas({
@@ -148,10 +156,10 @@ export async function loadGemAsset() {
       });
       return acc;
     },
-    {} as Record<AppLocale, MatchingAtlas<KeyOptionString>>
+    {} as Record<GemRecognitionLocale, MatchingAtlas<KeyOptionString>>
   );
 
-  const atalsOptionLevel = supportedLocales.reduce(
+  const atalsOptionLevel = supportedGemRecognitionLocales.reduce(
     (acc, locale) => {
       const mats = gt[locale];
       acc[locale] = generateMatchingAtlas({
@@ -163,7 +171,7 @@ export async function loadGemAsset() {
       });
       return acc;
     },
-    {} as Record<AppLocale, MatchingAtlas<KeyOptionLevel>>
+    {} as Record<GemRecognitionLocale, MatchingAtlas<KeyOptionLevel>>
   );
 
   return {

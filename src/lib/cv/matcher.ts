@@ -47,7 +47,10 @@ export function getBestMatch<K extends string>(
   frame: CvMat,
   matchingAtlas: MatchingAtlas<K>,
   roi?: CvRect,
-  method?: number
+  option?: {
+    method?: number;
+    excludeKey?: K;
+  }
 ): MatchingResult<K> | null {
   if (roi) {
     if (
@@ -68,6 +71,7 @@ export function getBestMatch<K extends string>(
   let bestKey: K | null = null;
 
   for (const key of Object.keys(matchingAtlas.entries) as K[]) {
+    if (option?.excludeKey && key === option.excludeKey) continue;
     const template = matchingAtlas.entries[key].template;
     const result = new cv.Mat();
     // if (template.cols > targetFrame.cols && template.rows > targetFrame.rows) {
@@ -76,7 +80,12 @@ export function getBestMatch<K extends string>(
     //     `Template size ${template.cols}x${template.rows} is larger than ROI ${targetFrame.cols}x${targetFrame.rows}. matchTemplate skipped.`
     //   );
     // }
-    cv.matchTemplate(targetFrame, template, result, method ? method : cv.TM_CCOEFF_NORMED);
+    cv.matchTemplate(
+      targetFrame,
+      template,
+      result,
+      option?.method ? option.method : cv.TM_CCOEFF_NORMED
+    );
     const mm = cv.minMaxLoc(result);
     if (!bestMm || mm.maxVal > bestMm.maxVal) {
       bestMm = mm;

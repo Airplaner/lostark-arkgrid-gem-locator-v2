@@ -65,4 +65,7 @@ export const KAKAOTALK_URL = 'https://open.kakao.com/o/s5bTYodi';
 export type AppLocale = 'ko_kr' | 'en_us';
 export const supportedLocales: AppLocale[] = ['ko_kr', 'en_us'];
 
+export type GemRecognitionLocale = 'ko_kr' | 'en_us' | 'ru_ru';
+export const supportedGemRecognitionLocales: GemRecognitionLocale[] = ['ko_kr', 'en_us', 'ru_ru'];
+
 export type LocalizationName = Record<AppLocale, string>;

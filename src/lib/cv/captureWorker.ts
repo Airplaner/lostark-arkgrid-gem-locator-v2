@@ -1,11 +1,11 @@
 import type { CV } from '@techstark/opencv-js';
 
-import type { AppLocale } from '../constants/enums';
+import type { GemRecognitionLocale } from '../constants/enums';
 import { type ArkGridGem, determineGemGradeByGem } from '../models/arkGridGems';
 import type { MatchingAtlas } from './atlas';
 import { getCv, initOpenCv } from './cvRuntime';
 import { showMatch } from './debug';
-import { loadGemAsset } from './matStore';
+import { type KeyOptionLevel, type KeyOptionString, loadGemAsset } from './matStore';
 import { type MatchingResult, getBestMatch } from './matcher';
 import type { CaptureWorkerRequest, CaptureWorkerResponse, CvMat } from './types';
 
@@ -35,7 +35,10 @@ class FrameProcessor {
   private canvas: OffscreenCanvas = new OffscreenCanvas(0, 0);
   private ctx: OffscreenCanvasRenderingContext2D;
   private cv: CV | null = null;
-  private previousInfo: { locale: AppLocale; anchorLoc: { x: number; y: number } } | null = null;
+  private previousInfo: {
+    locale: GemRecognitionLocale;
+    anchorLoc: { x: number; y: number };
+  } | null = null;
   private thresholdSet = {
     anchor: 0.95,
     gemAttr: 0.8,
@@ -107,12 +110,15 @@ class FrameProcessor {
     t: RecgonitionTarget<K>,
     frame: CvMat,
     debugCtx?: OffscreenCanvasRenderingContext2D | null,
-    method?: number
+    option?: {
+      method?: number;
+      excludeKey?: K;
+    }
   ): MatchingResult<K> | null {
     // 주어진 target을 찾고
     if (!this.cv) throw Error('cv is not ready');
     const roi = new this.cv.Rect(t.roi.x, t.roi.y, t.roi.width, t.roi.height);
-    const match = getBestMatch(frame, t.atlas, roi, method);
+    const match = getBestMatch(frame, t.atlas, roi, option);
     if (!match) return null;
     if (debugCtx) {
       showMatch(debugCtx, roi, match, {
@@ -225,7 +231,7 @@ class FrameProcessor {
       //2 질서 혹은 혼돈 문구 탐색
       const gemAttr = this.findBest(
         {
-          roi: { x: anchorX - 186, y: anchorY + 91, width: 224, height: 24 },
+          roi: { x: anchorX - 186, y: anchorY + 91, width: 224, height: 32 },
           atlas: this.loadedAsset.atlasGemAttr[currentLocale],
           threshold: this.thresholdSet.gemAttr - detectionMargin,
         },
@@ -274,82 +280,107 @@ class FrameProcessor {
           debugCtx
         );
 
-        // 4) 윗 옵션
-        const optionAName = this.findBest(
-          {
-            roi: {
-              x: rowX + 125,
-              y: rowY,
-              width: 146,
-              height: 30,
-            },
-            atlas: this.loadedAsset.atalsOptionString[currentLocale],
-            threshold: this.thresholdSet.optionName - detectionMargin,
-          },
-          resizedFrame,
-          debugCtx
-        );
-        const optionALevelXOffset = optionAName
-          ? optionAName.loc.x - (rowX + 125) + optionAName.template.cols + 16
-          : 60;
+        // 4) 젬 옵션 추출
+        type GemOptionResult = {
+          optionName: MatchingResult<KeyOptionString> | null;
+          optionLevel: MatchingResult<KeyOptionLevel> | null;
+          yOffset: number;
+        };
+        const optionTop: GemOptionResult = {
+          optionName: null,
+          optionLevel: null,
+          yOffset: 0,
+        };
+        const optionBottom: GemOptionResult = {
+          optionName: null,
+          optionLevel: null,
+          yOffset: 30, // 하단 옵션은 아래로 30px에 위치
+        };
 
-        const optionALevel = this.findBest(
-          {
-            roi: {
-              x: rowX + 125 + optionALevelXOffset,
-              y: rowY,
-              width: 48,
-              height: 30,
+        for (const targetOption of [optionTop, optionBottom]) {
+          // 옵션 이름
+          const optionNameRoi = {
+            x: rowX + 125,
+            y: rowY + targetOption.yOffset,
+            width: 200,
+            height: 30,
+          };
+          let optionName = this.findBest(
+            {
+              roi: optionNameRoi,
+              atlas: this.loadedAsset.atalsOptionString[currentLocale],
+              threshold: this.thresholdSet.optionName - detectionMargin,
             },
-            atlas: this.loadedAsset.atalsOptionLevel[currentLocale],
-            threshold: this.thresholdSet.optionLevel - detectionMargin,
-          },
-          resizedFrame,
-          debugCtx
-        );
+            resizedFrame,
+            currentLocale === 'ru_ru' ? null : debugCtx
+          );
 
-        // 5) 아랫 옵션
-        const optionBName = this.findBest(
-          {
-            roi: {
-              x: rowX + 125,
-              y: rowY + 30,
-              width: 146,
-              height: 30,
-            },
-            atlas: this.loadedAsset.atalsOptionString[currentLocale],
-            threshold: this.thresholdSet.optionName - detectionMargin,
-          },
-          resizedFrame,
-          debugCtx
-        );
-        const optionBLevelXOffset = optionBName
-          ? optionBName.loc.x - (rowX + 125) + optionBName.template.cols + 16
-          : 60;
+          // ru_ru의 경우, "공격력"이 "아군 공격 강화" 문자열에서 캡쳐됨
+          if (optionName !== null && currentLocale === 'ru_ru' && optionName.key === '공격력') {
+            // 따라서 "공격력"이 없는 atlas에서 다시 한 번 확인
+            const tempOptionName = this.findBest(
+              {
+                roi: optionNameRoi,
+                atlas: this.loadedAsset.atalsOptionString[currentLocale],
+                threshold: this.thresholdSet.optionName - detectionMargin,
+              },
+              resizedFrame,
+              null,
+              {
+                excludeKey: '공격력',
+              }
+            );
+            if (tempOptionName) {
+              // 그래도 발견되면, 이제 이건 "아군 공격 강화"임
+              optionName = tempOptionName;
+            } else {
+              // "아군 공격 강화"가 발견되지 않았을 거니까 "공격력"임
+            }
+          }
 
-        const optionBLevel = this.findBest(
-          {
-            roi: {
-              x: rowX + 125 + optionBLevelXOffset,
-              y: rowY + 30,
-              width: 48,
-              height: 30,
+          if (currentLocale === 'ru_ru') {
+            // findBest에서 그려주지 않은 디버그 그려주기
+            // XXX 못 찾은 경우 못 찾았다는 걸 보여주는데, 그거는 못함
+            if (debugCtx && optionName) {
+              showMatch(debugCtx, optionNameRoi, optionName, {
+                scoreThreshold: this.thresholdSet.optionName - detectionMargin,
+              });
+            }
+          }
+
+          // 옵션 레벨
+          // 레벨의 위치는 앞서 찾은 위치에서 16px 떨어진 위치
+          const optionLevelXOffset = optionName
+            ? optionName.loc.x - optionNameRoi.x + optionName.template.cols + 16
+            : 60;
+
+          const optionLevel = this.findBest(
+            {
+              roi: {
+                x: rowX + 125 + optionLevelXOffset,
+                y: rowY + targetOption.yOffset,
+                width: 48,
+                height: 30,
+              },
+              atlas: this.loadedAsset.atalsOptionLevel[currentLocale],
+              threshold: this.thresholdSet.optionLevel - detectionMargin,
             },
-            atlas: this.loadedAsset.atalsOptionLevel[currentLocale],
-            threshold: this.thresholdSet.optionLevel - detectionMargin,
-          },
-          resizedFrame,
-          debugCtx
-        );
+            resizedFrame,
+            debugCtx
+          );
+
+          targetOption.optionName = optionName;
+          targetOption.optionLevel = optionLevel;
+        }
 
         if (
           gemName !== null &&
           willPower !== null &&
           corePoint !== null &&
-          optionAName !== null &&
-          optionALevel !== null &&
-          optionBName !== null &&
-          optionBLevel !== null
+          optionTop.optionName !== null &&
+          optionTop.optionLevel !== null &&
+          optionBottom.optionName !== null &&
+          optionBottom.optionLevel !== null
         ) {
           const gem: ArkGridGem = {
             gemAttr: gemAttr.key,
@@ -357,12 +388,12 @@ class FrameProcessor {
             req: Number(willPower.key),
             point: Number(corePoint.key),
             option1: {
-              optionType: optionAName.key,
-              value: Number(optionALevel.key),
+              optionType: optionTop.optionName.key,
+              value: Number(optionTop.optionLevel.key),
             },
             option2: {
-              optionType: optionBName.key,
-              value: Number(optionBLevel.key),
+              optionType: optionBottom.optionName.key,
+              value: Number(optionBottom.optionLevel.key),
             },
           };
           gem.grade = determineGemGradeByGem(gem);

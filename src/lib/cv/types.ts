@@ -1,6 +1,6 @@
 import CV from '@techstark/opencv-js';
 
-import type { AppLocale, ArkGridAttr } from '../constants/enums';
+import type { ArkGridAttr, GemRecognitionLocale } from '../constants/enums';
 import type { ArkGridGem } from '../models/arkGridGems';
 
 export type CvMat = CV.Mat;
@@ -21,7 +21,7 @@ export type CaptureWorkerResponse =
       type: 'frame:done';
       result:
         | {
-            locale: AppLocale;
+            locale: GemRecognitionLocale;
             gemAttr: ArkGridAttr;
             gems: ArkGridGem[];
           }
