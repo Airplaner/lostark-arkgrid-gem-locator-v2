@@ -143,7 +143,7 @@ export async function loadGemAsset() {
     {} as Record<GemRecognitionLocale, MatchingAtlas<KeyGemName>>
   );
 
-  const atalsOptionString = supportedGemRecognitionLocales.reduce(
+  const atlasOptionName = supportedGemRecognitionLocales.reduce(
     (acc, locale) => {
       const mats = gt[locale];
       acc[locale] = generateMatchingAtlas({
@@ -159,7 +159,7 @@ export async function loadGemAsset() {
     {} as Record<GemRecognitionLocale, MatchingAtlas<KeyOptionString>>
   );
 
-  const atalsOptionLevel = supportedGemRecognitionLocales.reduce(
+  const atlasOptionLevel = supportedGemRecognitionLocales.reduce(
     (acc, locale) => {
       const mats = gt[locale];
       acc[locale] = generateMatchingAtlas({
@@ -180,7 +180,7 @@ export async function loadGemAsset() {
     altasGemImage,
     atlasWillPower,
     atlasCorePoint,
-    atalsOptionString,
-    atalsOptionLevel,
+    atlasOptionName,
+    atlasOptionLevel,
   };
 }

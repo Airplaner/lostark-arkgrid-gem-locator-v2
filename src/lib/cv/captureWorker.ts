@@ -308,7 +308,7 @@ class FrameProcessor {
           let optionName = this.findBest(
             {
               roi: optionNameRoi,
-              atlas: this.loadedAsset.atalsOptionString[currentLocale],
+              atlas: this.loadedAsset.atlasOptionName[currentLocale],
               threshold: this.thresholdSet.optionName - detectionMargin,
             },
             resizedFrame,
@@ -321,7 +321,7 @@ class FrameProcessor {
             const tempOptionName = this.findBest(
               {
                 roi: optionNameRoi,
-                atlas: this.loadedAsset.atalsOptionString[currentLocale],
+                atlas: this.loadedAsset.atlasOptionName[currentLocale],
                 threshold: this.thresholdSet.optionName - detectionMargin,
               },
               resizedFrame,
@@ -362,7 +362,7 @@ class FrameProcessor {
                 width: 48,
                 height: 30,
               },
-              atlas: this.loadedAsset.atalsOptionLevel[currentLocale],
+              atlas: this.loadedAsset.atlasOptionLevel[currentLocale],
               threshold: this.thresholdSet.optionLevel - detectionMargin,
             },
             resizedFrame,
