@@ -44,6 +44,12 @@
       en_us: 'Sorry, Firefox broswer is not supported. Please use Chromium browser.',
     }[locale]
   );
+  const LSupportedClient = $derived(
+    {
+      ko_kr: '지원 클라이언트: 한국어, 영어, 러시아어 (Beta)',
+      en_us: 'Supported Clients: Korean, English, Russian (Beta)',
+    }[locale]
+  );
   let debugCanvas: HTMLCanvasElement | null;
   let totalOrderGems = $state<ArkGridGem[]>([]);
   let totalChaosGems = $state<ArkGridGem[]>([]);
@@ -243,6 +249,12 @@
   <div class="title">
     <span>{LTitle[locale]}</span>
     <div class="status-dot" class:online={isRecording} class:offline={!isRecording}></div>
+    <span class="tooltip">
+      <i class="fa-solid fa-circle-info info-icon"></i>
+      <span class="tooltip-text">
+        {LSupportedClient}
+      </span>
+    </span>
     <button
       class="fold-button"
       onclick={() => toggleUI('showGemRecognitionPanel')}
@@ -321,6 +333,10 @@
     align-items: center;
     gap: 0.5rem;
   } */
+
+  .title .tooltip-text {
+    bottom: -200%;
+  }
   .panel > .title > .fold-button {
     flex-grow: 1;
     text-align: right;
