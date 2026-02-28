@@ -61,7 +61,17 @@
       setLocale('en_us');
     }
   });
+  const pageTitle = $derived(
+    {
+      ko_kr: '아크 그리드 전투력 최적화',
+      en_us: 'Ark Grid Combat Power Optimizer',
+    }[appLocale.current]
+  );
 </script>
+
+<svelte:head>
+  <title>{pageTitle}</title>
+</svelte:head>
 
 <main>
   <SvelteToast options={{ reversed: true, intro: { y: 192 } }} />
