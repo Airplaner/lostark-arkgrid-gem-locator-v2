@@ -48,13 +48,13 @@
   );
   const LTotalScore = $derived(
     {
-      ko_kr: '점수',
-      en_us: 'Score',
+      ko_kr: '부옵작 점수',
+      en_us: 'Astrogem Score',
     }[locale]
   );
   const LTotalScoreDesc = $derived(
     {
-      ko_kr: '현재 전투력 증가량을 전투력 증가 한계로 나눈 값입니다.',
+      ko_kr: '현재 전투력 증가량을 전투력 증가 한계로 나눠 부옵작을 점수화한 값입니다.',
       en_us: 'This shows the value calculated by dividing Current CP by Maximum CP Potential.',
     }[locale]
   );
@@ -62,15 +62,6 @@
 
 <div class="root">
   <div class="title">{LTitle}</div>
-  <div>
-    <span class="total-score">{LTotalScore} {(totalScore * 100).toFixed(2)}</span>
-    <span class="tooltip">
-      <i class="fa-solid fa-circle-info info-icon"></i>
-      <span class="tooltip-text">
-        {LTotalScoreDesc}
-      </span>
-    </span>
-  </div>
   <div class="score-wrapper">
     <div class="score-bar">
       <div class="indicator dot moving" style="--target-left:{scoreRatio * 100}%"></div>
@@ -110,6 +101,16 @@
       </span>
     </div>
   </div>
+
+  <div>
+    <span class="total-score">{LTotalScore} {(totalScore * 100).toFixed(2)}</span>
+    <span class="tooltip">
+      <i class="fa-solid fa-circle-info info-icon"></i>
+      <span class="tooltip-text">
+        {LTotalScoreDesc}
+      </span>
+    </span>
+  </div>
 </div>
 
 <style>
@@ -127,7 +128,7 @@
     width: 20rem;
   }
   .total-score {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
   }
   .total-score::after {
     content: ' / 100';
