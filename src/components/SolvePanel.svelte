@@ -178,10 +178,10 @@
   // 발사대용 젬 계산이 필요한지 판단
   let needLauncherGem: Record<ArkGridAttr, boolean> = { 질서: false, 혼돈: false };
   // 발사대용 젬 계산 결과 임시 보관
-  let additionalGem = $derived<AdditionalGemResult>({
+  let additionalGem: AdditionalGemResult = {
     질서: {},
     혼돈: {},
-  });
+  };
 
   function convertToSolverGems(
     gem: ArkGridGem[],
