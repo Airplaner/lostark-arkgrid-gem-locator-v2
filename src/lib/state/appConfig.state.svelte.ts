@@ -1,3 +1,4 @@
+import { undistort } from '@techstark/opencv-js';
 import { persistedState } from 'svelte-persisted-state';
 
 import { type ArkGridAttr, ArkGridAttrs, DEFAULT_PROFILE_NAME } from '../constants/enums';
@@ -14,6 +15,7 @@ interface UIConfig {
   showCoreCoeff: boolean;
   debugMode: boolean;
   darkMode: boolean;
+  deferredScreenSharingInit: boolean;
 }
 const defaultUIConfig: UIConfig = {
   showGemRecognitionPanel: true,
@@ -21,6 +23,7 @@ const defaultUIConfig: UIConfig = {
   showCoreCoeff: false,
   debugMode: false,
   darkMode: false,
+  deferredScreenSharingInit: false,
 };
 
 interface AppConfig {
@@ -54,6 +57,10 @@ export function migrateAppConfig(appConfig: Partial<AppConfig>) {
   // appLocale 제거
   if ('appLocale' in appConfig) {
     delete appConfig.appLocale;
+  }
+  // deferredScreenSharingInit
+  if (appConfig.uiConfig && appConfig.uiConfig.deferredScreenSharingInit === undefined) {
+    appConfig.uiConfig.deferredScreenSharingInit = false;
   }
 }
 
@@ -127,4 +134,8 @@ export function toggleDarkMode() {
 }
 export function enableDarkMode() {
   appConfig.current.uiConfig.darkMode = true;
+}
+export function toggleDeferredScreenSharingInit() {
+  appConfig.current.uiConfig.deferredScreenSharingInit =
+    !appConfig.current.uiConfig.deferredScreenSharingInit;
 }

@@ -4,7 +4,11 @@
   import { type ArkGridAttr, type LocalizationName } from '../../lib/constants/enums';
   import { CaptureController } from '../../lib/cv/captureController';
   import { type ArkGridGem, isSameArkGridGem } from '../../lib/models/arkGridGems';
-  import { appConfig, toggleUI } from '../../lib/state/appConfig.state.svelte';
+  import {
+    appConfig,
+    toggleDeferredScreenSharingInit,
+    toggleUI,
+  } from '../../lib/state/appConfig.state.svelte';
   import { appLocale } from '../../lib/state/locale.state.svelte';
   import GemRecognitionGemList from './GemList.svelte';
   import GemRecognitionGuide from './Guide.svelte';
@@ -48,6 +52,12 @@
     {
       ko_kr: '지원 클라이언트: 한국어, 영어, 러시아어 (Beta)',
       en_us: 'Supported Clients: Korean, English, Russian (Beta)',
+    }[locale]
+  );
+  const LControllerLazyLoading = $derived(
+    {
+      ko_kr: '화면 공유시 튕김 방지',
+      en_us: 'Prevent Screen Sharing Crash',
     }[locale]
   );
   let debugCanvas: HTMLCanvasElement | null;
@@ -214,7 +224,7 @@
     controller.onStop = () => {
       isRecording = false;
     };
-    await controller.startCapture();
+    await controller.startCapture(appConfig.current.uiConfig.deferredScreenSharingInit);
   }
 
   async function stopGemCapture() {
@@ -277,6 +287,14 @@
         {/if}
         <button class:active={isDebugging} onclick={toggleDrawDebug}>
           🔨 {isDebugging ? LHideScreen[locale] : LShowScreen[locale]}
+        </button>
+        <button onclick={toggleDeferredScreenSharingInit}>
+          {LControllerLazyLoading}
+          <i
+            class="fa-solid"
+            class:fa-circle-dot={appConfig.current.uiConfig.deferredScreenSharingInit}
+            class:fa-circle={!appConfig.current.uiConfig.deferredScreenSharingInit}
+          ></i>
         </button>
       </div>
       <div class="right"></div>

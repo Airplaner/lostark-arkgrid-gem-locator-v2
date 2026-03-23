@@ -159,7 +159,7 @@ export class CaptureController {
     return 'unknown';
   }
 
-  async startCapture() {
+  async startCapture(deferDisplayRequest: boolean = false) {
     // idle 상태에서만 가능
     // 녹화를 시작합니다.
     // worker를 생성하고 어셋 로드를 시킨 뒤, 사용자에게 화면 공유를 요청합니다.
@@ -187,8 +187,13 @@ export class CaptureController {
       });
       this.postMessage({ type: 'init' });
 
-      // 초기화되는 동안 사용자에게 화면 공유 요청하고 둘을 모두 기다림
-      await Promise.all([this.requestDisplayMedia(), waitForInit]);
+      if (deferDisplayRequest) {
+        await waitForInit;
+        await this.requestDisplayMedia();
+      } else {
+        // 초기화되는 동안 사용자에게 화면 공유 요청하고 둘을 모두 기다림
+        await Promise.all([this.requestDisplayMedia(), waitForInit]);
+      }
 
       // 완료되면 reader가 설정되어서 읽을 수 있음
       if (!this.reader) {
