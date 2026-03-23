@@ -420,18 +420,15 @@ function createProgressReporter(postProgress: ProgressReporter): ProgressReporte
   let lastTotalPercent = -1;
   let lastStagePercent = -1;
   let lastStage: SolverProgressStage | null = null;
-  let lastCurrent = -1;
 
   return (progress) => {
     const roundedTotalPercent = Math.max(0, Math.min(100, Math.round(progress.totalPercent)));
     const roundedStagePercent = Math.max(0, Math.min(100, Math.round(progress.stagePercent)));
-    const nextCurrent = progress.current ?? -1;
 
     if (
       roundedTotalPercent === lastTotalPercent &&
       roundedStagePercent === lastStagePercent &&
-      progress.stage === lastStage &&
-      nextCurrent === lastCurrent
+      progress.stage === lastStage
     ) {
       return;
     }
@@ -439,7 +436,6 @@ function createProgressReporter(postProgress: ProgressReporter): ProgressReporte
     lastTotalPercent = roundedTotalPercent;
     lastStagePercent = roundedStagePercent;
     lastStage = progress.stage;
-    lastCurrent = nextCurrent;
 
     postProgress({
       ...progress,

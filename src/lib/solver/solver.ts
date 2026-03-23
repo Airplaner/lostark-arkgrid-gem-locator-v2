@@ -93,8 +93,12 @@ export function getBestGemSetPacks(
   if (gss2) gss2.sort((a, b) => b.maxScore - a.maxScore);
   if (gss3) gss3.sort((a, b) => b.maxScore - a.maxScore);
 
+  let lastProgressBucket = -1;
   function emitProgress(current: number, total: number) {
     if (!onProgress || total <= 0) return;
+    const bucket = Math.floor((current * 100) / total);
+    if (bucket === lastProgressBucket && current < total) return;
+    lastProgressBucket = bucket;
     onProgress({ current, total });
   }
 

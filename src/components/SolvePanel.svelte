@@ -153,7 +153,7 @@
         preparing: '입력 정리 중',
         searching_order_packs: '질서 최적 조합 탐색 중',
         searching_chaos_packs: '혼돈 최적 조합 탐색 중',
-        combining_results: '질서/혼돈 조합 탐색 중',
+        combining_results: '두 조합을 모두 고려하여 최적해 탐색 중',
         simulating_launcher_gems: '젬 추가 시뮬레이션 중',
         finalizing: '결과 정리 중',
       },
