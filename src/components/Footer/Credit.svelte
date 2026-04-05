@@ -18,7 +18,6 @@
     <p>Thanks to 루페온 퐁듀 길드, 아브렐슈드 청염각, 피드백을 주신 모든 분들</p>
   {/if}
   {#if appLocale.current == 'en_us'}
-    <h2>Credits</h2>
     <p>
       Copyrights for game-related images and names belong to SmileGate. The calculation logic and
       site source code are the developer's own work and this site operates as a non-commercial fan
