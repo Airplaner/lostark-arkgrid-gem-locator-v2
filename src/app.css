@@ -81,7 +81,8 @@ input,
 select,
 option,
 img,
-button {
+button,
+dialog {
   user-select: none;
 }
 

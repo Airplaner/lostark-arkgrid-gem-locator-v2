@@ -6,7 +6,7 @@
   import { LChaos, LOrder } from '../lib/constants/localization';
   import { appLocale } from '../lib/state/locale.state.svelte';
   import { type AllGems, clearGems } from '../lib/state/profile.state.svelte';
-  import ArkGridGemAddPanel from './ArkGridGemAddPanel.svelte';
+  import Wrapper from './ArkGridGemAddPanel/Wrapper.svelte';
   import ArkGridGemList from './ArkGridGemList.svelte';
 
   interface Props {
@@ -129,7 +129,7 @@
   </div>
   <div class="buttons">
     <div class="left">
-      <ArkGridGemAddPanel gemAttr={currentAttr}></ArkGridGemAddPanel>
+      <Wrapper gemAttr={currentAttr}></Wrapper>
     </div>
     <div class="right">
       <button
