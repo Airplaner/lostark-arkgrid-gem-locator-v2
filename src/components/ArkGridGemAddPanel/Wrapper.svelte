@@ -89,7 +89,7 @@
       <input id="b" type="radio" bind:group={newGemAddStyle} value={false} />
       <label for="b">B</label>
     </div>
-    {#if !newGemAddStyle}
+    {#if newGemAddStyle}
       <RadioStyle {gemAttr} bind:gemInput {locale}></RadioStyle>
     {:else}
       <DropdownStyle {gemAttr} bind:gemInput {locale}></DropdownStyle>
