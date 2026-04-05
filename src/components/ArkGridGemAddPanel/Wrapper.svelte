@@ -84,9 +84,9 @@
 <dialog bind:this={dialog}>
   <div class="container">
     <div class="gem-add-style-panel">
-      <input id="a" type="radio" bind:group={newGemAddStyle} value={true} />
+      <input id="a" type="radio" bind:group={newGemAddStyle} value={false} />
       <label for="a">A</label>
-      <input id="b" type="radio" bind:group={newGemAddStyle} value={false} />
+      <input id="b" type="radio" bind:group={newGemAddStyle} value={true} />
       <label for="b">B</label>
     </div>
     {#if newGemAddStyle}
