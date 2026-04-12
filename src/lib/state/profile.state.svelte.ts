@@ -69,10 +69,13 @@ export type SolveAfter = {
   answerCores?: Record<ArkGridAttr, Record<ArkGridCoreType, ArkGridCore | null>>;
   additionalGemResult?: AdditionalGemResult;
   needLauncherGem?: NeedLauncherGem;
+  gemSnapshot?: ArkGridGem[];
 };
 export type SolveInfo = {
   before: SolveBefore;
   after?: SolveAfter;
+  orderAfter?: SolveAfter;
+  chaosAfter?: SolveAfter;
 };
 export function updateSolveAnswer(solveAnswer: SolveAnswer) {
   // 현재 프로필의 solve after에 solve answer 설정
@@ -136,6 +139,15 @@ export function updateNeedLauncherGem(needLauncherGem: NeedLauncherGem) {
   }
 }
 
+export function updateAttrSolveAfter(attr: ArkGridAttr, data: SolveAfter) {
+  const profile = getCurrentProfile();
+  if (attr === '질서') {
+    profile.solveInfo.orderAfter = data;
+  } else {
+    profile.solveInfo.chaosAfter = data;
+  }
+}
+
 export function initNewProfile(name: string): CharacterProfile {
   return {
     characterName: name,
@@ -149,6 +161,8 @@ export function initNewProfile(name: string): CharacterProfile {
       before: {
         coreGoalPoint: [0, 0, 0, 0, 0, 0],
       },
+      orderAfter: undefined,
+      chaosAfter: undefined,
     },
   };
 }
@@ -166,7 +180,12 @@ export function migrateProfile(profile: Partial<CharacterProfile>) {
     // console.log(profile, "solveInfo추가!")
     profile.solveInfo = {
       before: { coreGoalPoint: [0, 0, 0, 0, 0, 0] },
+      orderAfter: undefined,
+      chaosAfter: undefined,
     };
+  } else {
+    if (!('orderAfter' in profile.solveInfo)) profile.solveInfo.orderAfter = undefined;
+    if (!('chaosAfter' in profile.solveInfo)) profile.solveInfo.chaosAfter = undefined;
   }
 
   // 3. core.goalPoint

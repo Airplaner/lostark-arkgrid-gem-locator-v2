@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
 
-  import { type AppLocale, ArkGridAttrs } from '../lib/constants/enums';
+  import { type AppLocale, type ArkGridAttr, ArkGridAttrs } from '../lib/constants/enums';
   import { ArkGridCoreTypes } from '../lib/models/arkGridCores';
   import type { ArkGridGem } from '../lib/models/arkGridGems';
   import { SolverController } from '../lib/solver/solverController';
@@ -9,13 +9,13 @@
   import { appLocale } from '../lib/state/locale.state.svelte';
   import {
     type CharacterProfile,
-    updateAdditionalGemResult,
-    updateAnswerCores,
-    updateNeedLauncherGem,
-    updateScoreSet,
-    updateSolveAnswer,
+    type SolveAfter,
+    updateAttrSolveAfter,
   } from '../lib/state/profile.state.svelte';
+  import { gemFingerprint } from '../lib/models/arkGridGems';
   import SolveCoreEdit from './SolveCoreEdit.svelte';
+  import GemOptionStats from './SolveResult/GemOptionStats.svelte';
+  import ScoreIndicator from './SolveResult/ScoreIndicator.svelte';
   import SolveResult from './SolveResult/SolveResult.svelte';
 
   type Props = {
@@ -44,6 +44,18 @@
     {
       ko_kr: '최적화 실행',
       en_us: 'Run Optimization',
+    }[locale]
+  );
+  const LOptimizeHint = $derived(
+    {
+      ko_kr: '이전 결과가 저장됩니다',
+      en_us: 'Previous results are saved',
+    }[locale]
+  );
+  const LOptimizeTooltip = $derived(
+    {
+      ko_kr: '최적화 결과와 젬 목록의 스냅샷이 저장됩니다. 동점일 경우, 이전 배치에서 젬 이동이 가장 적은 배치를 우선합니다. 이전 스냅샷에 없는 새 젬은 결과에서 금색 테두리로 강조 표시됩니다.',
+      en_us: 'Your optimization result and astrogem list are snapshotted. On a tie, the optimizer prefers the assignment that moves the fewest gems from your previous result. Newly added astrogems not present in the previous snapshot are highlighted with a gold border in the results.',
     }[locale]
   );
   const LRunning = $derived(
@@ -76,31 +88,66 @@
       en_us: 'Chaos cores optimization failed',
     }[locale]
   );
+  const LCombinedResult = $derived(
+    {
+      ko_kr: '종합 결과 리포트',
+      en_us: 'Combined Result Report',
+    }[locale]
+  );
+  const LOrderResult = $derived(
+    {
+      ko_kr: '질서 결과',
+      en_us: 'Order Result',
+    }[locale]
+  );
+  const LChaosResult = $derived(
+    {
+      ko_kr: '혼돈 결과',
+      en_us: 'Chaos Result',
+    }[locale]
+  );
 
-  let failedSign = $derived.by(() => {
-    // 배치 실패 여부 반환
-    if (profile.solveInfo.after) {
-      const answerCores = profile.solveInfo.after.answerCores;
-      const solveAnswer = profile.solveInfo.after.solveAnswer;
+  // Local $state for results — guaranteed to trigger re-renders.
+  // Initialized from persisted profile so results survive page reload.
+  let orderAfter = $state<SolveAfter | undefined>(profile.solveInfo.orderAfter);
+  let chaosAfter = $state<SolveAfter | undefined>(profile.solveInfo.chaosAfter);
 
-      // 코어가 애초에 없으면 실패를 안 함
-      const allOrderCoresNull =
-        !answerCores || Object.values(answerCores['질서']).every((v) => v == null);
-      const allChaosCoresNull =
-        !answerCores || Object.values(answerCores['혼돈']).every((v) => v == null);
-
-      return {
-        order: solveAnswer?.gemSetPackTuple.gsp1 === null && !allOrderCoresNull,
-        chaos: solveAnswer?.gemSetPackTuple.gsp2 === null && !allChaosCoresNull,
-      };
-    }
+  // Combined result derived from both attrs
+  const combinedScoreSet = $derived.by(() => {
+    if (!orderAfter?.scoreSet || !chaosAfter?.scoreSet) return undefined;
+    const o = orderAfter.scoreSet;
+    const c = chaosAfter.scoreSet;
+    const combinedBestScore = o.bestScore + c.bestScore;
     return {
-      order: false,
-      chaos: false,
+      score: o.score + c.score,
+      bestScore: combinedBestScore,
+      // Set perfectScore = bestScore so the bar scales to 100% at max potential,
+      // matching the per-attr bar behavior. totalScore = score/bestScore is preserved.
+      perfectScore: combinedBestScore,
     };
   });
+
+  const combinedAssignedGems = $derived.by(() => {
+    if (!orderAfter?.solveAnswer || !chaosAfter?.solveAnswer) return undefined;
+    return [...orderAfter.solveAnswer.assignedGems, ...chaosAfter.solveAnswer.assignedGems];
+  });
+
+  let orderFailedSign = $derived.by(() => {
+    if (!orderAfter) return false;
+    const answerCores = orderAfter.answerCores;
+    const allOrderCoresNull = !answerCores || Object.values(answerCores['질서']).every((v) => v == null);
+    return orderAfter.solveAnswer?.gemSetPackTuple.gsp1 === null && !allOrderCoresNull;
+  });
+
+  let chaosFailedSign = $derived.by(() => {
+    if (!chaosAfter) return false;
+    const answerCores = chaosAfter.answerCores;
+    const allChaosCoresNull = !answerCores || Object.values(answerCores['혼돈']).every((v) => v == null);
+    return chaosAfter.solveAnswer?.gemSetPackTuple.gsp2 === null && !allChaosCoresNull;
+  });
+
   const solverController = new SolverController();
-  let isSolving = $state(false);
+  let activeSolveAttr = $state<ArkGridAttr | null>(null);
   let solveProgress = $state<SolverProgress | null>(null);
   let progressLog = $state<ProgressLogEntry[]>([]);
 
@@ -110,7 +157,6 @@
     const text = `${progress.stagePercent}% ${getProgressLabel(progress)}`;
     const index = progressLog.findIndex((entry) => entry.header === header);
 
-    // progress가 새로 온 거면 하단에 추가, 이미 있는 거면 텍스트만 바꿔치기
     if (index === -1) {
       progressLog = [...progressLog, { header, text }];
       return;
@@ -129,17 +175,32 @@
     solverController.destroy();
   });
 
-  function cloneAssignedGem(gem: ArkGridGem, coreIndex: number): ArkGridGem {
-    return JSON.parse(JSON.stringify({ ...gem, assign: coreIndex }));
-  }
-
-  function buildAssignedGems(assignedGemIndexes: number[][]): ArkGridGem[][] {
+  function buildAssignedGems(
+    assignedGemIndexes: number[][],
+    snapshot: ArkGridGem[] | undefined
+  ): ArkGridGem[][] {
     const orderGems = profile.gems.orderGems;
     const chaosGems = profile.gems.chaosGems;
     const gemPools = [orderGems, orderGems, orderGems, chaosGems, chaosGems, chaosGems];
 
+    // Build a consumable multiset of snapshot fingerprints for isNew detection
+    const snapshotCounts = new Map<string, number>();
+    if (snapshot) {
+      for (const gem of snapshot) {
+        const fp = gemFingerprint(gem);
+        snapshotCounts.set(fp, (snapshotCounts.get(fp) ?? 0) + 1);
+      }
+    }
+
     return assignedGemIndexes.map((indexes, coreIndex) =>
-      indexes.map((gemIndex) => cloneAssignedGem(gemPools[coreIndex][gemIndex], coreIndex))
+      indexes.map((gemIndex) => {
+        const gem = gemPools[coreIndex][gemIndex];
+        const fp = gemFingerprint(gem);
+        const count = snapshotCounts.get(fp) ?? 0;
+        const isNew = !snapshot || count === 0;
+        if (count > 0) snapshotCounts.set(fp, count - 1);
+        return JSON.parse(JSON.stringify({ ...gem, assign: coreIndex, isNew })) as ArkGridGem;
+      })
     );
   }
 
@@ -173,57 +234,56 @@
     }
 
     const attrLabel = {
-      ko_kr: {
-        질서: '질서',
-        혼돈: '혼돈',
-      },
-      en_us: {
-        질서: 'Order',
-        혼돈: 'Chaos',
-      },
+      ko_kr: { 질서: '질서', 혼돈: '혼돈' },
+      en_us: { 질서: 'Order', 혼돈: 'Chaos' },
     }[locale][progress.attr ?? '질서'];
 
     return `${baseLabel} (${attrLabel} ${progress.current}/${progress.total})`;
   }
 
   function getProgressLogKey(progress: SolverProgress | null) {
-    if (!progress) {
-      return '';
-    }
-
-    if (progress.stage !== 'simulating_launcher_gems') {
-      return progress.stage;
-    }
-
+    if (!progress) return '';
+    if (progress.stage !== 'simulating_launcher_gems') return progress.stage;
     return `${progress.stage}:${progress.attr ?? ''}`;
   }
 
-  async function runSolve() {
-    if (isSolving) return;
+  async function runSolve(attr: ArkGridAttr) {
+    if (activeSolveAttr !== null) return;
 
-    isSolving = true;
+    activeSolveAttr = attr;
     progressLog = [];
-    solveProgress = {
-      stage: 'preparing',
-      totalPercent: 0,
-      stagePercent: 0,
-    };
+    solveProgress = { stage: 'preparing', totalPercent: 0, stagePercent: 0 };
 
     try {
-      const result = await solverController.runSolve(profile);
+      const previousSnapshot =
+        attr === '질서'
+          ? profile.solveInfo.orderAfter?.gemSnapshot
+          : profile.solveInfo.chaosAfter?.gemSnapshot;
+      const currentGems = attr === '질서' ? profile.gems.orderGems : profile.gems.chaosGems;
 
-      updateSolveAnswer({
-        assignedGems: buildAssignedGems(result.assignedGemIndexes),
-        gemSetPackTuple: result.gemSetPackTuple,
-      });
-      updateScoreSet(result.scoreSet);
-      updateAnswerCores(JSON.parse(JSON.stringify(profile.cores)));
-      updateAdditionalGemResult(result.additionalGemResult);
-      updateNeedLauncherGem(result.needLauncherGem);
+      const result = await solverController.runSolve(profile, attr);
+
+      const solveAfter: SolveAfter = {
+        solveAnswer: {
+          assignedGems: buildAssignedGems(result.assignedGemIndexes, previousSnapshot),
+          gemSetPackTuple: result.gemSetPackTuple,
+        },
+        scoreSet: result.scoreSet,
+        answerCores: JSON.parse(JSON.stringify(profile.cores)),
+        additionalGemResult: result.additionalGemResult,
+        needLauncherGem: result.needLauncherGem,
+        gemSnapshot: JSON.parse(JSON.stringify(currentGems)),
+      };
+      updateAttrSolveAfter(attr, solveAfter);
+      if (attr === '질서') {
+        orderAfter = solveAfter;
+      } else {
+        chaosAfter = solveAfter;
+      }
     } catch (error) {
       console.error(error);
     } finally {
-      isSolving = false;
+      activeSolveAttr = null;
       if (solveProgress) {
         solverController.onProgress?.({
           ...solveProgress,
@@ -233,6 +293,11 @@
         });
       }
     }
+  }
+
+  async function runSolveBoth() {
+    await runSolve('질서');
+    await runSolve('혼돈');
   }
 </script>
 
@@ -249,20 +314,34 @@
         {/each}
       </div>
     </div>
-    {#if failedSign.order || failedSign.chaos}
+
+    {#if orderFailedSign || chaosFailedSign}
       <div class="failed-sign">
-        {#if failedSign.order}
+        {#if orderFailedSign}
           <div class="big">⚠️ {LOrderFailed} ⚠️</div>
         {/if}
-        {#if failedSign.chaos}
+        {#if chaosFailedSign}
           <div class="big">⚠️ {LChaosFailed} ⚠️</div>
         {/if}
         <div class="small">{LFailed}</div>
       </div>
     {/if}
-    <button class="solve-button" onclick={runSolve} disabled={isSolving} data-track="run-solve"
-      >{isSolving ? LRunning : LRunSolve}</button
+    <button
+      class="solve-button"
+      onclick={runSolveBoth}
+      disabled={activeSolveAttr !== null}
+      data-track="run-solve"
     >
+      {activeSolveAttr !== null ? LRunning : LRunSolve}
+    </button>
+    <div class="optimize-hint">
+      {LOptimizeHint}
+      <span class="tooltip">
+        <i class="fa-solid fa-circle-info info-icon"></i>
+        <span class="tooltip-text">{LOptimizeTooltip}</span>
+      </span>
+    </div>
+
     {#if solveProgress || progressLog.length > 0}
       <div class="solve-progress">
         <div class="title">{LProgressTitle}</div>
@@ -288,8 +367,29 @@
         </div>
       </div>
     {/if}
-    {#if profile.solveInfo.after}
-      <SolveResult solveAfter={profile.solveInfo.after}></SolveResult>
+
+    {#if orderAfter}
+      <div class="attr-result-block">
+        <div class="attr-result-title order-title">{LOrderResult}</div>
+        <SolveResult solveAfter={orderAfter} attr="질서"></SolveResult>
+      </div>
+    {/if}
+
+    {#if chaosAfter}
+      <div class="attr-result-block">
+        <div class="attr-result-title chaos-title">{LChaosResult}</div>
+        <SolveResult solveAfter={chaosAfter} attr="혼돈"></SolveResult>
+      </div>
+    {/if}
+
+    {#if combinedScoreSet && combinedAssignedGems}
+      <div class="attr-result-block">
+        <div class="attr-result-title combined-title">{LCombinedResult}</div>
+        <div class="combined-left">
+          <ScoreIndicator scoreSet={combinedScoreSet} maxDisplayScore={100}></ScoreIndicator>
+          <GemOptionStats assignedGems={combinedAssignedGems}></GemOptionStats>
+        </div>
+      </div>
     {/if}
   </div>
 </div>
@@ -303,6 +403,36 @@
     width: 15rem;
     height: 4rem;
     align-self: center;
+  }
+  .optimize-hint {
+    font-size: 0.85rem;
+    color: var(--text-muted, #888);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .tooltip {
+    position: relative;
+    display: inline-block;
+  }
+  .tooltip-text {
+    visibility: hidden;
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 0.4rem;
+    padding: 0.5rem 0.75rem;
+    width: 22rem;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    z-index: 10;
+    white-space: normal;
+  }
+  .tooltip:hover .tooltip-text {
+    visibility: visible;
   }
   .solve-progress {
     width: min(32rem, 100%);
@@ -392,5 +522,38 @@
   }
   .failed-sign > .small {
     font-size: 1rem;
+  }
+  .attr-result-block {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .attr-result-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    text-align: center;
+    padding: 0.5rem 0;
+    border-bottom: 2px solid var(--border);
+  }
+  .order-title {
+    color: #c94a4a;
+    border-color: #c94a4a;
+  }
+  .chaos-title {
+    color: #4a90d9;
+    border-color: #4a90d9;
+  }
+  .combined-title {
+    color: #7a4acf;
+    border-color: #7a4acf;
+  }
+  .combined-left {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6rem;
+    align-items: flex-start;
+    padding: 1rem 2rem;
   }
 </style>
