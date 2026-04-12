@@ -49,6 +49,8 @@ export type SolverRunPayload = {
   orderGems: ArkGridGem[];
   chaosGems: ArkGridGem[];
   isSupporter: boolean;
+  attr: ArkGridAttr;
+  currentBitmasks?: bigint[];
 };
 
 export type SolverRunResult = {

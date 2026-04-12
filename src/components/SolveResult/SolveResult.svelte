@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { ArkGridAttr } from '../../lib/constants/enums';
   import type { SolveAfter } from '../../lib/state/profile.state.svelte';
   import AdditionalGemResult from './AdditionalGemResult.svelte';
   import CoreGemEquippedList from './CoreGemEquippedList.svelte';
@@ -7,8 +8,9 @@
 
   type Props = {
     solveAfter: SolveAfter;
+    attr?: ArkGridAttr;
   };
-  let { solveAfter }: Props = $props();
+  let { solveAfter, attr }: Props = $props();
 </script>
 
 <div class="root">
@@ -16,21 +18,22 @@
   <div class="container">
     <div class="left">
       {#if solveAfter.scoreSet}
-        <ScoreIndicator scoreSet={solveAfter.scoreSet}></ScoreIndicator>
+        <ScoreIndicator scoreSet={solveAfter.scoreSet} {attr} maxDisplayScore={attr ? 50 : 100}></ScoreIndicator>
       {/if}
       {#if solveAfter.solveAnswer}
-        <GemOptionStats solveAnswer={solveAfter.solveAnswer}></GemOptionStats>
+        <GemOptionStats solveAnswer={solveAfter.solveAnswer} {attr}></GemOptionStats>
       {/if}
       {#if solveAfter.additionalGemResult && solveAfter.solveAnswer && solveAfter.needLauncherGem}
         <AdditionalGemResult
           additionalGemResult={solveAfter.additionalGemResult}
           solveAnswer={solveAfter.solveAnswer}
           needLauncherGem={solveAfter.needLauncherGem}
+          {attr}
         ></AdditionalGemResult>
       {/if}
     </div>
     {#if solveAfter.answerCores && solveAfter.solveAnswer}
-      <CoreGemEquippedList answerCores={solveAfter.answerCores} solveAnswer={solveAfter.solveAnswer}
+      <CoreGemEquippedList answerCores={solveAfter.answerCores} solveAnswer={solveAfter.solveAnswer} {attr}
       ></CoreGemEquippedList>
     {/if}
   </div>

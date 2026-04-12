@@ -13,8 +13,10 @@
     additionalGemResult: AdditionalGemResult;
     solveAnswer: SolveAnswer;
     needLauncherGem: NeedLauncherGem;
+    attr?: ArkGridAttr;
   };
-  const { additionalGemResult, solveAnswer, needLauncherGem }: Props = $props();
+  const { additionalGemResult, solveAnswer, needLauncherGem, attr }: Props = $props();
+  const attrs = $derived(attr ? [attr] : ArkGridAttrs);
 
   let currentKey = $derived<Record<ArkGridAttr, [number, number, number]>>({
     질서: gemSetPackKey(solveAnswer.gemSetPackTuple.gsp1),
@@ -99,7 +101,7 @@
       <span class="tooltip-text">{LTitleDesc}</span>
     </span>
   </div>
-  {#each ArkGridAttrs as attr}
+  {#each attrs as attr}
     <div class="attr-container">
       <div class="title">
         <div class="main">

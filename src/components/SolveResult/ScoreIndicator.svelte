@@ -1,4 +1,6 @@
 <script lang="ts">
+  import type { ArkGridAttr } from '../../lib/constants/enums';
+  import { LChaos, LOrder } from '../../lib/constants/localization';
   import { appLocale } from '../../lib/state/locale.state.svelte';
 
   type ScoreSet = {
@@ -7,13 +9,17 @@
     perfectScore: number;
   };
 
-  let { scoreSet } = $props<{ scoreSet: ScoreSet }>();
+  let { scoreSet, attr, maxDisplayScore = 100 } = $props<{ scoreSet: ScoreSet; attr?: ArkGridAttr; maxDisplayScore?: number }>();
 
   let scoreRatio = $derived(Math.min(scoreSet.score / scoreSet.perfectScore, 1));
   let bestRatio = $derived(Math.min(scoreSet.bestScore / scoreSet.perfectScore, 1));
   let totalScore = $derived(scoreRatio / bestRatio);
   let locale = $derived(appLocale.current);
+  const LAttrPrefix = $derived(
+    attr ? (attr === '질서' ? LOrder[locale] : LChaos[locale]) + ' ' : ''
+  );
   const LTitle = $derived(
+    LAttrPrefix +
     {
       ko_kr: '아크 그리드 전투력',
       en_us: 'Ark Grid Combat Power',
@@ -47,6 +53,7 @@
     }[locale]
   );
   const LTotalScore = $derived(
+    LAttrPrefix +
     {
       ko_kr: '부옵작 점수',
       en_us: 'Astrogem Score',
@@ -103,7 +110,7 @@
   </div>
 
   <div>
-    <span class="total-score">{LTotalScore} {(totalScore * 100).toFixed(2)}</span>
+    <span class="total-score">{LTotalScore} {(totalScore * maxDisplayScore).toFixed(2)} / {maxDisplayScore}</span>
     <span class="tooltip">
       <i class="fa-solid fa-circle-info info-icon"></i>
       <span class="tooltip-text">
@@ -129,10 +136,6 @@
   }
   .total-score {
     font-size: 1.1rem;
-  }
-  .total-score::after {
-    content: ' / 100';
-    font-size: 1rem;
   }
   /* 바 */
   .score-bar {
