@@ -9,13 +9,14 @@
   interface Props {
     gem: ArkGridGem;
     showDeleteButton?: boolean;
+    isReplaced?: boolean;
   }
 
-  let { gem, showDeleteButton = true }: Props = $props();
+  let { gem, showDeleteButton = true, isReplaced = false }: Props = $props();
   let locale: AppLocale = $derived(appLocale.current);
 </script>
 
-<div class="gem-box">
+<div class="gem-box" class:is-new={gem.isNew} class:is-replaced={isReplaced}>
   <div class="gem" data-locale={locale}>
     <div class="gem-image" data-grade={gem.grade}>
       <img src={getGemImage(gem.gemAttr, gem.name)} alt={gem.name} />
@@ -61,6 +62,13 @@
 </div>
 
 <style>
+  .gem-box.is-new {
+    border-color: #e6a817;
+    box-shadow: 0 0 0 1px #e6a817;
+  }
+  .gem-box.is-replaced {
+    opacity: 0.5;
+  }
   .gem-box {
     container-type: inline-size;
     /* scroll-snap-align: start; */
