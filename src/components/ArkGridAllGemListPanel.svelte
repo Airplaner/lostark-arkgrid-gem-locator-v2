@@ -11,9 +11,10 @@
 
   interface Props {
     gems: AllGems;
+    showGemScore?: boolean;
   }
 
-  let { gems }: Props = $props();
+  let { gems, showGemScore }: Props = $props();
   let showDeleteButton = $state(false);
 
   $effect(() => {
@@ -122,6 +123,7 @@
     gems={currentGems}
     bind:this={container}
     {showDeleteButton}
+    {showGemScore}
     emptyDescription={LEmpty}
   ></ArkGridGemList>
   <div class="gem-count">

@@ -8,11 +8,13 @@
   interface Props {
     gems: ArkGridGem[];
     showDeleteButton?: boolean;
+    showGemScore?: boolean;
     emptyDescription?: string;
   }
   let {
     gems,
     showDeleteButton = true,
+    showGemScore = true,
     emptyDescription = '보유한 젬이 없습니다.',
   }: Props = $props();
 
@@ -65,7 +67,7 @@
 <div class="gems" bind:this={container}>
   {#if gems.length > 0}
     {#each gems as gem}
-      <ArkGridGemDetail {gem} {showDeleteButton} />
+      <ArkGridGemDetail {gem} {showDeleteButton} {showGemScore}/>
     {/each}
   {:else}
     <span class="epmty-description">{emptyDescription} </span>

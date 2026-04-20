@@ -16,7 +16,7 @@
       <ArkGridCoreEditPanel {profile} />
     </div>
     <div>
-      <ArkGridAllGemListPanel gems={profile.gems} />
+      <ArkGridAllGemListPanel gems={profile.gems} showGemScore={!profile.isSupporter}/>
     </div>
   </div>
   <SolvePanel bind:profile></SolvePanel>
