@@ -5,20 +5,26 @@
   import { type ArkGridGem, ArkGridGemOptionTypes, getGemImage } from '../lib/models/arkGridGems';
   import { appLocale } from '../lib/state/locale.state.svelte';
   import { deleteGem } from '../lib/state/profile.state.svelte';
+  import { scoreGem } from '../lib/models/gemScore';
 
   interface Props {
     gem: ArkGridGem;
     showDeleteButton?: boolean;
+    showGemScore?: boolean;
   }
 
-  let { gem, showDeleteButton = true }: Props = $props();
+  let { gem, showDeleteButton = true, showGemScore = true }: Props = $props();
   let locale: AppLocale = $derived(appLocale.current);
+  let score = scoreGem(gem);
 </script>
 
 <div class="gem-box">
   <div class="gem" data-locale={locale}>
     <div class="gem-image" data-grade={gem.grade}>
       <img src={getGemImage(gem.gemAttr, gem.name)} alt={gem.name} />
+      {#if showGemScore}
+        <div class="score" style="color: {score<5 ? 'red' : score>15 ? 'yellow' : score>10 ? 'light-green' : 'white'}">{score.toFixed(2)}</div>
+      {/if}
     </div>
 
     <div class="willPower gem-spec">
@@ -113,6 +119,22 @@
   .gem-image {
     grid-column: 1;
     grid-row: 1 / span 2;
+    position: relative;
+  }
+
+  .gem-image > .score {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, 60%);
+    font-size: 0.7rem;
+    font-weight: normal;
+    text-shadow:
+      -1px -1px 0 #000,
+      1px -1px 0 #000,
+      -1px 1px 0 #000,
+      1px 1px 0 #000;
+    pointer-events: none;
   }
   .gem > .vl {
     grid-column: 3;
