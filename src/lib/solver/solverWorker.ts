@@ -287,12 +287,12 @@ function solve(
     }
   }
 
-  const relevantGssList = orderGssList.concat(chaosGssList);
+  const allGssList = orderGssList.concat(chaosGssList);
   let attMax = 0;
   let skillMax = 0;
   let bossMax = 0;
 
-  for (const gss of relevantGssList) {
+  for (const gss of allGssList) {
     attMax += getMaxStat(gss, 'att');
     skillMax += getMaxStat(gss, 'skill');
     bossMax += getMaxStat(gss, 'boss');
@@ -305,7 +305,7 @@ function solve(
     buildScoreMap(gemOptionCoeff[2], bossMax),
   ];
 
-  for (const gss of relevantGssList) {
+  for (const gss of allGssList) {
     for (const gs of gss) {
       gs.setScoreRange(scoreMaps);
     }

@@ -1,13 +1,12 @@
 <script lang="ts">
-  import { type ArkGridGem, type ArkGridGemOptionName, ArkGridGemOptionTypes } from '../../lib/models/arkGridGems';
+  import { type ArkGridGemOptionName, ArkGridGemOptionTypes } from '../../lib/models/arkGridGems';
   import { appLocale } from '../../lib/state/locale.state.svelte';
   import type { SolveAnswer } from '../../lib/state/profile.state.svelte';
 
   type Props = {
     solveAnswer?: SolveAnswer;
-    assignedGems?: ArkGridGem[][];
   };
-  let { solveAnswer, assignedGems }: Props = $props();
+  let { solveAnswer }: Props = $props();
   let answerStatistics: Record<ArkGridGemOptionName, number> = $derived.by(() => {
     let statistics = {
       공격력: 0,
@@ -17,7 +16,7 @@
       '아군 공격 강화': 0,
       '아군 피해 강화': 0,
     };
-    const allGems = assignedGems ?? solveAnswer?.assignedGems;
+    const allGems = solveAnswer?.assignedGems;
     if (!allGems) return statistics;
     for (const coreGems of allGems) {
       for (const gem of coreGems) {
