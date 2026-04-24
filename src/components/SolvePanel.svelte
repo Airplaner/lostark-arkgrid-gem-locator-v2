@@ -369,29 +369,6 @@
     align-items: center;
     gap: 0.3rem;
   }
-  .tooltip {
-    position: relative;
-    display: inline-block;
-  }
-  .tooltip-text {
-    visibility: hidden;
-    position: absolute;
-    bottom: 125%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 0.4rem;
-    padding: 0.5rem 0.75rem;
-    width: 22rem;
-    font-size: 0.85rem;
-    line-height: 1.4;
-    z-index: 10;
-    white-space: normal;
-  }
-  .tooltip:hover .tooltip-text {
-    visibility: visible;
-  }
   .solve-progress {
     width: min(32rem, 100%);
     background: var(--card);
