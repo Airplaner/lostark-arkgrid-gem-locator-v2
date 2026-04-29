@@ -422,8 +422,8 @@ function createProgressReporter(postProgress: ProgressReporter): ProgressReporte
   let lastStage: SolverProgressStage | null = null;
 
   return (progress) => {
-    const roundedTotalPercent = Math.max(0, Math.min(100, Math.round(progress.totalPercent)));
-    const roundedStagePercent = Math.max(0, Math.min(100, Math.round(progress.stagePercent)));
+    const roundedTotalPercent = Math.max(0, Math.min(100, Math.round(progress.totalPercent * 10) / 10));
+    const roundedStagePercent = Math.max(0, Math.min(100, Math.round(progress.stagePercent * 10) / 10));
 
     if (
       roundedTotalPercent === lastTotalPercent &&

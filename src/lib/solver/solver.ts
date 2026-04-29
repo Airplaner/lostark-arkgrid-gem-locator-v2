@@ -96,7 +96,7 @@ export function getBestGemSetPacks(
   let lastProgressBucket = -1;
   function emitProgress(current: number, total: number) {
     if (!onProgress || total <= 0) return;
-    const bucket = Math.floor((current * 100) / total);
+    const bucket = Math.floor((current * 1000) / total);
     if (bucket === lastProgressBucket && current < total) return;
     lastProgressBucket = bucket;
     onProgress({ current, total });
