@@ -66,6 +66,14 @@ export function getPossibleGemSets(core: Core, gems: Gem[]): GemSet[] {
   return result;
 }
 
+type PackEntry = {
+  gs1: GemSet;
+  gs2: GemSet | null;
+  gs3: GemSet | null;
+  maxScore: number;
+  minScore: number;
+};
+
 export function getBestGemSetPacks(
   gssList: GemSet[][],
   scoreMaps: [number, number][][],
@@ -75,7 +83,8 @@ export function getBestGemSetPacks(
   if (gssList.length > 3) throw Error('length of gsss should be one of 1, 2, 3');
   const [gss1, gss2, gss3] = gssList;
 
-  let answer = [];
+  // (att|skill|boss|coreScore) 키로 중복 제거 — 동일 키는 Phase 3에서 동일 점수를 냄
+  const answerMap = new Map<string, PackEntry>();
   let targetMin = 0; // 현재까지 찾은 배치 중 전투력 범위의 하한(min)의 가장 큰 값
 
   // validate
@@ -127,51 +136,6 @@ export function getBestGemSetPacks(
     return Math.max(current, binarySearchThreshold(gss1, threshold));
   }
 
-  const cache = new Map<bigint, Map<number, GemSet[]>>();
-  let hitCount = 0;
-  let missCount = 0;
-
-  function getCandidatesCache(
-    currentBitmask: bigint, // 현재 사용한 젬
-    gemSetIndex: number, // 추출 대상 GemSet[], 반드시 0,1,2 중 하나
-    threshold: number
-    // threshold는 currentMaxScore에 maxScore를 곱했을 때 targetMinScore보다는 커야 후보가 될 수 있기에
-    // targetMinScore / currentMaxScore
-  ): GemSet[] {
-    const gss = gssList[gemSetIndex];
-    // 주어진 Core가 가진 GemSet 중 currentBitmask와 충돌하지 않는 GemSet의 목록을 반환
-    // assert gss는 반드시 MaxScore에 대해서 내림차순으로 정렬된 상태!
-
-    const key = (currentBitmask << 3n) | BigInt(gemSetIndex);
-
-    const cached = cache.get(key)?.get(threshold);
-    if (cached) {
-      hitCount++;
-      return cached;
-    }
-    missCount++;
-
-    // ✅ 최적화 4: 이진 검색으로 threshold 이상인 마지막 인덱스 찾기
-    const maxValidIdx = binarySearchThreshold(gss, threshold);
-
-    const res: GemSet[] = [];
-
-    // ✅ 최적화 5: 필요한 범위만 순회
-    for (let i = 0; i < maxValidIdx; i++) {
-      const gs = gss[i];
-      if (ignoreDuplication || (gs.bitmask & currentBitmask) === 0n) {
-        res.push(gs);
-      }
-    }
-
-    let innerLevel = cache.get(key);
-    if (!innerLevel) cache.set(key, (innerLevel = new Map()));
-    innerLevel.set(threshold, res);
-
-    return res;
-  }
-
-  // ✅ Generator로 변경 - 메모리 효율적
   function* getCandidatesGenerator(
     currentBitmask: bigint,
     gemSetIndex: number,
@@ -190,8 +154,38 @@ export function getBestGemSetPacks(
       }
     }
   }
-  // const getCandidates = getCandidatesCache;
   const getCandidates = getCandidatesGenerator;
+
+  // GemSetPack 생성 없이 인라인으로 점수 계산 (GemSetPack 생성자와 동일한 연산 순서)
+  function inlineScores(gs1: GemSet, gs2: GemSet | null, gs3: GemSet | null) {
+    const att = gs1.att + (gs2?.att ?? 0) + (gs3?.att ?? 0);
+    const skill = gs1.skill + (gs2?.skill ?? 0) + (gs3?.skill ?? 0);
+    const boss = gs1.boss + (gs2?.boss ?? 0) + (gs3?.boss ?? 0);
+    const coreScore =
+      ((((((gs1.coreCoeff + 10000) / 10000) * ((gs2?.coreCoeff ?? 0) + 10000)) / 10000) *
+        ((gs3?.coreCoeff ?? 0) + 10000)) /
+        10000);
+    const maxScore = coreScore * scoreMaps[0][att][1] * scoreMaps[1][skill][1] * scoreMaps[2][boss][1];
+    const minScore = coreScore * scoreMaps[0][att][0] * scoreMaps[1][skill][0] * scoreMaps[2][boss][0];
+    return { att, skill, boss, coreScore, maxScore, minScore };
+  }
+
+  function upsertPack(
+    gs1: GemSet,
+    gs2: GemSet | null,
+    gs3: GemSet | null,
+    att: number,
+    skill: number,
+    boss: number,
+    coreScore: number,
+    maxScore: number,
+    minScore: number
+  ) {
+    const key = `${att}|${skill}|${boss}|${coreScore}`;
+    if (!answerMap.has(key)) {
+      answerMap.set(key, { gs1, gs2, gs3, maxScore, minScore });
+    }
+  }
 
   /* 코어 0개 */
   if (gssList.length == 0) return [];
@@ -210,13 +204,12 @@ export function getBestGemSetPacks(
       if (gs1.maxScore * gm2 < targetMin) break;
 
       for (const gs2 of getCandidates(gs1.bitmask, 1, targetMin / gs1.maxScore)) {
-        const gsp = new GemSetPack(gs1, gs2, null, scoreMaps);
-        if (gsp.maxScore > targetMin) {
-          answer.push(gsp);
+        const { att, skill, boss, coreScore, maxScore, minScore } = inlineScores(gs1, gs2, null);
+        if (maxScore > targetMin) {
+          upsertPack(gs1, gs2, null, att, skill, boss, coreScore, maxScore, minScore);
         }
-
-        if (gsp.minScore > targetMin) {
-          targetMin = gsp.minScore;
+        if (minScore > targetMin) {
+          targetMin = minScore;
         }
       }
     }
@@ -240,13 +233,9 @@ export function getBestGemSetPacks(
           targetMin / (gs1.maxScore * gs2.maxScore)
         )) {
           if (gs1.maxScore * gs2.maxScore * gs3.maxScore < targetMin) break;
-          // 세 개의 GemSet으로 얻을 수 있는 전투력 범위 구함
-          const gsp = new GemSetPack(gs1, gs2, gs3, scoreMaps);
-          const maxScore = gsp.maxScore;
-          const minScore = gsp.minScore;
-
+          const { att, skill, boss, coreScore, maxScore, minScore } = inlineScores(gs1, gs2, gs3);
           if (maxScore > targetMin && minScore != targetMin) {
-            answer.push(gsp);
+            upsertPack(gs1, gs2, gs3, att, skill, boss, coreScore, maxScore, minScore);
           }
           if (minScore > targetMin) {
             targetMin = minScore;
@@ -255,9 +244,14 @@ export function getBestGemSetPacks(
       }
     }
   }
-  // console.log('캐시 hit', hitCount, 'miss', missCount, hitCount / (hitCount + missCount));
+
   // maxScore이 targetMin보다 작은 경우엔 아예 후보조차 아님
-  answer = answer.filter((g) => g.maxScore >= targetMin);
-  answer.sort((a, b) => b.maxScore - a.maxScore);
-  return answer;
+  const result: GemSetPack[] = [];
+  for (const { gs1, gs2, gs3, maxScore } of answerMap.values()) {
+    if (maxScore >= targetMin) {
+      result.push(new GemSetPack(gs1, gs2, gs3, scoreMaps));
+    }
+  }
+  result.sort((a, b) => b.maxScore - a.maxScore);
+  return result;
 }

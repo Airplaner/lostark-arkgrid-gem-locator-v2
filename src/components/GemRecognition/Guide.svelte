@@ -56,13 +56,6 @@
         <li>마우스가 젬과 상호작용하지 않도록 스크롤 위에 위치시킨 채로 스크롤을 조작해주세요.</li>
         <br />
       </ol>
-
-      <p>
-        Q. Out of Memory 오류가 발생합니다.<br />
-        A. 고대 코어가 많거나 젬이 많을 경우 계산량이 많아서 생기는 문제입니다. 최적화 알고리즘 자체의
-        한계로 개선 중에 있습니다. 코어별 최소 포인트 설정을 18, 19, 20으로 설정해주시거나 불필요한 젬을
-        제거해주고 시도해주세요.
-      </p>
       <p>혹은 사이트 하단 카카오톡을 통해 문의 부탁드립니다.</p>
     {/if}{#if locale === 'en_us'}
       <div class="content">
@@ -104,13 +97,6 @@
             interact with the astrogems.
           </li>
         </ol>
-        <p>
-          Q. I encounter an "Out of Memory" error.<br />
-          A. This may occur when there are many Ancient Cores or astrogems, resulting in heavy computation.
-          It is a limitation of the current optimization algorithm and is being improved. Please try
-          setting the Minimum Core Points to 18, 19, or 20, or remove unnecessary astrogems before trying
-          again.
-        </p>
         <p>Alternatively, you can contact us via Discord in the site footer.</p>
       </div>
     {/if}
