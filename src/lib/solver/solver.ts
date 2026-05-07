@@ -72,13 +72,33 @@ type PackEntry = {
   gs3: GemSet | null;
   maxScore: number;
   minScore: number;
+  stability: number;
 };
+
+function popcount(n: bigint): number {
+  let count = 0;
+  while (n > 0n) {
+    count += Number(n & 1n);
+    n >>= 1n;
+  }
+  return count;
+}
+
+function computeStability(gs1: GemSet, gs2: GemSet | null, gs3: GemSet | null, bitmasks?: bigint[]): number {
+  if (!bitmasks) return 0;
+  let overlap = 0;
+  if (bitmasks[0] !== undefined) overlap += popcount(gs1.bitmask & bitmasks[0]);
+  if (gs2 && bitmasks[1] !== undefined) overlap += popcount(gs2.bitmask & bitmasks[1]);
+  if (gs3 && bitmasks[2] !== undefined) overlap += popcount(gs3.bitmask & bitmasks[2]);
+  return overlap;
+}
 
 export function getBestGemSetPacks(
   gssList: GemSet[][],
   scoreMaps: [number, number][][],
   ignoreDuplication = false,
-  onProgress?: GemSetPackProgressCallback
+  onProgress?: GemSetPackProgressCallback,
+  currentBitmasks?: bigint[]
 ): GemSetPack[] {
   if (gssList.length > 3) throw Error('length of gsss should be one of 1, 2, 3');
   const [gss1, gss2, gss3] = gssList;
@@ -182,8 +202,10 @@ export function getBestGemSetPacks(
     minScore: number
   ) {
     const key = `${att}|${skill}|${boss}|${coreScore}`;
-    if (!answerMap.has(key)) {
-      answerMap.set(key, { gs1, gs2, gs3, maxScore, minScore });
+    const stability = computeStability(gs1, gs2, gs3, currentBitmasks);
+    const existing = answerMap.get(key);
+    if (!existing || stability > existing.stability) {
+      answerMap.set(key, { gs1, gs2, gs3, maxScore, minScore, stability });
     }
   }
 
@@ -191,7 +213,15 @@ export function getBestGemSetPacks(
   if (gssList.length == 0) return [];
   /* 코어 1개 */
   if (gssList.length == 1) {
-    return gss1.map((gs) => new GemSetPack(gs, null, null, scoreMaps));
+    const packs = gss1.map((gs) => new GemSetPack(gs, null, null, scoreMaps));
+    if (currentBitmasks) {
+      packs.sort((a, b) => {
+        const sa = popcount(a.gs1.bitmask & (currentBitmasks[0] ?? 0n));
+        const sb = popcount(b.gs1.bitmask & (currentBitmasks[0] ?? 0n));
+        return b.maxScore - a.maxScore || sb - sa;
+      });
+    }
+    return packs;
   }
 
   /* 코어 2개 */
@@ -246,12 +276,7 @@ export function getBestGemSetPacks(
   }
 
   // maxScore이 targetMin보다 작은 경우엔 아예 후보조차 아님
-  const result: GemSetPack[] = [];
-  for (const { gs1, gs2, gs3, maxScore } of answerMap.values()) {
-    if (maxScore >= targetMin) {
-      result.push(new GemSetPack(gs1, gs2, gs3, scoreMaps));
-    }
-  }
-  result.sort((a, b) => b.maxScore - a.maxScore);
-  return result;
+  const entries = [...answerMap.values()].filter((e) => e.maxScore >= targetMin);
+  entries.sort((a, b) => b.maxScore - a.maxScore || b.stability - a.stability);
+  return entries.map(({ gs1, gs2, gs3 }) => new GemSetPack(gs1, gs2, gs3, scoreMaps));
 }

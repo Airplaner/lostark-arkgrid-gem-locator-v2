@@ -115,23 +115,6 @@ type SolveOptions = {
   chaosCurrentBitmasks?: bigint[];
 };
 
-function popcount(n: bigint): number {
-  let count = 0;
-  while (n > 0n) {
-    count += Number(n & 1n);
-    n >>= 1n;
-  }
-  return count;
-}
-
-function computeGspStability(gsp: GemSetPack | null, bitmasks?: bigint[]): number {
-  if (!gsp || !bitmasks) return 0;
-  let overlap = 0;
-  if (gsp.gs1 && bitmasks[0] !== undefined) overlap += popcount(gsp.gs1.bitmask & bitmasks[0]);
-  if (gsp.gs2 && bitmasks[1] !== undefined) overlap += popcount(gsp.gs2.bitmask & bitmasks[1]);
-  if (gsp.gs3 && bitmasks[2] !== undefined) overlap += popcount(gsp.gs3.bitmask & bitmasks[2]);
-  return overlap;
-}
 
 type SolveResultInternal = {
   answer: GemSetPackTuple;
@@ -318,7 +301,7 @@ function solve(
     ? [...precalculatedGsp.order]
     : getBestGemSetPacks(orderGssList, scoreMaps, perfectSolve, ({ current, total }) => {
         emitProgress(report, 'searching_order_packs', (current / total) * 100, { current, total });
-      });
+      }, orderCurrentBitmasks);
   emitProgress(report, 'searching_order_packs', 100);
 
   emitProgress(report, 'searching_chaos_packs', 0);
@@ -326,36 +309,14 @@ function solve(
     ? [...precalculatedGsp.chaos]
     : getBestGemSetPacks(chaosGssList, scoreMaps, perfectSolve, ({ current, total }) => {
         emitProgress(report, 'searching_chaos_packs', (current / total) * 100, { current, total });
-      });
+      }, chaosCurrentBitmasks);
   emitProgress(report, 'searching_chaos_packs', 100);
 
   if (onStep) {
     onStep(orderGspList, chaosGspList);
   }
 
-  // Pick best single-attr pack with stability tiebreaker
-  function pickBestGsp(gspList: GemSetPack[], bitmasks?: bigint[]): GemSetPack | null {
-    if (gspList.length === 0) return null;
-    let best = gspList[0];
-    let bestScore = new GemSetPackTuple(best, null, isSupporter).score;
-    let bestStability = computeGspStability(best, bitmasks);
-    for (let i = 1; i < gspList.length; i++) {
-      const gsp = gspList[i];
-      const score = new GemSetPackTuple(gsp, null, isSupporter).score;
-      const stability = computeGspStability(gsp, bitmasks);
-      if (score > bestScore || (score === bestScore && stability > bestStability)) {
-        best = gsp;
-        bestScore = score;
-        bestStability = stability;
-      }
-    }
-    return best;
-  }
-
-  const bestOrderGsp = pickBestGsp(orderGspList, orderCurrentBitmasks);
-  const bestChaosGsp = pickBestGsp(chaosGspList, chaosCurrentBitmasks);
-
-  let answer = new GemSetPackTuple(bestOrderGsp, bestChaosGsp, isSupporter);
+  let answer = new GemSetPackTuple(orderGspList[0] ?? null, chaosGspList[0] ?? null, isSupporter);
 
   // Cross-product combining step for globally optimal assignment
   {
