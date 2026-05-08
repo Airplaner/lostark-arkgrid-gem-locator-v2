@@ -125,6 +125,7 @@ export interface ArkGridGem {
   assign?: number;
   isNew?: boolean;
   replaces?: ArkGridGem;
+  swapIndex?: number;
 }
 
 export function gemFingerprint(gem: ArkGridGem): string {

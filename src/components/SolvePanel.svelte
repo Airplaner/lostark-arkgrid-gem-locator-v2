@@ -251,9 +251,17 @@
 
       const result = await solverController.runSolve(profile);
 
+      const assignedGems = buildAssignedGems(result.assignedGemIndexes, previousAssigned);
+      let swapIdx = 1;
+      for (const slotGems of assignedGems) {
+        for (const gem of slotGems) {
+          if (gem.isNew && gem.replaces) gem.swapIndex = swapIdx++;
+        }
+      }
+
       const after: SolveAfter = {
         solveAnswer: {
-          assignedGems: buildAssignedGems(result.assignedGemIndexes, previousAssigned),
+          assignedGems,
           gemSetPackTuple: result.gemSetPackTuple,
         },
         scoreSet: result.scoreSet,
