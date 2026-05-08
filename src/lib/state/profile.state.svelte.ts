@@ -136,6 +136,11 @@ export function updateNeedLauncherGem(needLauncherGem: NeedLauncherGem) {
   }
 }
 
+export function updateSolveAfter(data: SolveAfter) {
+  const profile = getCurrentProfile();
+  profile.solveInfo.after = data;
+}
+
 export function initNewProfile(name: string): CharacterProfile {
   return {
     characterName: name,

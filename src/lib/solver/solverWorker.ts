@@ -111,7 +111,10 @@ type SolveOptions = {
   perfectSolve?: boolean;
   precalculatedGsp?: PrecalculatedGspList;
   onStep?: StepCallback;
+  orderCurrentBitmasks?: bigint[];
+  chaosCurrentBitmasks?: bigint[];
 };
+
 
 type SolveResultInternal = {
   answer: GemSetPackTuple;
@@ -229,7 +232,7 @@ function solve(
   rawChaosCores: WorkerCore[],
   inOrderGems: ArkGridGem[],
   inChaosGems: ArkGridGem[],
-  { isSupporter = false, perfectSolve = false, precalculatedGsp, onStep }: SolveOptions = {},
+  { isSupporter = false, perfectSolve = false, precalculatedGsp, onStep, orderCurrentBitmasks, chaosCurrentBitmasks }: SolveOptions = {},
   report?: ProgressReporter
 ): SolveResultInternal {
   emitProgress(report, 'preparing', 0);
@@ -292,73 +295,70 @@ function solve(
   }
 
   emitProgress(report, 'preparing', 100);
+
   emitProgress(report, 'searching_order_packs', 0);
-  const orderGspList = precalculatedGsp?.order
+  const orderGspList: GemSetPack[] = precalculatedGsp?.order
     ? [...precalculatedGsp.order]
     : getBestGemSetPacks(orderGssList, scoreMaps, perfectSolve, ({ current, total }) => {
-        emitProgress(report, 'searching_order_packs', (current / total) * 100, {
-          current,
-          total,
-        });
-      });
-
+        emitProgress(report, 'searching_order_packs', (current / total) * 100, { current, total });
+      }, orderCurrentBitmasks);
   emitProgress(report, 'searching_order_packs', 100);
+
   emitProgress(report, 'searching_chaos_packs', 0);
-  const chaosGspList = precalculatedGsp?.chaos
+  const chaosGspList: GemSetPack[] = precalculatedGsp?.chaos
     ? [...precalculatedGsp.chaos]
     : getBestGemSetPacks(chaosGssList, scoreMaps, perfectSolve, ({ current, total }) => {
-        emitProgress(report, 'searching_chaos_packs', (current / total) * 100, {
-          current,
-          total,
-        });
-      });
+        emitProgress(report, 'searching_chaos_packs', (current / total) * 100, { current, total });
+      }, chaosCurrentBitmasks);
+  emitProgress(report, 'searching_chaos_packs', 100);
 
   if (onStep) {
     onStep(orderGspList, chaosGspList);
   }
 
-  emitProgress(report, 'searching_chaos_packs', 100);
-  emitProgress(report, 'combining_results', 0);
   let answer = new GemSetPackTuple(orderGspList[0] ?? null, chaosGspList[0] ?? null, isSupporter);
-  const gemSetPackSet: GemSetPack[][] = [[], []];
 
-  for (const [i, gspList] of [orderGspList, chaosGspList].entries()) {
-    const seen = new Set<string>();
-    const total = gspList.length;
-    let current = 0;
-    for (const gsp of gspList) {
-      current += 1;
-      emitProgress(report, 'combining_results', ((i + current / Math.max(total, 1)) / 4) * 100, {
-        current,
-        total,
-      });
-      const key = `${gsp.att}|${gsp.skill}|${gsp.boss}|${gsp.coreScore}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        gemSetPackSet[i].push(gsp);
-      }
-    }
-  }
+  // Cross-product combining step for globally optimal assignment
+  {
+    emitProgress(report, 'combining_results', 0);
+    const gemSetPackSet: GemSetPack[][] = [[], []];
 
-  if (gemSetPackSet[0].length > 0 && gemSetPackSet[1].length > 0) {
-    const total = gemSetPackSet[0].length;
-    let current = 0;
-    for (const gsp1 of gemSetPackSet[0]) {
-      current += 1;
-      emitProgress(report, 'combining_results', 50 + (current / total) * 50, {
-        current,
-        total,
-      });
-      for (const gsp2 of gemSetPackSet[1]) {
-        const gspt = new GemSetPackTuple(gsp1, gsp2, isSupporter);
-        if (gspt.score > answer.score) {
-          answer = gspt;
+    for (const [i, gspList] of [orderGspList, chaosGspList].entries()) {
+      const seen = new Set<string>();
+      const total = gspList.length;
+      let current = 0;
+      for (const gsp of gspList) {
+        current += 1;
+        emitProgress(report, 'combining_results', ((i + current / Math.max(total, 1)) / 4) * 100, {
+          current,
+          total,
+        });
+        const key = `${gsp.att}|${gsp.skill}|${gsp.boss}|${gsp.coreScore}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          gemSetPackSet[i].push(gsp);
         }
       }
     }
+
+    if (gemSetPackSet[0].length > 0 && gemSetPackSet[1].length > 0) {
+      const total = gemSetPackSet[0].length;
+      let current = 0;
+      for (const gsp1 of gemSetPackSet[0]) {
+        current += 1;
+        emitProgress(report, 'combining_results', 50 + (current / total) * 50, { current, total });
+        for (const gsp2 of gemSetPackSet[1]) {
+          const gspt = new GemSetPackTuple(gsp1, gsp2, isSupporter);
+          if (gspt.score > answer.score) {
+            answer = gspt;
+          }
+        }
+      }
+    }
+
+    emitProgress(report, 'combining_results', 100);
   }
 
-  emitProgress(report, 'combining_results', 100);
   return {
     answer,
     assignedGemIndexes: [
@@ -446,7 +446,7 @@ function createProgressReporter(postProgress: ProgressReporter): ProgressReporte
 }
 
 function runSolve(payload: SolverRunPayload, report: ProgressReporter): SolverRunResult {
-  const { orderCores, chaosCores, orderGems, chaosGems, isSupporter } = payload;
+  const { orderCores, chaosCores, orderGems, chaosGems, isSupporter, orderCurrentBitmasks, chaosCurrentBitmasks } = payload;
   const perfectOrderGems: ArkGridGem[] = [];
   const perfectChaosGems: ArkGridGem[] = [];
 
@@ -467,6 +467,8 @@ function runSolve(payload: SolverRunPayload, report: ProgressReporter): SolverRu
     chaosGems,
     {
       isSupporter,
+      orderCurrentBitmasks,
+      chaosCurrentBitmasks,
       onStep: (order, chaos) => {
         precalculatedGspListOrder = { order };
         precalculatedGspListChaos = { chaos };
@@ -490,20 +492,23 @@ function runSolve(payload: SolverRunPayload, report: ProgressReporter): SolverRu
     혼돈: {},
   };
 
-  const simulationTargets = [
-    { attr: '질서', gsp: answer.gsp1 },
-    { attr: '혼돈', gsp: answer.gsp2 },
-  ] satisfies { attr: ArkGridAttr; gsp: GemSetPack | null }[];
+  const simulationTargets = (
+    [
+      { attr: '질서' as ArkGridAttr, gsp: answer.gsp1 },
+      { attr: '혼돈' as ArkGridAttr, gsp: answer.gsp2 },
+    ] satisfies { attr: ArkGridAttr; gsp: GemSetPack | null }[]
+  );
+
   const shouldSimulateLauncherGems = simulationTargets.some(
-    ({ attr, gsp }) => solved.needLauncherGem[attr] && gsp
+    ({ attr: a, gsp }) => solved.needLauncherGem[a] && gsp
   );
 
   if (shouldSimulateLauncherGems) {
     emitProgress(report, 'simulating_launcher_gems', 0);
   }
 
-  for (const { attr, gsp } of simulationTargets) {
-    if (!solved.needLauncherGem[attr] || !gsp) {
+  for (const { attr: simAttr, gsp } of simulationTargets) {
+    if (!solved.needLauncherGem[simAttr] || !gsp) {
       continue;
     }
 
@@ -512,7 +517,7 @@ function runSolve(payload: SolverRunPayload, report: ProgressReporter): SolverRu
     for (let gemReq = 3; gemReq < 10; gemReq++) {
       for (let gemPoint = 5; gemPoint >= 1; gemPoint--) {
         const newGem: ArkGridGem = {
-          gemAttr: attr,
+          gemAttr: simAttr,
           req: gemReq,
           point: gemPoint,
           option1: { optionType: '공격력', value: 0 },
@@ -522,23 +527,23 @@ function runSolve(payload: SolverRunPayload, report: ProgressReporter): SolverRu
         const nextSolve = solve(
           orderCores,
           chaosCores,
-          attr === '질서' ? [...orderGems, newGem] : orderGems,
-          attr === '혼돈' ? [...chaosGems, newGem] : chaosGems,
+          simAttr === '질서' ? [...orderGems, newGem] : orderGems,
+          simAttr === '혼돈' ? [...chaosGems, newGem] : chaosGems,
           {
             isSupporter,
             precalculatedGsp:
-              attr === '혼돈' ? precalculatedGspListOrder : precalculatedGspListChaos,
+              simAttr === '혼돈' ? precalculatedGspListOrder : precalculatedGspListChaos,
           }
         );
 
-        const nextGsp = attr === '질서' ? nextSolve.answer.gsp1 : nextSolve.answer.gsp2;
+        const nextGsp = simAttr === '질서' ? nextSolve.answer.gsp1 : nextSolve.answer.gsp2;
         if (!nextGsp) {
           continue;
         }
 
         const newKeyRaw = gemSetPackKey(nextGsp);
         const newKey = newKeyRaw.join(',');
-        const targetAdditionalGem = additionalGemResult[attr];
+        const targetAdditionalGem = additionalGemResult[simAttr];
 
         if (newKey !== currentKey && nextSolve.answer.score > answer.score) {
           if (targetAdditionalGem[newKey]) {
