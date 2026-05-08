@@ -2,9 +2,9 @@
   import type { SolveAfter } from '../../lib/state/profile.state.svelte';
   import AdditionalGemResult from './AdditionalGemResult.svelte';
   import CoreGemEquippedList from './CoreGemEquippedList.svelte';
-  import SwapGuide from './SwapGuide.svelte';
   import GemOptionStats from './GemOptionStats.svelte';
   import ScoreIndicator from './ScoreIndicator.svelte';
+  import SwapGuide from './SwapGuide.svelte';
 
   type Props = {
     solveAfter: SolveAfter;
@@ -32,7 +32,10 @@
     </div>
     <div class="right">
       {#if solveAfter.answerCores && solveAfter.solveAnswer}
-        <CoreGemEquippedList answerCores={solveAfter.answerCores} solveAnswer={solveAfter.solveAnswer} />
+        <CoreGemEquippedList
+          answerCores={solveAfter.answerCores}
+          solveAnswer={solveAfter.solveAnswer}
+        />
         <SwapGuide solveAnswer={solveAfter.solveAnswer} />
       {/if}
     </div>

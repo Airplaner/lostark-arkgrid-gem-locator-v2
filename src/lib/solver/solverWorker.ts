@@ -115,7 +115,6 @@ type SolveOptions = {
   chaosCurrentBitmasks?: bigint[];
 };
 
-
 type SolveResultInternal = {
   answer: GemSetPackTuple;
   assignedGemIndexes: number[][];
@@ -232,7 +231,14 @@ function solve(
   rawChaosCores: WorkerCore[],
   inOrderGems: ArkGridGem[],
   inChaosGems: ArkGridGem[],
-  { isSupporter = false, perfectSolve = false, precalculatedGsp, onStep, orderCurrentBitmasks, chaosCurrentBitmasks }: SolveOptions = {},
+  {
+    isSupporter = false,
+    perfectSolve = false,
+    precalculatedGsp,
+    onStep,
+    orderCurrentBitmasks,
+    chaosCurrentBitmasks,
+  }: SolveOptions = {},
   report?: ProgressReporter
 ): SolveResultInternal {
   emitProgress(report, 'preparing', 0);
@@ -299,17 +305,35 @@ function solve(
   emitProgress(report, 'searching_order_packs', 0);
   const orderGspList: GemSetPack[] = precalculatedGsp?.order
     ? [...precalculatedGsp.order]
-    : getBestGemSetPacks(orderGssList, scoreMaps, perfectSolve, ({ current, total }) => {
-        emitProgress(report, 'searching_order_packs', (current / total) * 100, { current, total });
-      }, orderCurrentBitmasks);
+    : getBestGemSetPacks(
+        orderGssList,
+        scoreMaps,
+        perfectSolve,
+        ({ current, total }) => {
+          emitProgress(report, 'searching_order_packs', (current / total) * 100, {
+            current,
+            total,
+          });
+        },
+        orderCurrentBitmasks
+      );
   emitProgress(report, 'searching_order_packs', 100);
 
   emitProgress(report, 'searching_chaos_packs', 0);
   const chaosGspList: GemSetPack[] = precalculatedGsp?.chaos
     ? [...precalculatedGsp.chaos]
-    : getBestGemSetPacks(chaosGssList, scoreMaps, perfectSolve, ({ current, total }) => {
-        emitProgress(report, 'searching_chaos_packs', (current / total) * 100, { current, total });
-      }, chaosCurrentBitmasks);
+    : getBestGemSetPacks(
+        chaosGssList,
+        scoreMaps,
+        perfectSolve,
+        ({ current, total }) => {
+          emitProgress(report, 'searching_chaos_packs', (current / total) * 100, {
+            current,
+            total,
+          });
+        },
+        chaosCurrentBitmasks
+      );
   emitProgress(report, 'searching_chaos_packs', 100);
 
   if (onStep) {
@@ -422,8 +446,14 @@ function createProgressReporter(postProgress: ProgressReporter): ProgressReporte
   let lastStage: SolverProgressStage | null = null;
 
   return (progress) => {
-    const roundedTotalPercent = Math.max(0, Math.min(100, Math.round(progress.totalPercent * 10) / 10));
-    const roundedStagePercent = Math.max(0, Math.min(100, Math.round(progress.stagePercent * 10) / 10));
+    const roundedTotalPercent = Math.max(
+      0,
+      Math.min(100, Math.round(progress.totalPercent * 10) / 10)
+    );
+    const roundedStagePercent = Math.max(
+      0,
+      Math.min(100, Math.round(progress.stagePercent * 10) / 10)
+    );
 
     if (
       roundedTotalPercent === lastTotalPercent &&
@@ -446,7 +476,15 @@ function createProgressReporter(postProgress: ProgressReporter): ProgressReporte
 }
 
 function runSolve(payload: SolverRunPayload, report: ProgressReporter): SolverRunResult {
-  const { orderCores, chaosCores, orderGems, chaosGems, isSupporter, orderCurrentBitmasks, chaosCurrentBitmasks } = payload;
+  const {
+    orderCores,
+    chaosCores,
+    orderGems,
+    chaosGems,
+    isSupporter,
+    orderCurrentBitmasks,
+    chaosCurrentBitmasks,
+  } = payload;
   const perfectOrderGems: ArkGridGem[] = [];
   const perfectChaosGems: ArkGridGem[] = [];
 
@@ -492,12 +530,10 @@ function runSolve(payload: SolverRunPayload, report: ProgressReporter): SolverRu
     혼돈: {},
   };
 
-  const simulationTargets = (
-    [
-      { attr: '질서' as ArkGridAttr, gsp: answer.gsp1 },
-      { attr: '혼돈' as ArkGridAttr, gsp: answer.gsp2 },
-    ] satisfies { attr: ArkGridAttr; gsp: GemSetPack | null }[]
-  );
+  const simulationTargets = [
+    { attr: '질서' as ArkGridAttr, gsp: answer.gsp1 },
+    { attr: '혼돈' as ArkGridAttr, gsp: answer.gsp2 },
+  ] satisfies { attr: ArkGridAttr; gsp: GemSetPack | null }[];
 
   const shouldSimulateLauncherGems = simulationTargets.some(
     ({ attr: a, gsp }) => solved.needLauncherGem[a] && gsp

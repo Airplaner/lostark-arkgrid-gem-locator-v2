@@ -4,6 +4,7 @@
   import { type AppLocale, ArkGridAttrs } from '../lib/constants/enums';
   import { ArkGridCoreTypes } from '../lib/models/arkGridCores';
   import type { ArkGridGem } from '../lib/models/arkGridGems';
+  import { gemFingerprint } from '../lib/models/arkGridGems';
   import { SolverController } from '../lib/solver/solverController';
   import type { SolverProgress, SolverProgressStage } from '../lib/solver/types';
   import { appLocale } from '../lib/state/locale.state.svelte';
@@ -12,7 +13,6 @@
     type SolveAfter,
     updateSolveAfter,
   } from '../lib/state/profile.state.svelte';
-  import { gemFingerprint } from '../lib/models/arkGridGems';
   import SolveCoreEdit from './SolveCoreEdit.svelte';
   import SolveResult from './SolveResult/SolveResult.svelte';
 
@@ -52,8 +52,10 @@
   );
   const LOptimizeTooltip = $derived(
     {
-      ko_kr: '최적화 결과와 젬 목록의 스냅샷이 저장됩니다. 동점일 경우, 이전 배치에서 젬 이동이 가장 적은 배치를 우선합니다. 이전 스냅샷에 없는 새 젬은 결과에서 금색 테두리로 강조 표시됩니다.',
-      en_us: 'Your optimization result and astrogem list are snapshotted. On a tie, the optimizer prefers the assignment that moves the fewest gems from your previous result. Newly added astrogems not present in the previous snapshot are highlighted with a gold border in the results.',
+      ko_kr:
+        '최적화 결과와 젬 목록의 스냅샷이 저장됩니다. 동점일 경우, 이전 배치에서 젬 이동이 가장 적은 배치를 우선합니다. 이전 스냅샷에 없는 새 젬은 결과에서 금색 테두리로 강조 표시됩니다.',
+      en_us:
+        'Your optimization result and astrogem list are snapshotted. On a tie, the optimizer prefers the assignment that moves the fewest gems from your previous result. Newly added astrogems not present in the previous snapshot are highlighted with a gold border in the results.',
     }[locale]
   );
   const LRunning = $derived(
@@ -94,8 +96,10 @@
   let failedSign = $derived.by(() => {
     if (!solveAfter) return { order: false, chaos: false };
     const answerCores = solveAfter.answerCores;
-    const allOrderCoresNull = !answerCores || Object.values(answerCores['질서']).every((v) => v == null);
-    const allChaosCoresNull = !answerCores || Object.values(answerCores['혼돈']).every((v) => v == null);
+    const allOrderCoresNull =
+      !answerCores || Object.values(answerCores['질서']).every((v) => v == null);
+    const allChaosCoresNull =
+      !answerCores || Object.values(answerCores['혼돈']).every((v) => v == null);
     return {
       order: solveAfter.solveAnswer?.gemSetPackTuple.gsp1 === null && !allOrderCoresNull,
       chaos: solveAfter.solveAnswer?.gemSetPackTuple.gsp2 === null && !allChaosCoresNull,
@@ -145,8 +149,9 @@
 
       if (!previousPerSlot) {
         // First solve — no previous assignment to compare against.
-        return newGems.map((gem) =>
-          JSON.parse(JSON.stringify({ ...gem, assign: coreIndex, isNew: false })) as ArkGridGem
+        return newGems.map(
+          (gem) =>
+            JSON.parse(JSON.stringify({ ...gem, assign: coreIndex, isNew: false })) as ArkGridGem
         );
       }
 
@@ -187,10 +192,14 @@
         const c = oldCountsForNew.get(fp) ?? 0;
         if (c > 0) {
           oldCountsForNew.set(fp, c - 1);
-          return JSON.parse(JSON.stringify({ ...gem, assign: coreIndex, isNew: false })) as ArkGridGem;
+          return JSON.parse(
+            JSON.stringify({ ...gem, assign: coreIndex, isNew: false })
+          ) as ArkGridGem;
         }
         const replaces: ArkGridGem | undefined = droppedGems[droppedIdx++];
-        return JSON.parse(JSON.stringify({ ...gem, assign: coreIndex, isNew: true, replaces })) as ArkGridGem;
+        return JSON.parse(
+          JSON.stringify({ ...gem, assign: coreIndex, isNew: true, replaces })
+        ) as ArkGridGem;
       });
     });
   }
@@ -312,12 +321,7 @@
         <div class="small">{LFailed}</div>
       </div>
     {/if}
-    <button
-      class="solve-button"
-      onclick={runSolve}
-      disabled={isSolving}
-      data-track="run-solve"
-    >
+    <button class="solve-button" onclick={runSolve} disabled={isSolving} data-track="run-solve">
       {isSolving ? LRunning : LRunSolve}
     </button>
     <div class="optimize-hint">
@@ -355,7 +359,7 @@
     {/if}
 
     {#if solveAfter}
-      <SolveResult solveAfter={solveAfter}></SolveResult>
+      <SolveResult {solveAfter}></SolveResult>
     {/if}
   </div>
 </div>

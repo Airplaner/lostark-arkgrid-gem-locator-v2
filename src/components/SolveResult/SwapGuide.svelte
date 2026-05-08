@@ -1,10 +1,10 @@
 <script lang="ts">
   import { type ArkGridAttr, ArkGridAttrs } from '../../lib/constants/enums';
-  import { type ArkGridCoreType, ArkGridCoreTypes } from '../../lib/models/arkGridCores';
   import { formatCoreType } from '../../lib/constants/localization';
+  import { type ArkGridCoreType, ArkGridCoreTypes } from '../../lib/models/arkGridCores';
   import type { ArkGridGem } from '../../lib/models/arkGridGems';
-  import type { SolveAnswer } from '../../lib/state/profile.state.svelte';
   import { appLocale } from '../../lib/state/locale.state.svelte';
+  import type { SolveAnswer } from '../../lib/state/profile.state.svelte';
   import ArkGridGemDetail from '../ArkGridGemDetail.svelte';
 
   type SwapEntry = {

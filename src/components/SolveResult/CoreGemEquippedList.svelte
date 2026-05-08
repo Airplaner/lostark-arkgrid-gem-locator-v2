@@ -13,7 +13,6 @@
     solveAnswer: SolveAnswer;
   };
   let { answerCores, solveAnswer }: Props = $props();
-
 </script>
 
 <div class="root">
@@ -24,7 +23,6 @@
         {ctype}
         core={answerCores[attr][ctype]}
         gems={solveAnswer.assignedGems[i * 3 + j]}
-
       ></CoreGemEquipped>
     {/each}
   {/each}

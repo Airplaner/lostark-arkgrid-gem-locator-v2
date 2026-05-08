@@ -84,7 +84,12 @@ function popcount(n: bigint): number {
   return count;
 }
 
-function computeStability(gs1: GemSet, gs2: GemSet | null, gs3: GemSet | null, bitmasks?: bigint[]): number {
+function computeStability(
+  gs1: GemSet,
+  gs2: GemSet | null,
+  gs3: GemSet | null,
+  bitmasks?: bigint[]
+): number {
   if (!bitmasks) return 0;
   let overlap = 0;
   if (bitmasks[0] !== undefined) overlap += popcount(gs1.bitmask & bitmasks[0]);
@@ -182,11 +187,13 @@ export function getBestGemSetPacks(
     const skill = gs1.skill + (gs2?.skill ?? 0) + (gs3?.skill ?? 0);
     const boss = gs1.boss + (gs2?.boss ?? 0) + (gs3?.boss ?? 0);
     const coreScore =
-      ((((((gs1.coreCoeff + 10000) / 10000) * ((gs2?.coreCoeff ?? 0) + 10000)) / 10000) *
+      (((((gs1.coreCoeff + 10000) / 10000) * ((gs2?.coreCoeff ?? 0) + 10000)) / 10000) *
         ((gs3?.coreCoeff ?? 0) + 10000)) /
-        10000);
-    const maxScore = coreScore * scoreMaps[0][att][1] * scoreMaps[1][skill][1] * scoreMaps[2][boss][1];
-    const minScore = coreScore * scoreMaps[0][att][0] * scoreMaps[1][skill][0] * scoreMaps[2][boss][0];
+      10000;
+    const maxScore =
+      coreScore * scoreMaps[0][att][1] * scoreMaps[1][skill][1] * scoreMaps[2][boss][1];
+    const minScore =
+      coreScore * scoreMaps[0][att][0] * scoreMaps[1][skill][0] * scoreMaps[2][boss][0];
     return { att, skill, boss, coreScore, maxScore, minScore };
   }
 
