@@ -271,7 +271,7 @@ export function getBestGemSetPacks(
         )) {
           if (gs1.maxScore * gs2.maxScore * gs3.maxScore < targetMin) break;
           const { att, skill, boss, coreScore, maxScore, minScore } = inlineScores(gs1, gs2, gs3);
-          if (maxScore > targetMin && minScore != targetMin) {
+          if (maxScore > targetMin) {
             upsertPack(gs1, gs2, gs3, att, skill, boss, coreScore, maxScore, minScore);
           }
           if (minScore > targetMin) {
