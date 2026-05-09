@@ -373,7 +373,10 @@ function solve(
         emitProgress(report, 'combining_results', 50 + (current / total) * 50, { current, total });
         for (const gsp2 of gemSetPackSet[1]) {
           const gspt = new GemSetPackTuple(gsp1, gsp2, isSupporter);
-          if (gspt.score > answer.score) {
+          if (
+            gspt.score > answer.score ||
+            (gspt.score == answer.score && gspt.stability > answer.stability)
+          ) {
             answer = gspt;
           }
         }

@@ -112,7 +112,8 @@ export class GemSetPack {
     public gs1: GemSet | null,
     public gs2: GemSet | null,
     public gs3: GemSet | null,
-    scoreMaps: [number, number][][]
+    scoreMaps: [number, number][][],
+    public stability: number
   ) {
     this.att = (gs1?.att ?? 0) + (gs2?.att ?? 0) + (gs3?.att ?? 0);
     this.skill = (gs1?.skill ?? 0) + (gs2?.skill ?? 0) + (gs3?.skill ?? 0);
@@ -153,6 +154,7 @@ export class GemSetPackTuple {
   skill: number;
   boss: number;
   score: number;
+  stability: number;
   constructor(
     public gsp1: GemSetPack | null,
     public gsp2: GemSetPack | null,
@@ -171,5 +173,6 @@ export class GemSetPackTuple {
         10000) *
         (Math.floor((this.boss * coeffs[2]) / 120) + 10000)) /
       10000;
+    this.stability = (gsp1?.stability ?? 0) + (gsp2?.stability ?? 0);
   }
 }

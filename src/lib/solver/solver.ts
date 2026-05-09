@@ -285,5 +285,7 @@ export function getBestGemSetPacks(
   // maxScore이 targetMin보다 작은 경우엔 아예 후보조차 아님
   const entries = [...answerMap.values()].filter((e) => e.maxScore >= targetMin);
   entries.sort((a, b) => b.maxScore - a.maxScore || b.stability - a.stability);
-  return entries.map(({ gs1, gs2, gs3 }) => new GemSetPack(gs1, gs2, gs3, scoreMaps));
+  return entries.map(
+    ({ gs1, gs2, gs3, stability }) => new GemSetPack(gs1, gs2, gs3, scoreMaps, stability)
+  );
 }
