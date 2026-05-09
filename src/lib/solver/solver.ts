@@ -220,15 +220,15 @@ export function getBestGemSetPacks(
   if (gssList.length == 0) return [];
   /* 코어 1개 */
   if (gssList.length == 1) {
-    const packs = gss1.map((gs) => new GemSetPack(gs, null, null, scoreMaps));
-    if (currentBitmasks) {
-      packs.sort((a, b) => {
-        const sa = popcount(a.gs1.bitmask & (currentBitmasks[0] ?? 0n));
-        const sb = popcount(b.gs1.bitmask & (currentBitmasks[0] ?? 0n));
-        return b.maxScore - a.maxScore || sb - sa;
-      });
+    for (const gs of gss1) {
+      const { att, skill, boss, coreScore, maxScore, minScore } = inlineScores(gs, null, null);
+      if (maxScore > targetMin) {
+        upsertPack(gs, null, null, att, skill, boss, coreScore, maxScore, minScore);
+      }
+      if (minScore > targetMin) {
+        targetMin = minScore;
+      }
     }
-    return packs;
   }
 
   /* 코어 2개 */
